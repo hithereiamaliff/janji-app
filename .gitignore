@@ -41,3 +41,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Cloudflare Wrangler (local state and dev secrets)
+.wrangler/
+.dev.vars*
