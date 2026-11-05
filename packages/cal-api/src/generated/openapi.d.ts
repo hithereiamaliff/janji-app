@@ -2206,12 +2206,12 @@ export interface components {
              * @description If true, when creating a managed user the managed user will have 4 default event types: 30 and 60 minutes without Cal video, 30 and 60 minutes with Cal video. Set this as false if you want to create a managed user and then manually create event types for the user.
              * @default false
              */
-            areDefaultEventTypesEnabled: boolean;
+            areDefaultEventTypesEnabled?: boolean;
             /**
              * @description If true and if managed user has calendar connected, calendar events will be created. Disable it if you manually create calendar events. Default to true.
              * @default true
              */
-            areCalendarEventsEnabled: boolean;
+            areCalendarEventsEnabled?: boolean;
         };
         CreateOAuthClientOutput: {
             /** @example clsx38nbl0001vkhlwin9fmt0 */
@@ -2321,7 +2321,7 @@ export interface components {
              * @default 30
              * @example 60
              */
-            apiKeyDaysValid: number;
+            apiKeyDaysValid?: number;
             /**
              * @description If true, organization api key never expires.
              * @example true
@@ -2763,7 +2763,7 @@ export interface components {
              */
             year?: number;
             /** @default false */
-            disabled: boolean;
+            disabled?: boolean;
         };
         BookerActiveBookingsLimit_2024_06_14: {
             /**
@@ -3014,39 +3014,39 @@ export interface components {
              * @description If true, the organizer will not be able to record the meeting
              * @default false
              */
-            disableRecordingForOrganizer: boolean;
+            disableRecordingForOrganizer?: boolean;
             /**
              * @description If true, the guests will not be able to record the meeting
              * @default false
              */
-            disableRecordingForGuests: boolean;
+            disableRecordingForGuests?: boolean;
             /** @description URL to which participants are redirected when they exit the call */
             redirectUrlOnExit?: Record<string, never>;
             /**
              * @description If true, enables the automatic recording for the event when organizer joins the call
              * @default false
              */
-            enableAutomaticRecordingForOrganizer: boolean;
+            enableAutomaticRecordingForOrganizer?: boolean;
             /**
              * @description If true, enables the automatic transcription for the event whenever someone joins the call
              * @default false
              */
-            enableAutomaticTranscription: boolean;
+            enableAutomaticTranscription?: boolean;
             /**
              * @description If true, the guests will not be able to receive transcription of the meeting
              * @default false
              */
-            disableTranscriptionForGuests: boolean;
+            disableTranscriptionForGuests?: boolean;
             /**
              * @description If true, the organizer will not be able to receive transcription of the meeting
              * @default false
              */
-            disableTranscriptionForOrganizer: boolean;
+            disableTranscriptionForOrganizer?: boolean;
             /**
              * @description Send emails with the transcription of the Cal Video after the meeting ends.
              * @default true
              */
-            sendTranscriptionEmails: boolean;
+            sendTranscriptionEmails?: boolean;
         };
         CreateEventTypeInput_2024_06_14: {
             /** @example 60 */
@@ -3133,7 +3133,7 @@ export interface components {
              * @description Boolean to require authentication for booking this event type via api. If true, only authenticated users who are the event-type owner or org/team admin/owner can book this event type.
              * @default false
              */
-            bookingRequiresAuthentication: boolean;
+            bookingRequiresAuthentication?: boolean;
             /**
              * @description Settings for disabling cancelling of this event type.
              * @example {
@@ -3158,17 +3158,17 @@ export interface components {
              * @description Enabling this option allows for past events to be rescheduled.
              * @default false
              */
-            allowReschedulingPastBookings: boolean;
+            allowReschedulingPastBookings?: boolean;
             /**
              * @description When enabled, users will be able to create a new booking when trying to reschedule a cancelled booking.
              * @default false
              */
-            allowReschedulingCancelledBookings: boolean;
+            allowReschedulingCancelledBookings?: boolean;
             /**
              * @description Arrange time slots to optimize availability.
              * @default false
              */
-            showOptimizedSlots: boolean;
+            showOptimizedSlots?: boolean;
             /** @description Locations where the event will take place. If not provided, cal video link will be used as the location. Note: Setting a location to a conferencing app does not install the app - the app must already be installed. Via API, only Google Meet (google-meet), Microsoft Teams (office365-video), and Zoom (zoom) can be installed. Cal Video (cal-video) is installed by default. All other conferencing apps must be connected via the Cal.diy web app and are not available for Platform plan customers. You can only set an event type location to an app that has already been installed or connected. */
             locations?: (components["schemas"]["InputAddressLocation_2024_06_14"] | components["schemas"]["InputLinkLocation_2024_06_14"] | components["schemas"]["InputIntegrationLocation_2024_06_14"] | components["schemas"]["InputPhoneLocation_2024_06_14"] | components["schemas"]["InputAttendeeAddressLocation_2024_06_14"] | components["schemas"]["InputAttendeePhoneLocation_2024_06_14"] | components["schemas"]["InputAttendeeDefinedLocation_2024_06_14"])[];
         };
@@ -4067,7 +4067,7 @@ export interface components {
              * @description Boolean to require authentication for booking this event type via api. If true, only authenticated users who are the event-type owner or org/team admin/owner can book this event type.
              * @default false
              */
-            bookingRequiresAuthentication: boolean;
+            bookingRequiresAuthentication?: boolean;
             /**
              * @description Settings for disabling cancelling of this event type.
              * @example {
@@ -4092,17 +4092,17 @@ export interface components {
              * @description Enabling this option allows for past events to be rescheduled.
              * @default false
              */
-            allowReschedulingPastBookings: boolean;
+            allowReschedulingPastBookings?: boolean;
             /**
              * @description When enabled, users will be able to create a new booking when trying to reschedule a cancelled booking.
              * @default false
              */
-            allowReschedulingCancelledBookings: boolean;
+            allowReschedulingCancelledBookings?: boolean;
             /**
              * @description Arrange time slots to optimize availability.
              * @default false
              */
-            showOptimizedSlots: boolean;
+            showOptimizedSlots?: boolean;
             /** @description Locations where the event will take place. If not provided, cal video link will be used as the location. Note: Setting a location to a conferencing app does not install the app - the app must already be installed. Via API, only Google Meet (google-meet), Microsoft Teams (office365-video), and Zoom (zoom) can be installed. Cal Video (cal-video) is installed by default. All other conferencing apps must be connected via the Cal.diy web app and are not available for Platform plan customers. You can only set an event type location to an app that has already been installed or connected. */
             locations?: (components["schemas"]["InputAddressLocation_2024_06_14"] | components["schemas"]["InputLinkLocation_2024_06_14"] | components["schemas"]["InputIntegrationLocation_2024_06_14"] | components["schemas"]["InputPhoneLocation_2024_06_14"] | components["schemas"]["InputAttendeeAddressLocation_2024_06_14"] | components["schemas"]["InputAttendeePhoneLocation_2024_06_14"] | components["schemas"]["InputAttendeeDefinedLocation_2024_06_14"])[];
         };
@@ -4387,7 +4387,7 @@ export interface components {
              * @default 1
              * @example 10
              */
-            maxUsageCount: number;
+            maxUsageCount?: number;
         };
         TimeBasedPrivateLinkOutput: {
             /**
@@ -4553,7 +4553,7 @@ export interface components {
              * @default true
              * @example false
              */
-            readOnly: boolean;
+            readOnly?: boolean;
         };
         CreateIcsFeedOutput: {
             /**
@@ -4802,7 +4802,7 @@ export interface components {
              * @example it
              * @enum {string}
              */
-            language: "ar" | "ca" | "de" | "es" | "eu" | "he" | "id" | "ja" | "lv" | "pl" | "ro" | "sr" | "th" | "vi" | "az" | "cs" | "el" | "es-419" | "fi" | "hr" | "it" | "km" | "nl" | "pt" | "ru" | "sv" | "tr" | "zh-CN" | "bg" | "da" | "en" | "et" | "fr" | "hu" | "iw" | "ko" | "no" | "pt-BR" | "sk" | "ta" | "uk" | "zh-TW" | "bn";
+            language?: "ar" | "ca" | "de" | "es" | "eu" | "he" | "id" | "ja" | "lv" | "pl" | "ro" | "sr" | "th" | "vi" | "az" | "cs" | "el" | "es-419" | "fi" | "hr" | "it" | "km" | "nl" | "pt" | "ru" | "sv" | "tr" | "zh-CN" | "bg" | "da" | "en" | "et" | "fr" | "hu" | "iw" | "ko" | "no" | "pt-BR" | "sk" | "ta" | "uk" | "zh-TW" | "bn";
             /**
              * @description The email of the attendee.
              * @example john.doe@example.com
@@ -5974,7 +5974,7 @@ export interface components {
              * @example it
              * @enum {string}
              */
-            language: "ar" | "ca" | "de" | "es" | "eu" | "he" | "id" | "ja" | "lv" | "pl" | "ro" | "sr" | "th" | "vi" | "az" | "cs" | "el" | "es-419" | "fi" | "hr" | "it" | "km" | "nl" | "pt" | "ru" | "sv" | "tr" | "zh-CN" | "bg" | "da" | "en" | "et" | "fr" | "hu" | "iw" | "ko" | "no" | "pt-BR" | "sk" | "ta" | "uk" | "zh-TW" | "bn";
+            language?: "ar" | "ca" | "de" | "es" | "eu" | "he" | "id" | "ja" | "lv" | "pl" | "ro" | "sr" | "th" | "vi" | "az" | "cs" | "el" | "es-419" | "fi" | "hr" | "it" | "km" | "nl" | "pt" | "ru" | "sv" | "tr" | "zh-CN" | "bg" | "da" | "en" | "et" | "fr" | "hu" | "iw" | "ko" | "no" | "pt-BR" | "sk" | "ta" | "uk" | "zh-TW" | "bn";
             /**
              * @description The email of the attendee.
              * @example john.doe@example.com
@@ -6077,7 +6077,7 @@ export interface components {
              * @example it
              * @enum {string}
              */
-            language: "ar" | "ca" | "de" | "es" | "eu" | "he" | "id" | "ja" | "lv" | "pl" | "ro" | "sr" | "th" | "vi" | "az" | "cs" | "el" | "es-419" | "fi" | "hr" | "it" | "km" | "nl" | "pt" | "ru" | "sv" | "tr" | "zh-CN" | "bg" | "da" | "en" | "et" | "fr" | "hu" | "iw" | "ko" | "no" | "pt-BR" | "sk" | "ta" | "uk" | "zh-TW" | "bn";
+            language?: "ar" | "ca" | "de" | "es" | "eu" | "he" | "id" | "ja" | "lv" | "pl" | "ro" | "sr" | "th" | "vi" | "az" | "cs" | "el" | "es-419" | "fi" | "hr" | "it" | "km" | "nl" | "pt" | "ru" | "sv" | "tr" | "zh-CN" | "bg" | "da" | "en" | "et" | "fr" | "hu" | "iw" | "ko" | "no" | "pt-BR" | "sk" | "ta" | "uk" | "zh-TW" | "bn";
         };
         AddGuestsInput_2024_08_13: {
             /**

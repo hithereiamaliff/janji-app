@@ -135,10 +135,7 @@ describe("booking actions", () => {
       path: "/api/v2/bookings/b1/guests",
       version: "2024-08-13",
       body: {
-        guests: [
-          { email: "lee@example.com", name: "Lee", language: "en" },
-          { email: "kim@example.com", language: "en" },
-        ],
+        guests: [{ email: "lee@example.com", name: "Lee" }, { email: "kim@example.com" }],
       },
     });
   });

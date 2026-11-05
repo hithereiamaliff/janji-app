@@ -1,5 +1,4 @@
 import { type CalClient, unwrap } from "@janji/cal-api/client";
-import type { components } from "@janji/cal-api/schema";
 
 import { type ApiBookingResult, type BookingDetail, pickBooking, toBookingDetail } from "./booking-detail";
 
@@ -82,8 +81,6 @@ export type NewGuest = {
   name?: string;
 };
 
-type ApiGuest = components["schemas"]["Guest"];
-
 /** Cal.diy accepts up to 10 guests per request and 30 attendees per booking. */
 export const MAX_GUESTS_PER_REQUEST = 10;
 
@@ -96,16 +93,8 @@ export async function addGuests(
   const body = unwrap(
     await client.POST("/v2/bookings/{bookingUid}/guests", {
       params: { path: { bookingUid: uid } },
-      // The spec marks language (of the guest's emails) as required, though the server falls back to
-      // English. The app can't know a new guest's language, so it sends that same fallback.
       body: {
-        guests: guests.map(
-          ({ email, name }): ApiGuest => ({
-            email: email.trim(),
-            name: name?.trim() || undefined,
-            language: "en",
-          })
-        ),
+        guests: guests.map(({ email, name }) => ({ email: email.trim(), name: name?.trim() || undefined })),
       },
     })
   );
