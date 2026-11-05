@@ -112,7 +112,14 @@
     "cancelSubmit": "Cancel booking",
     "cancelled": "Booking cancelled.",
     "cancelFailed": "Couldn't cancel the booking. Try again.",
-    "keep": "Keep booking"
+    "keep": "Keep booking",
+    "markNoShow": "Mark as no-show",
+    "markNoShowLabel": "Mark {{name}} as a no-show",
+    "undoNoShow": "Undo no-show",
+    "undoNoShowLabel": "Undo no-show for {{name}}",
+    "markedNoShow": "Marked {{name}} as a no-show.",
+    "unmarkedNoShow": "{{name}} is no longer marked as a no-show.",
+    "noShowFailed": "Couldn't update the no-show. Try again."
   },
   "settings": {
     "accountHeading": "Account",

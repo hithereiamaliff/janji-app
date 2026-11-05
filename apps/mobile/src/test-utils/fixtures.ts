@@ -45,7 +45,15 @@ export type TestBooking = {
   cancellationReason?: string;
   reschedulingReason?: string;
   recurringBookingUid?: string;
-  attendees?: { name: string; email: string; timeZone?: string; phoneNumber?: string; absent?: boolean }[];
+  attendees?: {
+    name: string;
+    email: string;
+    /** API v2's copy of `email` without its alias; the same as `email` unless given. */
+    displayEmail?: string;
+    timeZone?: string;
+    phoneNumber?: string;
+    absent?: boolean;
+  }[];
 };
 
 /** One booking as API v2 (cal-api-version 2024-08-13) sends it. */
@@ -71,7 +79,7 @@ export function apiBooking(booking: TestBooking, id = 1) {
     attendees: (booking.attendees ?? []).map(
       ({ absent = false, timeZone = "Asia/Kuala_Lumpur", ...attendee }) => ({
         ...attendee,
-        displayEmail: attendee.email,
+        displayEmail: attendee.displayEmail ?? attendee.email,
         timeZone,
         absent,
       })

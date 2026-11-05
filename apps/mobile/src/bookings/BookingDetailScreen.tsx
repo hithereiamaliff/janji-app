@@ -23,7 +23,7 @@ import { useSession } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
 import { actionErrorMessage } from "./action-error";
-import { confirmBooking } from "./booking-actions";
+import { confirmBooking, markNoShow } from "./booking-actions";
 import { type BookingAnswer, type BookingDetail, type BookingPerson, fieldNameLabel } from "./booking-detail";
 import { formatFullDate, formatTimeRange, timeRangeElsewhere, timeZoneCity } from "./format";
 import { describeLocation, phoneUrl } from "./location";
@@ -162,13 +162,23 @@ function WhereSection({ location }: { location: string }) {
   );
 }
 
+type NoShowToggle = {
+  /** This attendee's change is being saved. */
+  updating: boolean;
+  /** Another change is being saved, and changes go one at a time. */
+  disabled: boolean;
+  onToggle: () => void;
+};
+
 type AttendeeProps = SectionProps & {
   person: BookingPerson;
   /** Draws a line above, separating this attendee from the one before. */
   divided: boolean;
+  /** Given once the booking has started, when Cal.diy lets hosts mark no-shows. */
+  noShow?: NoShowToggle;
 };
 
-function Attendee({ person, booking, locale, divided }: AttendeeProps) {
+function Attendee({ person, booking, locale, divided, noShow }: AttendeeProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const theirTime = person.timeZone
@@ -199,6 +209,33 @@ function Attendee({ person, booking, locale, divided }: AttendeeProps) {
         <Text style={[styles.body, { color: colors.textMuted }]}>
           {t("bookingDetail.theirTime", { time: theirTime, zone: timeZoneCity(person.timeZone) })}
         </Text>
+      ) : null}
+      {noShow ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            person.noShow
+              ? t("bookingActions.undoNoShowLabel", { name: person.name })
+              : t("bookingActions.markNoShowLabel", { name: person.name })
+          }
+          accessibilityState={{ disabled: noShow.disabled || noShow.updating, busy: noShow.updating }}
+          disabled={noShow.disabled || noShow.updating}
+          onPress={noShow.onToggle}
+          style={({ pressed }) => [styles.linkRow, { opacity: noShow.disabled ? 0.6 : pressed ? 0.7 : 1 }]}
+        >
+          {noShow.updating ? (
+            <ActivityIndicator color={colors.accent} />
+          ) : (
+            <Ionicons
+              name={person.noShow ? "arrow-undo-outline" : "person-remove-outline"}
+              size={20}
+              color={colors.accent}
+            />
+          )}
+          <Text style={[styles.linkText, { color: colors.accent }]}>
+            {person.noShow ? t("bookingActions.undoNoShow") : t("bookingActions.markNoShow")}
+          </Text>
+        </Pressable>
       ) : null}
     </View>
   );
@@ -285,6 +322,7 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
   const bookingQuery = useBooking(uid);
   // Lives here rather than in PendingActions, which unmounts as soon as the booking is confirmed.
   const confirm = useBookingAction(uid, confirmBooking);
+  const noShow = useBookingAction(uid, markNoShow);
   // Tracked separately from isRefetching so background refreshes don't show the pull-to-refresh spinner.
   const [refreshing, setRefreshing] = useState(false);
 
@@ -292,6 +330,18 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
     setRefreshing(true);
     await bookingQuery.refetch();
     setRefreshing(false);
+  }
+
+  function toggleNoShow(person: BookingPerson) {
+    const marking = !person.noShow;
+    noShow.mutate([{ email: person.email, noShow: marking }], {
+      onSuccess: () =>
+        AccessibilityInfo.announceForAccessibility(
+          marking
+            ? t("bookingActions.markedNoShow", { name: person.name })
+            : t("bookingActions.unmarkedNoShow", { name: person.name })
+        ),
+    });
   }
 
   function handleConfirm() {
@@ -324,8 +374,10 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
 
   const booking = bookingQuery.data;
   const inactive = booking.status === "cancelled" || booking.status === "rejected";
-  // Cal.diy refuses to cancel a booking that has ended.
+  // Cal.diy refuses to cancel a booking that has ended, and to mark no-shows before it starts.
   const manageable = booking.status === "accepted" && Date.parse(booking.end) > Date.now();
+  const canMarkNoShow = booking.status === "accepted" && Date.parse(booking.start) <= Date.now();
+  const updatingNoShowFor = noShow.isPending ? noShow.variables?.[0]?.email : undefined;
 
   return (
     <ScrollView
@@ -386,8 +438,22 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
               booking={booking}
               locale={locale}
               divided={index > 0}
+              noShow={
+                canMarkNoShow
+                  ? {
+                      updating: updatingNoShowFor === person.email,
+                      disabled: noShow.isPending,
+                      onToggle: () => toggleNoShow(person),
+                    }
+                  : undefined
+              }
             />
           ))}
+          {noShow.isError ? (
+            <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
+              {actionErrorMessage(t, noShow.error, t("bookingActions.noShowFailed"))}
+            </Text>
+          ) : null}
         </Section>
       ) : null}
       {booking.description ? (
