@@ -1,7 +1,12 @@
 import { createCalClient } from "@janji/cal-api/client";
 import { CalApiError } from "@janji/cal-api/errors";
 
-import { BOOKINGS_PAGE_SIZE, fetchBooking, fetchBookingsPage } from "@/bookings/bookings-api";
+import {
+  BOOKINGS_PAGE_SIZE,
+  fetchBooking,
+  fetchBookingsPage,
+  fetchCalendarLinks,
+} from "@/bookings/bookings-api";
 import { jsonResponse } from "@/test-utils/fixtures";
 
 function bookingsBody({ uids, hasNextPage }: { uids: string[]; hasNextPage: boolean }) {
@@ -161,5 +166,49 @@ describe("fetchBooking", () => {
     const { client } = clientRespondingWith(() => jsonResponse({ status: "success", data: [] }));
 
     await expect(fetchBooking(client, "series-1")).rejects.toMatchObject({ kind: "not_found" });
+  });
+});
+
+describe("fetchCalendarLinks", () => {
+  it("keeps the web calendars, naming the ones it knows, and drops the ICS file", async () => {
+    const { client, urls } = clientRespondingWith(() =>
+      jsonResponse({
+        status: "success",
+        data: [
+          { label: "Google Calendar", link: "https://calendar.google.com/calendar/r/eventedit?text=Review" },
+          {
+            label: "Microsoft Office",
+            link: "https://outlook.office.com/calendar/0/deeplink/compose?subject=x",
+          },
+          {
+            label: "Microsoft Outlook",
+            link: "https://outlook.live.com/calendar/0/deeplink/compose?subject=x",
+          },
+          { label: "Fastmail", link: "https://app.fastmail.com/calendar/new?title=x" },
+          { label: "ICS", link: "data:text/calendar,BEGIN%3AVCALENDAR" },
+          { label: "Broken", link: "not a link" },
+        ],
+      })
+    );
+
+    await expect(fetchCalendarLinks(client, "abc")).resolves.toEqual([
+      {
+        calendar: "google",
+        label: "Google Calendar",
+        url: "https://calendar.google.com/calendar/r/eventedit?text=Review",
+      },
+      {
+        calendar: "office",
+        label: "Microsoft Office",
+        url: "https://outlook.office.com/calendar/0/deeplink/compose?subject=x",
+      },
+      {
+        calendar: "outlook",
+        label: "Microsoft Outlook",
+        url: "https://outlook.live.com/calendar/0/deeplink/compose?subject=x",
+      },
+      { calendar: "other", label: "Fastmail", url: "https://app.fastmail.com/calendar/new?title=x" },
+    ]);
+    expect(urls[0]?.pathname).toBe("/api/v2/bookings/abc/calendar-links");
   });
 });

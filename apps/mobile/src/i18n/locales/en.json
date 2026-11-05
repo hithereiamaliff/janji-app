@@ -85,7 +85,17 @@
     "notes": "Additional notes",
     "answers": "Booking questions",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "share": "Share booking",
+    "shareHint": "Shares the booking's page on your server, where anyone with the link can see it",
+    "addToCalendar": "Add to calendar",
+    "calendars": {
+      "google": "Google Calendar",
+      "outlook": "Outlook.com",
+      "office": "Microsoft 365"
+    },
+    "calendarHint": "Opens {{calendar}} in a browser",
+    "calendarsFailed": "Couldn't get the calendar links. Try again."
   },
   "bookingActions": {
     "pendingTitle": "Needs your confirmation",
