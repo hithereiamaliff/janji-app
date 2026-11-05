@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "janji-relay",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-19",
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "janji-relay",
+      // Replaced with the ID `wrangler d1 create janji-relay` prints, before the first deploy.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
