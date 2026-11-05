@@ -1,11 +1,13 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/theme/useTheme";
 
-import type { BookingAttendee, BookingStatus, BookingSummary } from "./booking";
+import type { BookingAttendee, BookingSummary } from "./booking";
 import { formatTimeRange } from "./format";
+import { StatusBadge, statusText } from "./StatusBadge";
 
 export function attendeesText(t: TFunction, attendees: readonly BookingAttendee[]): string | null {
   const [first, second] = attendees;
@@ -17,18 +19,14 @@ export function attendeesText(t: TFunction, attendees: readonly BookingAttendee[
   return t("bookings.attendeesMore", { first: first.name, count: attendees.length - 1 });
 }
 
-/** Accepted is the normal case, so only the other statuses get a label. */
-export function statusText(t: TFunction, status: BookingStatus): string | null {
-  return status === "accepted" ? null : t(`bookings.status.${status}`);
-}
-
 type BookingRowProps = {
   booking: BookingSummary;
   /** BCP 47 locale for times, usually the device's. */
   locale: string;
+  onPress: () => void;
 };
 
-export function BookingRow({ booking, locale }: BookingRowProps) {
+export function BookingRow({ booking, locale, onPress }: BookingRowProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
@@ -39,11 +37,11 @@ export function BookingRow({ booking, locale }: BookingRowProps) {
     .filter(Boolean)
     .join(" · ");
   const inactive = booking.status === "cancelled" || booking.status === "rejected";
-  const statusColor = booking.status === "pending" ? colors.accent : colors.danger;
 
   return (
-    <View
-      accessible
+    <Pressable
+      accessibilityRole="button"
+      accessibilityHint={t("bookings.openHint")}
       accessibilityLabel={[
         time,
         booking.title,
@@ -53,27 +51,38 @@ export function BookingRow({ booking, locale }: BookingRowProps) {
       ]
         .filter(Boolean)
         .join(", ")}
-      style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.row,
+        { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
+      ]}
     >
-      <View style={styles.topLine}>
-        <Text style={[styles.time, { color: inactive ? colors.textMuted : colors.text }]}>{time}</Text>
-        {status ? (
-          <Text style={[styles.status, { color: statusColor, borderColor: statusColor }]}>{status}</Text>
-        ) : null}
+      <View style={styles.content}>
+        <View style={styles.topLine}>
+          <Text style={[styles.time, { color: inactive ? colors.textMuted : colors.text }]}>{time}</Text>
+          <StatusBadge status={booking.status} />
+        </View>
+        <Text numberOfLines={2} style={[styles.title, { color: inactive ? colors.textMuted : colors.text }]}>
+          {booking.title}
+        </Text>
+        {details ? <Text style={[styles.details, { color: colors.textMuted }]}>{details}</Text> : null}
       </View>
-      <Text numberOfLines={2} style={[styles.title, { color: inactive ? colors.textMuted : colors.text }]}>
-        {booking.title}
-      </Text>
-      {details ? <Text style={[styles.details, { color: colors.textMuted }]}>{details}</Text> : null}
-    </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderRadius: 12,
     padding: 14,
+    gap: 8,
+  },
+  content: {
+    flex: 1,
     gap: 4,
   },
   topLine: {
@@ -85,15 +94,6 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 15,
     fontWeight: "600",
-  },
-  status: {
-    fontSize: 13,
-    fontWeight: "600",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    overflow: "hidden",
   },
   title: {
     fontSize: 16,

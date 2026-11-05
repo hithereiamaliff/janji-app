@@ -1,6 +1,6 @@
 import "@/i18n";
 
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { BookingRow } from "@/bookings/BookingRow";
 import type { BookingSummary } from "@/bookings/booking";
 
@@ -15,8 +15,8 @@ const booking: BookingSummary = {
   isRecurring: false,
 };
 
-async function renderRow(overrides: Partial<BookingSummary> = {}) {
-  await render(<BookingRow booking={{ ...booking, ...overrides }} locale="en-US" />);
+async function renderRow(overrides: Partial<BookingSummary> = {}, onPress = jest.fn()) {
+  await render(<BookingRow booking={{ ...booking, ...overrides }} locale="en-US" onPress={onPress} />);
 }
 
 describe("BookingRow", () => {
@@ -73,12 +73,23 @@ describe("BookingRow", () => {
     }
   });
 
-  it("reads as one item to screen readers, status and series included", async () => {
+  it("reads as one button to screen readers, status and series included", async () => {
     await renderRow({ status: "pending", isRecurring: true });
 
     expect(
-      screen.getByLabelText("7:00 AM – 8:00 AM, 1-to-1 call with Alan, with Jane, Repeats, Unconfirmed")
+      screen.getByRole("button", {
+        name: "7:00 AM – 8:00 AM, 1-to-1 call with Alan, with Jane, Repeats, Unconfirmed",
+      })
     ).toBeOnTheScreen();
     expect(screen.getByText("with Jane · Repeats")).toBeOnTheScreen();
+  });
+
+  it("opens the booking when pressed", async () => {
+    const onPress = jest.fn();
+    await renderRow({}, onPress);
+
+    await fireEvent.press(screen.getByRole("button"));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 });

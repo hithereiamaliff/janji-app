@@ -30,6 +30,14 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="booking/[uid]"
+          options={{
+            headerShown: true,
+            title: t("bookingDetail.screenTitle"),
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />

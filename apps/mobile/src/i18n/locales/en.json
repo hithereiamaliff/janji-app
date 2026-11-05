@@ -54,8 +54,19 @@
       "cancelled": "No cancelled bookings.",
       "search": "No bookings with an attendee called “{{search}}”."
     },
+    "openHint": "Opens the booking's details",
     "loadFailed": "Couldn't load your bookings. Try again.",
     "refreshFailed": "Couldn't refresh, so these bookings may be out of date."
+  },
+  "bookingDetail": {
+    "screenTitle": "Booking",
+    "loadFailed": "Couldn't load this booking. Try again.",
+    "notFound": "This booking no longer exists. It may have been deleted.",
+    "refreshFailed": "Couldn't refresh, so this booking may be out of date.",
+    "when": "When",
+    "duration_one": "{{count}} minute",
+    "duration_other": "{{count}} minutes",
+    "recurring": "Part of a recurring series"
   },
   "settings": {
     "accountHeading": "Account",
