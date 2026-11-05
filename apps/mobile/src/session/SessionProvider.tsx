@@ -83,6 +83,15 @@ export function useSession(): SessionContextValue {
   return value;
 }
 
+/** The signed-in account, for screens behind the sign-in guard. */
+export function useSignedInAccount(): Account {
+  const { session } = useSession();
+  if (session.status !== "signedIn") {
+    throw new Error("useSignedInAccount was called while signed out; use it only in signed-in screens.");
+  }
+  return session.account;
+}
+
 /** For screens behind the sign-in guard, which only render while an account is signed in. */
 export function useCalClient(): CalClient {
   const { calClient } = useSession();
