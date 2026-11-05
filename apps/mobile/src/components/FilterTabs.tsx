@@ -13,6 +13,11 @@ type FilterTabsProps<Value extends string> = {
   onChange: (value: Value) => void;
   /** Names the group for screen readers, e.g. "Which bookings to show". */
   accessibilityLabel: string;
+  /**
+   * The side padding of the container the tabs sit in, if any. The row then reaches past it to the screen's
+   * edges, so tabs scroll edge to edge while the first one lines up with the content around it.
+   */
+  containerPadding?: number;
 };
 
 /**
@@ -24,6 +29,7 @@ export function FilterTabs<Value extends string>({
   value,
   onChange,
   accessibilityLabel,
+  containerPadding,
 }: FilterTabsProps<Value>) {
   const { colors } = useTheme();
 
@@ -33,8 +39,8 @@ export function FilterTabs<Value extends string>({
       showsHorizontalScrollIndicator={false}
       accessibilityRole="tablist"
       accessibilityLabel={accessibilityLabel}
-      style={styles.scroller}
-      contentContainerStyle={styles.row}
+      style={[styles.scroller, containerPadding ? { marginHorizontal: -containerPadding } : null]}
+      contentContainerStyle={[styles.row, containerPadding ? { paddingHorizontal: containerPadding } : null]}
     >
       {options.map((option) => {
         const selected = option.value === value;

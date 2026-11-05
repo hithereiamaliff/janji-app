@@ -88,3 +88,13 @@ export function timeRangeElsewhere(
 export function timeZoneCity(timeZone: string): string {
   return timeZone.slice(timeZone.lastIndexOf("/") + 1).replace(/_/g, " ");
 }
+
+/** "3:00 pm", in the locale's own 12- or 24-hour style. */
+export function formatTime(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+}
+
+/** "6 Nov" or "Nov 6", in the locale's own order. */
+export function formatShortDate(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(date);
+}

@@ -308,6 +308,11 @@ function ManageActions({ uid }: { uid: string }) {
     <View style={styles.manage}>
       <Button
         variant="secondary"
+        label={t("reschedule.action")}
+        onPress={() => router.push({ pathname: "/booking/[uid]/reschedule", params: { uid } })}
+      />
+      <Button
+        variant="secondary"
         label={t("bookingActions.addGuests")}
         onPress={() => router.push({ pathname: "/booking/[uid]/guests", params: { uid } })}
       />
@@ -320,7 +325,24 @@ function ManageActions({ uid }: { uid: string }) {
   );
 }
 
-export function BookingDetailScreen({ uid }: { uid: string }) {
+/** Confirms that a change went through. */
+function Notice({ message }: { message: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.notice}>
+      <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
+      <Text style={[styles.body, styles.noticeText, { color: colors.text }]}>{message}</Text>
+    </View>
+  );
+}
+
+type BookingDetailScreenProps = {
+  uid: string;
+  /** A change made on another screen that led here, such as the reschedule that created this booking. */
+  notice?: "rescheduled";
+};
+
+export function BookingDetailScreen({ uid, notice }: BookingDetailScreenProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [{ languageTag: locale }] = useLocales();
@@ -396,14 +418,8 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
           {t("bookingDetail.refreshFailed")}
         </Text>
       ) : null}
-      {confirm.isSuccess ? (
-        <View style={styles.notice}>
-          <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
-          <Text style={[styles.body, styles.noticeText, { color: colors.text }]}>
-            {t("bookingActions.confirmed")}
-          </Text>
-        </View>
-      ) : null}
+      {notice === "rescheduled" ? <Notice message={t("reschedule.done")} /> : null}
+      {confirm.isSuccess ? <Notice message={t("bookingActions.confirmed")} /> : null}
 
       <View style={styles.heading}>
         {booking.status === "accepted" ? null : (
