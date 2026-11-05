@@ -34,6 +34,10 @@ jest.mock("expo-notifications", () => ({
   },
   getExpoPushTokenAsync: async () => ({ type: "expo", data: "ExponentPushToken[abc]" }),
   addPushTokenListener: () => ({ remove: () => undefined }),
+  DEFAULT_ACTION_IDENTIFIER: "expo.modules.notifications.actions.DEFAULT",
+  getLastNotificationResponse: () => null,
+  addNotificationResponseReceivedListener: () => ({ remove: () => undefined }),
+  addNotificationReceivedListener: () => ({ remove: () => undefined }),
 }));
 
 jest.mock("@/notifications/push-setup", () => ({ pushSetup: () => mockSetup }));
