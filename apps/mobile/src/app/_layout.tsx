@@ -8,6 +8,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { QueryProvider } from "@/data/QueryProvider";
 import { NotificationsSync } from "@/notifications/NotificationsSync";
 import { releaseNotifications } from "@/notifications/notifications";
+import { useBookingNotifications } from "@/notifications/useBookingNotifications";
 import { SessionProvider, useSession } from "@/session/SessionProvider";
 import { getNavigationTheme } from "@/theme/navigationTheme";
 import { useTheme } from "@/theme/useTheme";
@@ -16,6 +17,8 @@ function RootNavigator() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { session } = useSession();
+  // A component's effects run after its children's, so here a tapped booking opens once the navigator exists.
+  useBookingNotifications(session.status === "signedIn");
 
   // Rendering the navigator only once the saved session is known avoids flashing the sign-in screen at
   // people who are already signed in.
