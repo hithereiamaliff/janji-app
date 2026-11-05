@@ -31,13 +31,15 @@ function RootNavigator() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
-          name="booking/[uid]"
+          name="booking/[uid]/index"
           options={{
             headerShown: true,
             title: t("bookingDetail.screenTitle"),
             headerBackButtonDisplayMode: "minimal",
           }}
         />
+        {/* Forms that change a booking open as modals over it, each with its own title and way back. */}
+        <Stack.Screen name="booking/[uid]/decline" options={{ presentation: "modal" }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />

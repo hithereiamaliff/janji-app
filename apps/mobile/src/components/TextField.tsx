@@ -25,6 +25,7 @@ export function TextField({ label, hint, error, ref, ...inputProps }: TextFieldP
         placeholderTextColor={colors.textMuted}
         style={[
           styles.input,
+          inputProps.multiline ? styles.multiline : null,
           {
             color: colors.text,
             backgroundColor: colors.surface,
@@ -60,7 +61,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 14,
+    paddingVertical: 12,
     fontSize: 16,
+  },
+  // Room for a few lines, so a field meant for a sentence or two doesn't look like a one-line input.
+  multiline: {
+    minHeight: 96,
   },
   hint: {
     fontSize: 14,

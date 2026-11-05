@@ -84,6 +84,24 @@
     "yes": "Yes",
     "no": "No"
   },
+  "bookingActions": {
+    "pendingTitle": "Needs your confirmation",
+    "pendingDescription": "This booking is waiting for you to confirm or decline it.",
+    "confirm": "Confirm",
+    "confirmed": "Booking confirmed.",
+    "confirmFailed": "Couldn't confirm the booking. Try again.",
+    "decline": "Decline",
+    "declineTitle": "Decline this booking?",
+    "declineDescription": "Cal.diy will email {{name}} that the booking was declined.",
+    "declineDescriptionNoName": "Cal.diy will email the attendees that the booking was declined.",
+    "declineReasonLabel": "Reason (optional)",
+    "declineReasonHint": "Included in that email.",
+    "declineSubmit": "Decline booking",
+    "declined": "Booking declined.",
+    "declineFailed": "Couldn't decline the booking. Try again.",
+    "goBack": "Go back",
+    "serverSaid": "Your Cal.diy server said: “{{message}}”"
+  },
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
