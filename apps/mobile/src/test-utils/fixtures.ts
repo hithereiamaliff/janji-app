@@ -39,6 +39,11 @@ export type TestBooking = {
   end?: string;
   status?: "accepted" | "pending" | "cancelled" | "rejected";
   location?: string;
+  description?: string;
+  /** Booking question answers, keyed by field name. */
+  responses?: Record<string, unknown>;
+  cancellationReason?: string;
+  reschedulingReason?: string;
   recurringBookingUid?: string;
   attendees?: { name: string; email: string; timeZone?: string; phoneNumber?: string; absent?: boolean }[];
 };
@@ -50,7 +55,7 @@ export function apiBooking(booking: TestBooking, id = 1) {
     id,
     uid: booking.uid,
     title: booking.title,
-    description: "",
+    description: booking.description ?? "",
     hosts: [],
     status: booking.status ?? "accepted",
     start: booking.start,
@@ -71,7 +76,9 @@ export function apiBooking(booking: TestBooking, id = 1) {
         absent,
       })
     ),
-    bookingFieldsResponses: {},
+    ...(booking.cancellationReason ? { cancellationReason: booking.cancellationReason } : {}),
+    ...(booking.reschedulingReason ? { reschedulingReason: booking.reschedulingReason } : {}),
+    bookingFieldsResponses: booking.responses ?? {},
   };
 }
 

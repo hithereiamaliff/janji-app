@@ -133,6 +133,53 @@ describe("BookingDetailScreen", () => {
     expect(screen.getByText(en.bookingDetail.noShow)).toBeOnTheScreen();
   });
 
+  it("shows the booker's notes and their answers to the booking questions", async () => {
+    await renderDetail([], {
+      ...booking,
+      description: "Travelling with two kids",
+      responses: {
+        notes: "Travelling with two kids",
+        "arrival-date": "2026-12-01",
+        citiesToVisit: ["Penang", "Ipoh"],
+        "needs-visa": true,
+      },
+    });
+
+    expect(await screen.findByRole("header", { name: en.bookingDetail.notes })).toBeOnTheScreen();
+    // The notes answer is the description, so it shows once.
+    expect(screen.getAllByText("Travelling with two kids")).toHaveLength(1);
+    expect(screen.getByRole("header", { name: en.bookingDetail.answers })).toBeOnTheScreen();
+    const labelledAnswers: [label: string, value: string][] = [
+      ["Arrival date", "2026-12-01"],
+      ["Cities to visit", "Penang, Ipoh"],
+      ["Needs visa", en.bookingDetail.yes],
+    ];
+    for (const [label, value] of labelledAnswers) {
+      expect(screen.getByText(label)).toBeOnTheScreen();
+      expect(screen.getByText(value)).toBeOnTheScreen();
+    }
+  });
+
+  it("leaves out notes and answers the booker didn't give", async () => {
+    await renderDetail();
+
+    await screen.findByRole("header", { name: "Itinerary review" });
+    expect(screen.queryByRole("header", { name: en.bookingDetail.notes })).toBeNull();
+    expect(screen.queryByRole("header", { name: en.bookingDetail.answers })).toBeNull();
+  });
+
+  it("says why a booking was cancelled or rescheduled", async () => {
+    await renderDetail([], {
+      ...booking,
+      status: "cancelled",
+      cancellationReason: "Flight cancelled",
+      reschedulingReason: "Flight moved",
+    });
+
+    expect(await screen.findByText("Reason for cancellation: Flight cancelled")).toBeOnTheScreen();
+    expect(screen.getByText("Reason for rescheduling: Flight moved")).toBeOnTheScreen();
+  });
+
   it("says when the booking no longer exists, without offering to try again", async () => {
     await renderDetail([apiError(404, "Booking with uid=b1 was not found in the database")]);
 

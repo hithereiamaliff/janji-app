@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocales } from "expo-localization";
+import type { TFunction } from "i18next";
 import { type ComponentProps, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,7 +19,7 @@ import { LoadErrorState } from "@/components/LoadErrorState";
 import { useSession } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
-import type { BookingDetail, BookingPerson } from "./booking-detail";
+import { type BookingAnswer, type BookingDetail, type BookingPerson, fieldNameLabel } from "./booking-detail";
 import { formatFullDate, formatTimeRange, timeRangeElsewhere, timeZoneCity } from "./format";
 import { describeLocation, phoneUrl } from "./location";
 import { StatusBadge } from "./StatusBadge";
@@ -96,6 +97,11 @@ function WhenSection({ booking, locale }: SectionProps) {
       ) : null}
       {booking.isRecurring ? (
         <Text style={[styles.body, { color: colors.textMuted }]}>{t("bookingDetail.recurring")}</Text>
+      ) : null}
+      {booking.reschedulingReason ? (
+        <Text selectable style={[styles.body, { color: colors.textMuted }]}>
+          {t("bookingDetail.reschedulingReason", { reason: booking.reschedulingReason })}
+        </Text>
       ) : null}
     </Section>
   );
@@ -192,6 +198,31 @@ function Attendee({ person, booking, locale, divided }: AttendeeProps) {
   );
 }
 
+function answerText(t: TFunction, value: BookingAnswer["value"]): string {
+  if (typeof value === "boolean") return value ? t("bookingDetail.yes") : t("bookingDetail.no");
+  return value;
+}
+
+function AnswersSection({ answers }: { answers: BookingAnswer[] }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  return (
+    <Section title={t("bookingDetail.answers")}>
+      {answers.map((answer) => (
+        <View key={answer.field} style={styles.answer}>
+          <Text style={[styles.answerLabel, { color: colors.textMuted }]}>
+            {fieldNameLabel(answer.field)}
+          </Text>
+          <Text selectable style={[styles.body, { color: colors.text }]}>
+            {answerText(t, answer.value)}
+          </Text>
+        </View>
+      ))}
+    </Section>
+  );
+}
+
 export function BookingDetailScreen({ uid }: { uid: string }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -256,6 +287,11 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
         >
           {booking.title}
         </Text>
+        {booking.cancellationReason ? (
+          <Text selectable style={[styles.body, { color: colors.textMuted }]}>
+            {t("bookingDetail.cancellationReason", { reason: booking.cancellationReason })}
+          </Text>
+        ) : null}
       </View>
 
       <WhenSection booking={booking} locale={locale} />
@@ -273,6 +309,14 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
           ))}
         </Section>
       ) : null}
+      {booking.description ? (
+        <Section title={t("bookingDetail.notes")}>
+          <Text selectable style={[styles.body, { color: colors.text }]}>
+            {booking.description}
+          </Text>
+        </Section>
+      ) : null}
+      {booking.answers.length > 0 ? <AnswersSection answers={booking.answers} /> : null}
     </ScrollView>
   );
 }
@@ -337,6 +381,13 @@ const styles = StyleSheet.create({
   },
   person: {
     paddingVertical: 4,
+  },
+  answer: {
+    paddingVertical: 4,
+  },
+  answerLabel: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   divided: {
     borderTopWidth: StyleSheet.hairlineWidth,

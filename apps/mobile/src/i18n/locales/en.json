@@ -76,7 +76,13 @@
     "email": "Email {{email}}",
     "call": "Call {{number}}",
     "theirTime": "{{time}} their time ({{zone}})",
-    "noShow": "No-show"
+    "noShow": "No-show",
+    "cancellationReason": "Reason for cancellation: {{reason}}",
+    "reschedulingReason": "Reason for rescheduling: {{reason}}",
+    "notes": "Additional notes",
+    "answers": "Booking questions",
+    "yes": "Yes",
+    "no": "No"
   },
   "settings": {
     "accountHeading": "Account",
