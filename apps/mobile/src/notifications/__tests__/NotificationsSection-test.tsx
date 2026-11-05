@@ -222,6 +222,41 @@ describe("booking notifications in Settings", () => {
     expect(mockStore.size).toBe(0);
   });
 
+  it("lets the person choose which bookings notify them", async () => {
+    mockStore.set("janji.notifications", JSON.stringify(registration));
+    mockPermission = granted;
+    const sent = await openSettings();
+    const rescheduled = () =>
+      screen.findByRole("switch", { name: en.notifications.events.BOOKING_RESCHEDULED });
+    for (const trigger of ["BOOKING_CREATED", "BOOKING_REQUESTED", "BOOKING_CANCELLED"] as const) {
+      expect(await screen.findByRole("switch", { name: en.notifications.events[trigger] })).toBeChecked();
+    }
+    expect(await rescheduled()).toBeChecked();
+
+    await fireEvent(await rescheduled(), "valueChange", false);
+
+    await waitFor(async () => expect(await rescheduled()).not.toBeChecked());
+    expect(sent).toEqual(["PATCH https://book.example.com/api/v2/webhooks/12"]);
+    expect(JSON.parse(mockStore.get("janji.notifications") ?? "null")).toMatchObject({
+      triggers: ["BOOKING_CREATED", "BOOKING_REQUESTED", "BOOKING_CANCELLED"],
+    });
+  });
+
+  it("keeps one kind of booking on, since turning notifications off is how to get none", async () => {
+    mockStore.set(
+      "janji.notifications",
+      JSON.stringify({ ...registration, triggers: ["BOOKING_CANCELLED"] })
+    );
+    mockPermission = granted;
+    await openSettings();
+
+    expect(
+      await screen.findByRole("switch", { name: en.notifications.events.BOOKING_CANCELLED })
+    ).toBeDisabled();
+    expect(screen.getByRole("switch", { name: en.notifications.events.BOOKING_CREATED })).not.toBeChecked();
+    expect(screen.getByText(en.notifications.events.lastOne)).toBeOnTheScreen();
+  });
+
   it("says when this version of Janji can't send them", async () => {
     mockSetup = null;
     await openSettings();

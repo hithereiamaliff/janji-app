@@ -1,5 +1,7 @@
 import { deleteSecureItem, getSecureItem, setSecureItem } from "@/lib/secure-storage";
 
+import { HOOK_TRIGGERS, type HookTrigger } from "./webhooks-api";
+
 const REGISTRATION_KEY = "janji.notifications";
 
 /**
@@ -18,7 +20,23 @@ export type PushRegistration = {
   /** The push token and language the relay was last given, so a change can be sent on. */
   expoPushToken: string;
   locale: string;
+  /** The booking events the person chose to hear about. All of them when it's missing. */
+  triggers?: HookTrigger[];
 };
+
+/** The booking events a registration's webhook sends, in the order the app lists them. */
+export function chosenTriggers(registration: PushRegistration): readonly HookTrigger[] {
+  const { triggers } = registration;
+  return triggers ? HOOK_TRIGGERS.filter((trigger) => triggers.includes(trigger)) : HOOK_TRIGGERS;
+}
+
+function isTriggers(value: unknown): value is HookTrigger[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((trigger) => HOOK_TRIGGERS.some((known) => known === trigger))
+  );
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -34,7 +52,8 @@ function isRegistration(value: unknown): value is PushRegistration {
     typeof value.deviceToken === "string" &&
     typeof value.webhookId === "number" &&
     typeof value.expoPushToken === "string" &&
-    typeof value.locale === "string"
+    typeof value.locale === "string" &&
+    (value.triggers === undefined || isTriggers(value.triggers))
   );
 }
 

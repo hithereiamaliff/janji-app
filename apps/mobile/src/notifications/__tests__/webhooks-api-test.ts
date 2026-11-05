@@ -7,6 +7,7 @@ import {
   fetchRelayWebhooks,
   HOOK_TRIGGERS,
   hookPrefix,
+  setWebhookTriggers,
 } from "@/notifications/webhooks-api";
 import { jsonResponse } from "@/test-utils/fixtures";
 
@@ -146,5 +147,35 @@ describe("disconnectWebhook", () => {
     await disconnectWebhook(client, 41);
 
     expect(sent[0]).toMatchObject({ method: "DELETE", path: "/api/v2/webhooks/41", version: null });
+  });
+});
+
+describe("choosing a webhook's events", () => {
+  it("creates the webhook with only the events chosen", async () => {
+    const { client, sent } = clientAnswering([
+      () => jsonResponse({ status: "success", data: apiWebhook(41, hook("phone-a")) }, { status: 201 }),
+    ]);
+
+    await connectWebhook(client, { hookUrl: hook("phone-a"), secret: "s", triggers: ["BOOKING_CANCELLED"] });
+
+    expect(sent[0]?.body).toMatchObject({ triggers: ["BOOKING_CANCELLED"] });
+  });
+
+  it("changes them on the webhook", async () => {
+    const { client, sent } = clientAnswering([
+      () => jsonResponse({ status: "success", data: apiWebhook(41, hook("phone-a")) }),
+    ]);
+
+    await setWebhookTriggers(client, 41, ["BOOKING_CREATED", "BOOKING_RESCHEDULED"]);
+
+    expect(sent).toEqual([
+      {
+        method: "PATCH",
+        path: "/api/v2/webhooks/41",
+        query: "",
+        version: null,
+        body: { triggers: ["BOOKING_CREATED", "BOOKING_RESCHEDULED"] },
+      },
+    ]);
   });
 });

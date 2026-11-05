@@ -1,4 +1,5 @@
 import {
+  chosenTriggers,
   clearPushRegistration,
   loadPushRegistration,
   type PushRegistration,
@@ -55,10 +56,30 @@ describe("push registration storage", () => {
     ["isn't JSON", "{not json"],
     ["isn't a registration", JSON.stringify(["AAAAAAAAAAAAAAAAAAAAAA"])],
     ["misses a field", JSON.stringify({ ...registration, webhookId: undefined })],
+    ["has an event the app doesn't know", JSON.stringify({ ...registration, triggers: ["BOOKING_PAID"] })],
+    ["chose no events", JSON.stringify({ ...registration, triggers: [] })],
   ])("deletes one that %s, since it can't be used", async (_, stored) => {
     mockStore.set("janji.notifications", stored);
 
     await expect(loadPushRegistration()).resolves.toBeNull();
     expect(mockStore.size).toBe(0);
+  });
+});
+
+describe("chosenTriggers", () => {
+  it("is every event for a registration saved before there was a choice", () => {
+    expect(chosenTriggers(registration)).toEqual([
+      "BOOKING_CREATED",
+      "BOOKING_REQUESTED",
+      "BOOKING_RESCHEDULED",
+      "BOOKING_CANCELLED",
+    ]);
+  });
+
+  it("lists the events chosen in the app's order", () => {
+    expect(chosenTriggers({ ...registration, triggers: ["BOOKING_CANCELLED", "BOOKING_CREATED"] })).toEqual([
+      "BOOKING_CREATED",
+      "BOOKING_CANCELLED",
+    ]);
   });
 });

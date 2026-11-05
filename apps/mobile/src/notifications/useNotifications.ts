@@ -6,11 +6,18 @@ import { useTranslation } from "react-i18next";
 import { useAccountKey } from "@/data/useAccountKey";
 import { useCalClient, useSignedInAccount } from "@/session/SessionProvider";
 
-import { belongsTo, syncNotifications, turnOffNotifications, turnOnNotifications } from "./notifications";
+import {
+  belongsTo,
+  chooseNotificationEvents,
+  syncNotifications,
+  turnOffNotifications,
+  turnOnNotifications,
+} from "./notifications";
 import { onPushTokenChange, type PushPermission, readPushPermission } from "./push";
 import { pushSetup } from "./push-setup";
 import { loadPushRegistration, type PushRegistration } from "./registration-storage";
 import { createRelayClient } from "./relay-client";
+import type { HookTrigger } from "./webhooks-api";
 
 export type NotificationsState =
   /** On web, and in builds made without a relay or an EAS project. */
@@ -72,6 +79,18 @@ export function useTurnOffNotifications() {
 
   return useMutation({
     mutationFn: () => turnOffNotifications({ calClient }),
+    retry: false,
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+  });
+}
+
+export function useChooseNotificationEvents() {
+  const calClient = useCalClient();
+  const queryClient = useQueryClient();
+  const queryKey = useNotificationsKey();
+
+  return useMutation({
+    mutationFn: (triggers: readonly HookTrigger[]) => chooseNotificationEvents(calClient, triggers),
     retry: false,
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });

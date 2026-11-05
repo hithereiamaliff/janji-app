@@ -8,6 +8,7 @@ type AccountRef = Pick<Account, "serverOrigin"> & { user: Pick<Account["user"], 
 import { askPushPermission, getPushToken, type PushPermission, readPushPermission } from "./push";
 import type { PushSetup } from "./push-setup";
 import {
+  chosenTriggers,
   clearPushRegistration,
   loadPushRegistration,
   type PushRegistration,
@@ -18,8 +19,10 @@ import {
   connectWebhook,
   disconnectWebhook,
   fetchRelayWebhooks,
+  type HookTrigger,
   type HookWebhook,
   hookPrefix,
+  setWebhookTriggers,
 } from "./webhooks-api";
 
 type RelayFor = (relayOrigin: string) => RelayClient;
@@ -140,6 +143,19 @@ async function release(calClient: CalClient, relayFor: RelayFor): Promise<void> 
   if (removed.status === "fulfilled") await clearPushRegistration();
 }
 
+/** Changes which booking events notify this phone, on its webhook and in the saved registration. */
+export function chooseNotificationEvents(
+  calClient: CalClient,
+  triggers: readonly HookTrigger[]
+): Promise<void> {
+  return takeTurn(async () => {
+    const registration = await loadPushRegistration();
+    if (!registration) return;
+    await setWebhookTriggers(calClient, registration.webhookId, triggers);
+    await savePushRegistration({ ...registration, triggers: [...triggers] });
+  });
+}
+
 /** Whether a saved registration is the signed-in account's, rather than one left from another account. */
 export function belongsTo(registration: PushRegistration, account: AccountRef): boolean {
   return registration.serverOrigin === account.serverOrigin && registration.userId === account.user.id;
@@ -184,6 +200,7 @@ async function reconnect({ calClient, relay, setup, registration, expoPushToken,
   const webhookId = await connectWebhook(calClient, {
     hookUrl: device.hookUrl,
     secret: device.webhookSecret,
+    triggers: chosenTriggers(registration),
   });
   await savePushRegistration({ ...registered, webhookId });
   if (device.deviceId !== registration.deviceId) await relay.remove(registration).catch(() => undefined);
