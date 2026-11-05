@@ -11,6 +11,8 @@ export type EventTypeSummary = {
   /** Every length a booker can choose from, shortest first, when there's a choice; otherwise empty. */
   lengthOptions: number[];
   description: string | null;
+  /** How long before its start a booking must be made, in minutes. */
+  minimumBookingNotice: number;
   /** Left off the public booking page, though still bookable through its own link. */
   hidden: boolean;
 };
@@ -24,6 +26,7 @@ export function toEventTypeSummary(eventType: ApiEventType): EventTypeSummary {
     lengthInMinutes: eventType.lengthInMinutes,
     lengthOptions: options.size > 0 ? [...options.add(eventType.lengthInMinutes)].sort((a, b) => a - b) : [],
     description: eventType.description.trim() || null,
+    minimumBookingNotice: eventType.minimumBookingNotice ?? 0,
     hidden: eventType.hidden,
   };
 }
@@ -35,4 +38,9 @@ export function toEventTypeSummary(eventType: ApiEventType): EventTypeSummary {
  */
 export function bookingLink(serverOrigin: string, username: string, slug: string): string {
   return `${serverOrigin.replace(/\/+$/, "")}/${encodeURIComponent(username)}/${encodeURIComponent(slug)}`;
+}
+
+/** A booking link as people read it: no scheme, and a slug in any script shown as typed, not percent-encoded. */
+export function readableLink(link: string): string {
+  return decodeURI(link).replace(/^https?:\/\//, "");
 }
