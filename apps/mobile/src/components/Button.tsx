@@ -14,6 +14,8 @@ type ButtonProps = {
   disabled?: boolean;
   /** Read by screen readers when the label alone doesn't say what happens. */
   accessibilityHint?: string;
+  /** For a button that shows and hides something: whether it's showing. */
+  expanded?: boolean;
 };
 
 function paletteFor(variant: ButtonVariant, colors: ThemeColors) {
@@ -34,6 +36,7 @@ export function Button({
   loading = false,
   disabled = false,
   accessibilityHint,
+  expanded,
 }: ButtonProps) {
   const { colors } = useTheme();
   const palette = paletteFor(variant, colors);
@@ -44,7 +47,7 @@ export function Button({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: inactive, busy: loading }}
+      accessibilityState={{ disabled: inactive, busy: loading, expanded }}
       disabled={inactive}
       onPress={onPress}
       style={({ pressed }) => [

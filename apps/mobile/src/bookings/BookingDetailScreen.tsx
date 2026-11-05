@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocales } from "expo-localization";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import type { TFunction } from "i18next";
 import { type ComponentProps, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,15 +22,17 @@ import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
 import { actionErrorMessage } from "@/lib/action-error";
-import { useSession } from "@/session/SessionProvider";
+import { shareLink } from "@/lib/share-link";
+import { useSession, useSignedInAccount } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
 import { confirmBooking, markNoShow } from "./booking-actions";
 import { type BookingAnswer, type BookingDetail, type BookingPerson, fieldNameLabel } from "./booking-detail";
+import type { CalendarLink } from "./bookings-api";
 import { formatFullDate, formatTimeRange, timeRangeElsewhere, timeZoneCity } from "./format";
 import { describeLocation, phoneUrl } from "./location";
 import { StatusBadge } from "./StatusBadge";
-import { useBooking } from "./useBooking";
+import { useBooking, useCalendarLinks } from "./useBooking";
 import { useBookingAction } from "./useBookingAction";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -317,6 +320,68 @@ function ManageActions({ uid }: { uid: string }) {
   );
 }
 
+function openInBrowser(url: string) {
+  // Without a browser to open there's nothing more to do; the button stays for another try.
+  WebBrowser.openBrowserAsync(url).catch(() => undefined);
+}
+
+/** Shares the booking's page on the server, and while it's still to come, adds it to a web calendar. */
+function ShareActions({ uid, upcoming }: { uid: string; upcoming: boolean }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { serverOrigin } = useSignedInAccount();
+  const [calendarsShown, setCalendarsShown] = useState(false);
+  const links = useCalendarLinks(uid, upcoming && calendarsShown);
+  const calendarName = (link: CalendarLink) =>
+    link.calendar === "other" ? link.label : t(`bookingDetail.calendars.${link.calendar}`);
+
+  let calendars: ReactNode = null;
+  if (upcoming && calendarsShown) {
+    if (links.data) {
+      calendars = links.data.map((link) => (
+        <Button
+          key={link.url}
+          variant="secondary"
+          label={calendarName(link)}
+          accessibilityHint={t("bookingDetail.calendarHint", { calendar: calendarName(link) })}
+          onPress={() => openInBrowser(link.url)}
+        />
+      ));
+    } else if (links.isError) {
+      calendars = (
+        <LoadErrorState
+          error={links.error}
+          onRetry={() => void links.refetch()}
+          fallbackMessage={t("bookingDetail.calendarsFailed")}
+          notFoundMessage={t("bookingDetail.notFound")}
+        />
+      );
+    } else {
+      calendars = <ActivityIndicator accessibilityLabel={t("common.loading")} color={colors.accent} />;
+    }
+  }
+
+  return (
+    <View style={styles.manage}>
+      <Button
+        variant="secondary"
+        label={t("bookingDetail.share")}
+        accessibilityHint={t("bookingDetail.shareHint")}
+        onPress={() => shareLink(`${serverOrigin}/booking/${uid}`)}
+      />
+      {upcoming ? (
+        <Button
+          variant="secondary"
+          label={t("bookingDetail.addToCalendar")}
+          expanded={calendarsShown}
+          onPress={() => setCalendarsShown((shown) => !shown)}
+        />
+      ) : null}
+      {calendars}
+    </View>
+  );
+}
+
 /** Confirms that a change went through. */
 function Notice({ message }: { message: string }) {
   const { colors } = useTheme();
@@ -480,6 +545,7 @@ export function BookingDetailScreen({ uid, notice }: BookingDetailScreenProps) {
         </Section>
       ) : null}
       {booking.answers.length > 0 ? <AnswersSection answers={booking.answers} /> : null}
+      {inactive ? null : <ShareActions uid={uid} upcoming={Date.parse(booking.end) > Date.now()} />}
       {manageable ? <ManageActions uid={uid} /> : null}
     </ScrollView>
   );

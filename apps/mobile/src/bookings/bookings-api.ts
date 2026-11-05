@@ -64,3 +64,39 @@ export async function fetchBooking(client: CalClient, uid: string): Promise<Book
   if (!booking) throw new CalApiError({ kind: "not_found", status: 200 });
   return toBookingDetail(booking);
 }
+
+/** A link that adds a booking to a web calendar. */
+export type CalendarLink = {
+  calendar: "google" | "outlook" | "office" | "other";
+  /** Cal.diy's name for it, for calendars the app doesn't know. */
+  label: string;
+  url: string;
+};
+
+const CALENDARS: Record<string, CalendarLink["calendar"]> = {
+  "calendar.google.com": "google",
+  "outlook.live.com": "outlook",
+  "outlook.office.com": "office",
+};
+
+/**
+ * Links that add the booking to Google Calendar, Outlook.com and Microsoft 365. Cal.diy also offers an ICS
+ * file as a data: URL, which a phone can't open from an app, so only web links are kept.
+ */
+export async function fetchCalendarLinks(client: CalClient, uid: string): Promise<CalendarLink[]> {
+  const body = unwrap(
+    await client.GET("/v2/bookings/{bookingUid}/calendar-links", { params: { path: { bookingUid: uid } } })
+  );
+  const links: CalendarLink[] = [];
+  for (const { label, link } of body.data) {
+    let url: URL;
+    try {
+      url = new URL(link);
+    } catch {
+      continue;
+    }
+    if (url.protocol === "https:")
+      links.push({ calendar: CALENDARS[url.hostname] ?? "other", label, url: link });
+  }
+  return links;
+}
