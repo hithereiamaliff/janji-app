@@ -40,6 +40,7 @@ function RootNavigator() {
         />
         {/* Forms that change a booking open as modals over it, each with its own title and way back. */}
         <Stack.Screen name="booking/[uid]/decline" options={{ presentation: "modal" }} />
+        <Stack.Screen name="booking/[uid]/cancel" options={{ presentation: "modal" }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />
