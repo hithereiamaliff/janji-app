@@ -1,0 +1,22 @@
+{
+  "name": "@janji/cal-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./api-versions": "./src/api-versions.ts",
+    "./schema": "./src/generated/openapi.d.ts"
+  },
+  "scripts": {
+    "generate": "bun scripts/generate.ts",
+    "generate:check": "bun scripts/generate.ts --check",
+    "sync-openapi": "bun scripts/sync-openapi.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.4",
+    "openapi-typescript": "7.13.0",
+    "typescript": "~6.0.3"
+  }
+}

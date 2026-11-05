@@ -8,7 +8,9 @@ Worker) that turns Cal.diy webhooks into Expo push notifications.
 
 - `apps/mobile/`: the Expo app. Routes live in `src/app/` (Expo Router); everything else in `src/` outside it.
 - `apps/relay/`: the push relay (added later).
-- `packages/`: shared workspace packages (added later), for example the generated Cal API v2 client.
+- `packages/cal-api/`: the typed Cal API v2 client. `openapi/` and `src/generated/` are generated from the
+  pinned Cal.diy spec; change them only with `bun run sync-openapi` or `bun run generate` (see its README).
+  Import from its subpath exports (`@janji/cal-api/client`, …), not a barrel file.
 
 Read `apps/mobile/AGENTS.md` before touching Expo or React Native APIs: Expo SDK 58 differs from older
 SDKs, so check the versioned docs instead of relying on memory.

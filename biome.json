@@ -6,7 +6,12 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/expo-env.d.ts"]
+    "includes": [
+      "**",
+      "!**/expo-env.d.ts",
+      "!packages/cal-api/openapi/cal-diy-api-v2.json",
+      "!packages/cal-api/src/generated"
+    ]
   },
   "formatter": {
     "enabled": true,
