@@ -1,5 +1,5 @@
 import { useLocales } from "expo-localization";
-import { type ComponentRef, useRef, useState } from "react";
+import { type ComponentRef, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -33,7 +33,12 @@ export function TimePicker({ label, title, value, onChange, disabled = false }: 
   const [open, setOpen] = useState(false);
   const list = useRef<ComponentRef<typeof ScrollView>>(null);
   // A time set on the web with another interval still shows, in its place, so it can be kept.
-  const choices = TIME_CHOICES.includes(value) ? TIME_CHOICES : [...TIME_CHOICES, value].sort();
+  const choices = useMemo(
+    () => (TIME_CHOICES.includes(value) ? TIME_CHOICES : [...TIME_CHOICES, value].sort()),
+    [value]
+  );
+  // The list's children are built on every render, sheet open or not, so its labels are worked out once.
+  const labels = useMemo(() => choices.map((time) => clockTime(time, locale)), [choices, locale]);
   const shown = clockTime(value, locale);
 
   function choose(time: string) {
@@ -86,7 +91,7 @@ export function TimePicker({ label, title, value, onChange, disabled = false }: 
                 })
               }
             >
-              {choices.map((time) => {
+              {choices.map((time, index) => {
                 const selected = time === value;
                 return (
                   <Pressable
@@ -103,7 +108,7 @@ export function TimePicker({ label, title, value, onChange, disabled = false }: 
                     ]}
                   >
                     <Text style={[styles.choiceText, { color: selected ? colors.onAccent : colors.text }]}>
-                      {clockTime(time, locale)}
+                      {labels[index]}
                     </Text>
                   </Pressable>
                 );

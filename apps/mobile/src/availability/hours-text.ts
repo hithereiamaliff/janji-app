@@ -1,12 +1,19 @@
 import type { TFunction } from "i18next";
 
+import { dateTimeFormat } from "@/lib/date-format";
+
 import { WEEK_DAYS, type WeekDay, type WeeklyHours } from "./schedule";
 
-function dayName(index: number, locale: string): string {
+function dayName(index: number, locale: string, width: "short" | "long" = "short"): string {
   // 1 January 2024 was a Monday, so adding the day's place in WEEK_DAYS lands on that weekday.
-  return new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(
+  return dateTimeFormat(locale, { weekday: width, timeZone: "UTC" }).format(
     new Date(Date.UTC(2024, 0, 1 + index))
   );
+}
+
+/** The day's full name in the person's language, such as "Monday" or "Isnin". */
+export function weekdayName(day: WeekDay, locale: string): string {
+  return dayName(WEEK_DAYS.indexOf(day), locale, "long");
 }
 
 /** "Mon, Tue, Fri–Sun": short day names in week order, with three or more days in a row given as a range. */
@@ -36,7 +43,7 @@ export function daysText(days: readonly WeekDay[], locale: string): string {
  */
 export function clockTime(hoursMinutes: string, locale: string): string {
   const [hours = 0, minutes = 0] = hoursMinutes.split(":").map(Number);
-  return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(
+  return dateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(
     new Date(Date.UTC(1970, 0, 1, hours, minutes))
   );
 }

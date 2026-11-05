@@ -123,6 +123,7 @@ export function ScheduleScreen({ id }: { id: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [{ languageTag: locale }] = useLocales();
+  const router = useRouter();
   const schedule = useSchedule(id);
   const remove = useDeleteSchedule();
 
@@ -180,6 +181,15 @@ export function ScheduleScreen({ id }: { id: number }) {
             {line}
           </Text>
         ))}
+        <View style={styles.sectionAction}>
+          <Button
+            variant="secondary"
+            label={t("availability.hours.action")}
+            onPress={() =>
+              router.push({ pathname: "/schedule/[id]/hours", params: { id: String(details.id) } })
+            }
+          />
+        </View>
       </Section>
       <Section title={t("availability.timeZone")}>
         <Text style={[styles.body, { color: colors.text }]}>
@@ -231,6 +241,9 @@ const styles = StyleSheet.create({
   },
   group: {
     gap: 12,
+  },
+  sectionAction: {
+    marginTop: 12,
   },
   actions: {
     flexDirection: "row",
