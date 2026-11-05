@@ -12,6 +12,8 @@ export const HOOK_TRIGGERS = [
   "BOOKING_CANCELLED",
 ] as const;
 
+export type HookTrigger = (typeof HOOK_TRIGGERS)[number];
+
 /** A Cal.diy webhook that sends a phone's notifications through the relay. */
 export type HookWebhook = { id: number; subscriberUrl: string };
 
@@ -43,9 +45,13 @@ export async function fetchRelayWebhooks(client: CalClient, relayOrigin: string)
  */
 export async function connectWebhook(
   client: CalClient,
-  { hookUrl, secret }: { hookUrl: string; secret: string }
+  {
+    hookUrl,
+    secret,
+    triggers = HOOK_TRIGGERS,
+  }: { hookUrl: string; secret: string; triggers?: readonly HookTrigger[] }
 ): Promise<number> {
-  const settings = { secret, active: true, triggers: [...HOOK_TRIGGERS] };
+  const settings = { secret, active: true, triggers: [...triggers] };
   try {
     return unwrap(await client.POST("/v2/webhooks", { body: { subscriberUrl: hookUrl, ...settings } })).data
       .id;
@@ -67,4 +73,18 @@ export async function connectWebhook(
 
 export async function disconnectWebhook(client: CalClient, id: number): Promise<void> {
   unwrap(await client.DELETE("/v2/webhooks/{webhookId}", { params: { path: { webhookId: String(id) } } }));
+}
+
+/** Changes which booking events a phone's webhook sends it. */
+export async function setWebhookTriggers(
+  client: CalClient,
+  id: number,
+  triggers: readonly HookTrigger[]
+): Promise<void> {
+  unwrap(
+    await client.PATCH("/v2/webhooks/{webhookId}", {
+      params: { path: { webhookId: String(id) } },
+      body: { triggers: [...triggers] },
+    })
+  );
 }

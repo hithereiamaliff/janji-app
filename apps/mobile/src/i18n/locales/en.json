@@ -427,7 +427,16 @@
     "relayUnreachable": "Couldn't reach Janji's notification service. Check your internet connection and try again.",
     "relayBusy": "Janji's notification service is busy. Wait a minute and try again.",
     "turnOnFailed": "Couldn't turn on notifications. Try again.",
-    "turnOffFailed": "Couldn't turn off notifications. Try again."
+    "turnOffFailed": "Couldn't turn off notifications. Try again.",
+    "events": {
+      "title": "Notify me about",
+      "BOOKING_CREATED": "New and confirmed bookings",
+      "BOOKING_REQUESTED": "Bookings to confirm",
+      "BOOKING_RESCHEDULED": "Rescheduled bookings",
+      "BOOKING_CANCELLED": "Cancelled bookings",
+      "lastOne": "To get none, turn off booking notifications.",
+      "failed": "Couldn't change which bookings notify you. Try again."
+    }
   },
   "signIn": {
     "server": {

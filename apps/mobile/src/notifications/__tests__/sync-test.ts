@@ -48,6 +48,7 @@ function world({
   devices = new Map<string, Device>(),
 }) {
   const sent: string[] = [];
+  const connectedWebhooks: { subscriberUrl: string; triggers: string[] }[] = [];
   let nextId = 100;
   const relay = createRelayClient(relayOrigin, async (request) => {
     const path = new URL(request.url).pathname;
@@ -88,7 +89,8 @@ function world({
         webhooks = webhooks.filter((webhook) => webhook.id !== id);
         return jsonResponse({ status: "success" });
       }
-      const { subscriberUrl } = await request.json();
+      const { subscriberUrl, triggers } = await request.json();
+      connectedWebhooks.push({ subscriberUrl, triggers });
       const webhook = { id: nextId++, subscriberUrl };
       webhooks = [...webhooks, webhook];
       return jsonResponse({ status: "success", data: webhook }, { status: 201 });
@@ -96,7 +98,7 @@ function world({
   });
   const sync = (locale = "en-MY") =>
     syncNotifications({ calClient, setup, account: testAccount, locale, relayFor: () => relay });
-  return { sync, sent, devices, webhooks: () => webhooks };
+  return { sync, sent, devices, webhooks: () => webhooks, connected: connectedWebhooks };
 }
 
 /** This phone, connected: its device at the relay and its webhook at Cal.diy. */
@@ -174,6 +176,19 @@ describe("syncNotifications", () => {
       deviceToken: "token-100",
       webhookId: 101,
     });
+  });
+
+  it("keeps the events the person chose when it connects a new webhook", async () => {
+    mockStore.set(
+      "janji.notifications",
+      JSON.stringify({ ...registration, triggers: ["BOOKING_CANCELLED"] })
+    );
+    const { sync, connected: posted } = world({ ...connected(), webhooks: [] });
+
+    await sync();
+
+    expect(posted).toEqual([{ subscriberUrl: hook(phone), triggers: ["BOOKING_CANCELLED"] }]);
+    await expect(loadPushRegistration()).resolves.toMatchObject({ triggers: ["BOOKING_CANCELLED"] });
   });
 
   it("registers again when the relay forgot the phone, replacing its webhook", async () => {

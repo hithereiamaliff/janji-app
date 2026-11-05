@@ -2,6 +2,7 @@ import { createCalClient } from "@janji/cal-api/client";
 
 import {
   belongsTo,
+  chooseNotificationEvents,
   releaseNotifications,
   turnOffNotifications,
   turnOnNotifications,
@@ -238,6 +239,29 @@ describe("releaseNotifications", () => {
     await releaseNotifications(calClient, () => relay);
 
     expect(sent).toEqual([]);
+  });
+});
+
+describe("chooseNotificationEvents", () => {
+  it("changes the webhook's events and keeps the choice", async () => {
+    const { calClient, sent } = servers();
+    mockStore.set("janji.notifications", JSON.stringify(registration));
+
+    await chooseNotificationEvents(calClient, ["BOOKING_REQUESTED", "BOOKING_CANCELLED"]);
+
+    expect(sent).toEqual([
+      {
+        to: "cal",
+        method: "PATCH",
+        path: "/api/v2/webhooks/12",
+        token: "Bearer cal_secret",
+        body: { triggers: ["BOOKING_REQUESTED", "BOOKING_CANCELLED"] },
+      },
+    ]);
+    await expect(loadPushRegistration()).resolves.toEqual({
+      ...registration,
+      triggers: ["BOOKING_REQUESTED", "BOOKING_CANCELLED"],
+    });
   });
 });
 

@@ -11,8 +11,15 @@ import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
 
 import type { TurnOnResult } from "./notifications";
+import { chosenTriggers, type PushRegistration } from "./registration-storage";
 import { RelayRequestError } from "./relay-client";
-import { useNotifications, useTurnOffNotifications, useTurnOnNotifications } from "./useNotifications";
+import {
+  useChooseNotificationEvents,
+  useNotifications,
+  useTurnOffNotifications,
+  useTurnOnNotifications,
+} from "./useNotifications";
+import { HOOK_TRIGGERS, type HookTrigger } from "./webhooks-api";
 
 type Refusal = Extract<TurnOnResult, { status: "notAllowed" }>["permission"];
 
@@ -27,6 +34,50 @@ function failureMessage(t: TFunction, error: unknown, fallback: string): string 
 function openPhoneSettings() {
   // Without a settings app to open there's nothing more to do; the button stays for another try.
   Linking.openSettings().catch(() => undefined);
+}
+
+/** Which booking events notify this phone. One always stays on: to get none, notifications go off. */
+function EventChoices({ registration, disabled }: { registration: PushRegistration; disabled: boolean }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const choose = useChooseNotificationEvents();
+  // The choice being saved shows at once, so a switch doesn't flick back while the saved one loads.
+  const shown = choose.isPending && choose.variables ? choose.variables : chosenTriggers(registration);
+
+  function toggle(trigger: HookTrigger, on: boolean) {
+    choose.mutate(HOOK_TRIGGERS.filter((each) => (each === trigger ? on : shown.includes(each))));
+  }
+
+  return (
+    <View style={styles.group}>
+      <Text accessibilityRole="header" style={[styles.subheading, { color: colors.text }]}>
+        {t("notifications.events.title")}
+      </Text>
+      {HOOK_TRIGGERS.map((trigger) => {
+        const on = shown.includes(trigger);
+        const label = t(`notifications.events.${trigger}`);
+        return (
+          <View key={trigger} style={styles.switchRow}>
+            <Text style={[styles.body, styles.eventLabel, { color: colors.text }]}>{label}</Text>
+            <ThemedSwitch
+              accessibilityLabel={label}
+              value={on}
+              disabled={disabled || choose.isPending || (on && shown.length === 1)}
+              onValueChange={(next) => toggle(trigger, next)}
+            />
+          </View>
+        );
+      })}
+      {shown.length === 1 ? (
+        <Text style={[styles.body, { color: colors.textMuted }]}>{t("notifications.events.lastOne")}</Text>
+      ) : null}
+      {choose.isError ? (
+        <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
+          {failureMessage(t, choose.error, t("notifications.events.failed"))}
+        </Text>
+      ) : null}
+    </View>
+  );
 }
 
 /** The switch for this phone's booking notifications, with what stops them when they can't work. */
@@ -94,6 +145,7 @@ export function NotificationsSection() {
           />
         </View>
         <Text style={[styles.body, { color: colors.textMuted }]}>{t("notifications.description")}</Text>
+        {registration ? <EventChoices registration={registration} disabled={busy} /> : null}
         {busy ? (
           <ActivityIndicator
             accessibilityLabel={t(turnOn.isPending ? "notifications.turningOn" : "notifications.turningOff")}
@@ -163,6 +215,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: "600",
+  },
+  subheading: {
+    fontSize: 15,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  eventLabel: {
+    flex: 1,
   },
   body: {
     fontSize: 15,
