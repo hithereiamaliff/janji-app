@@ -7,7 +7,10 @@ export type ApiBookingResult = components["schemas"]["GetBookingOutput_2024_08_1
 
 export type BookingPerson = {
   name: string;
+  /** The address as Cal.diy stores it, which actions such as marking a no-show identify the person by. */
   email: string;
+  /** The address to show and write to: `email` without the alias API v2 adds to some addresses. */
+  displayEmail: string;
   timeZone: string | null;
   phoneNumber: string | null;
   /** Marked as a no-show on this booking. */
@@ -106,17 +109,18 @@ export function toBookingDetail(booking: ApiBooking): BookingDetail {
     ...toBookingSummary(booking),
     description: textOrNull(booking.description),
     durationMinutes: booking.duration,
-    // displayEmail drops the alias API v2 adds to some addresses, leaving the one people actually use.
     hosts: booking.hosts.map((host) => ({
       name: host.name,
-      email: host.displayEmail,
+      email: host.email,
+      displayEmail: host.displayEmail,
       timeZone: host.timeZone,
       phoneNumber: null,
       noShow: booking.absentHost,
     })),
     attendees: booking.attendees.map((attendee) => ({
       name: attendee.name,
-      email: attendee.displayEmail,
+      email: attendee.email,
+      displayEmail: attendee.displayEmail,
       timeZone: attendee.timeZone,
       phoneNumber: textOrNull(attendee.phoneNumber),
       noShow: attendee.absent,
