@@ -1,3 +1,4 @@
+import type { ApiEventType } from "@/event-types/event-type";
 import type { Account } from "@/session/account";
 
 // Kept apart from app-routes.ts so unit tests don't load every screen just to get test data.
@@ -111,4 +112,48 @@ export function bookingsResponse(bookings: TestBooking[], { hasNextPage = false 
 /** A GET /v2/bookings/{uid} body for one booking. */
 export function bookingResponse(booking: TestBooking): Response {
   return jsonResponse({ status: "success", data: apiBooking(booking) });
+}
+
+export type TestEventType = {
+  id: number;
+  title: string;
+  slug: string;
+  lengthInMinutes?: number;
+  lengthInMinutesOptions?: number[];
+  description?: string;
+  hidden?: boolean;
+};
+
+/** One event type as API v2 (cal-api-version 2024-06-14) sends it. */
+export function apiEventType(eventType: TestEventType): ApiEventType {
+  return {
+    id: eventType.id,
+    title: eventType.title,
+    slug: eventType.slug,
+    lengthInMinutes: eventType.lengthInMinutes ?? 30,
+    ...(eventType.lengthInMinutesOptions ? { lengthInMinutesOptions: eventType.lengthInMinutesOptions } : {}),
+    description: eventType.description ?? "",
+    locations: [],
+    bookingFields: [],
+    disableGuests: false,
+    recurrence: null,
+    metadata: {},
+    price: 0,
+    currency: "usd",
+    lockTimeZoneToggleOnBookingPage: false,
+    forwardParamsSuccessRedirect: null,
+    successRedirectUrl: null,
+    isInstantEvent: false,
+    scheduleId: null,
+    hidden: eventType.hidden ?? false,
+    bookingRequiresAuthentication: false,
+    ownerId: 7,
+    users: ["alan"],
+    bookingUrl: `https://cal.com/alan/${eventType.slug}`,
+  };
+}
+
+/** A GET /v2/event-types body holding the given event types. */
+export function eventTypesResponse(eventTypes: TestEventType[]): Response {
+  return jsonResponse({ status: "success", data: eventTypes.map(apiEventType) });
 }
