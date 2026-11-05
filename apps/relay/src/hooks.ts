@@ -19,7 +19,7 @@ async function notify(env: Cloudflare.Env, device: HookDevice, webhook: BookingW
   const key = `dedupe:${dedupeKey(device.id, webhook)}`;
   if (await env.DEDUPE.get(key)) return;
   await env.DEDUPE.put(key, "1", { expirationTtl: DEDUPE_SECONDS });
-  await sendAlert(env, device.push_token, alertFor(webhook, device.locale));
+  await sendAlert(env, device, alertFor(webhook, device.locale));
 }
 
 export const hooks = new Hono<{ Bindings: Cloudflare.Env }>();

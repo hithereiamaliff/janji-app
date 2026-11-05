@@ -25,11 +25,13 @@ async function registered(): Promise<RegisterDeviceResponse> {
   return response.json();
 }
 
+let tickets = 0;
+
 /** Expo's push API, answered as it does for a push it accepted. */
 function expo() {
   return vi
     .spyOn(globalThis, "fetch")
-    .mockImplementation(async () => Response.json({ data: { status: "ok", id: "ticket-1" } }));
+    .mockImplementation(async () => Response.json({ data: [{ status: "ok", id: `ticket-${++tickets}` }] }));
 }
 
 /** Posts a webhook the way Cal.diy does, then waits for the work done after answering. */
@@ -54,7 +56,7 @@ async function deliverSigned(device: RegisterDeviceResponse, options: WebhookOpt
 }
 
 const sentPushes = (spy: ReturnType<typeof expo>) =>
-  spy.mock.calls.map(([, init]) => JSON.parse(String(init?.body)));
+  spy.mock.calls.flatMap(([, init]) => JSON.parse(String(init?.body)));
 
 describe("a Cal.diy webhook", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -88,7 +90,8 @@ describe("a Cal.diy webhook", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(
       () =>
         new Promise((resolve) => {
-          finishSending = () => resolve(Response.json({ data: { status: "ok", id: "ticket-2" } }));
+          finishSending = () =>
+            resolve(Response.json({ data: [{ status: "ok", id: `ticket-${++tickets}` }] }));
         })
     );
     const body = webhookBody();

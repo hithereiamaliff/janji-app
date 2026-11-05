@@ -4,6 +4,8 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-19",
   "observability": { "enabled": true },
+  // Reads Expo's push receipts, which say which phones can't be reached any more.
+  "triggers": { "crons": ["*/15 * * * *"] },
   "ratelimits": [
     // Registrations per minute from one IP address.
     { "name": "REGISTER_LIMIT", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }
