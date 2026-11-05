@@ -293,6 +293,10 @@
       "failed": "Couldn't create the schedule. Try again."
     }
   },
+  "timePicker": {
+    "hint": "Opens the list of times",
+    "cancel": "Cancel"
+  },
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
