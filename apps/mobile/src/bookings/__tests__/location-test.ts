@@ -4,10 +4,18 @@ describe("describeLocation", () => {
   it("turns meeting links into links, keeping their host", () => {
     expect(describeLocation("https://Meet.Google.com/abc-defg-hij")).toEqual({
       kind: "link",
-      url: "https://Meet.Google.com/abc-defg-hij",
+      url: "https://meet.google.com/abc-defg-hij",
       host: "meet.google.com",
     });
-    expect(describeLocation(" http://zoom.us/j/123?pwd=x ")).toMatchObject({ kind: "link", host: "zoom.us" });
+    expect(describeLocation(" http://zoom.us:80/j/123?pwd=x ")).toEqual({
+      kind: "link",
+      url: "http://zoom.us/j/123?pwd=x",
+      host: "zoom.us",
+    });
+  });
+
+  it("keeps text that only starts like a link", () => {
+    expect(describeLocation("https://not a link")).toEqual({ kind: "text", text: "https://not a link" });
   });
 
   it("doesn't link other URL schemes", () => {
