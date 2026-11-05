@@ -7,7 +7,9 @@
     "./api-versions": "./src/api-versions.ts",
     "./client": "./src/client.ts",
     "./errors": "./src/errors.ts",
-    "./schema": "./src/generated/openapi.d.ts"
+    "./probe": "./src/probe.ts",
+    "./schema": "./src/generated/openapi.d.ts",
+    "./server-url": "./src/server-url.ts"
   },
   "scripts": {
     "generate": "bun scripts/generate.ts",

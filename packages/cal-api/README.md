@@ -12,6 +12,24 @@ const cal = createCalClient({
 const me = unwrap(await cal.GET("/v2/me")); // typed body, or throws CalApiError
 ```
 
+## Finding a server's API
+
+```ts
+import { probeCalApi } from "@janji/cal-api/probe";
+import { apiRootUrlFromApiV2Address, defaultApiRootUrl, normalizeServerUrl } from "@janji/cal-api/server-url";
+
+normalizeServerUrl("book.example.com/some/booking-link"); // { ok: true, url: "https://book.example.com" }
+defaultApiRootUrl("https://book.example.com"); // "https://book.example.com/api"
+apiRootUrlFromApiV2Address("https://api.example.com/v2"); // { ok: true, url: "https://api.example.com" }
+
+await probeCalApi("https://book.example.com/api"); // { kind: "ok" } | "not_cal_api" | "unreachable" | "timeout"
+```
+
+- **HTTPS only.** Server addresses must use HTTPS, except `localhost`, `127.0.0.1` and `10.0.2.2` (the
+  Android emulator's address for the host) during development.
+- **The probe.** It calls `GET /v2/timezones`, which needs no API key. A server whose web app answers but
+  doesn't route `/api/v2` comes back as `not_cal_api`.
+
 ## What the client handles
 
 - **API key.** It sends `Authorization: Bearer <key>`, reading the key on every request.
