@@ -38,6 +38,14 @@ function RootNavigator() {
             headerBackButtonDisplayMode: "minimal",
           }}
         />
+        <Stack.Screen
+          name="event-type/[id]"
+          options={{
+            headerShown: true,
+            title: t("eventTypes.screenTitle"),
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
         {/* Forms that change a booking open as modals over it, each with its own title and way back. */}
         <Stack.Screen name="booking/[uid]/decline" options={{ presentation: "modal" }} />
         <Stack.Screen name="booking/[uid]/cancel" options={{ presentation: "modal" }} />

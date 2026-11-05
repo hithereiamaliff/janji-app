@@ -27,7 +27,6 @@
     "settings": "Settings"
   },
   "placeholder": {
-    "eventTypes": "Your event types will show up here.",
     "availability": "Your schedules and working hours will show up here."
   },
   "bookings": {
@@ -161,6 +160,18 @@
     "submit": "Reschedule",
     "failed": "Couldn't reschedule the booking. Try again.",
     "done": "Booking rescheduled."
+  },
+  "eventTypes": {
+    "loadFailed": "Couldn't load your event types. Try again.",
+    "refreshFailed": "Couldn't refresh, so these event types may be out of date.",
+    "empty": "No event types yet. You can create them in Cal.diy on the web.",
+    "hidden": "Hidden",
+    "openHint": "Opens the event type",
+    "screenTitle": "Event type",
+    "notFound": "This event type no longer exists. It may have been deleted.",
+    "length": "Length",
+    "lengthChoice": "{{lengths}}. Bookings are {{usual}} unless the booker picks another length.",
+    "description": "Description"
   },
   "settings": {
     "accountHeading": "Account",
