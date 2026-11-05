@@ -1,0 +1,78 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocales } from "expo-localization";
+import { useTranslation } from "react-i18next";
+
+import { useAccountKey } from "@/data/useAccountKey";
+import { useCalClient, useSignedInAccount } from "@/session/SessionProvider";
+
+import { belongsTo, turnOffNotifications, turnOnNotifications } from "./notifications";
+import { type PushPermission, readPushPermission } from "./push";
+import { pushSetup } from "./push-setup";
+import { loadPushRegistration, type PushRegistration } from "./registration-storage";
+import { createRelayClient } from "./relay-client";
+
+export type NotificationsState =
+  /** On web, and in builds made without a relay or an EAS project. */
+  | { status: "unavailable" }
+  | { status: "off"; permission: PushPermission }
+  | { status: "on"; permission: PushPermission; registration: PushRegistration };
+
+function useNotificationsKey() {
+  return ["notifications", useAccountKey()] as const;
+}
+
+/** Whether this phone gets the signed-in account's notifications, and whether the phone allows them. */
+export function useNotifications() {
+  const account = useSignedInAccount();
+  return useQuery({
+    queryKey: useNotificationsKey(),
+    queryFn: async (): Promise<NotificationsState> => {
+      if (!pushSetup()) return { status: "unavailable" };
+      const [registration, permission] = await Promise.all([loadPushRegistration(), readPushPermission()]);
+      if (registration && belongsTo(registration, account)) return { status: "on", permission, registration };
+      return { status: "off", permission };
+    },
+    // Reading it is cheap and stays on the phone, and the person may change the permission in the phone's
+    // settings while Janji is in the background, so it's read again each time the app comes back.
+    staleTime: 0,
+  });
+}
+
+export function useTurnOnNotifications() {
+  const calClient = useCalClient();
+  const account = useSignedInAccount();
+  const [{ languageTag }] = useLocales();
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const queryKey = useNotificationsKey();
+
+  return useMutation({
+    mutationFn: () => {
+      const setup = pushSetup();
+      if (!setup) throw new Error("This build of Janji has no notifications");
+      return turnOnNotifications({
+        calClient,
+        relay: createRelayClient(setup.relayOrigin),
+        setup,
+        account,
+        locale: languageTag,
+        channelName: t("notifications.channel"),
+      });
+    },
+    retry: false,
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+  });
+}
+
+export function useTurnOffNotifications() {
+  const calClient = useCalClient();
+  const queryClient = useQueryClient();
+  const queryKey = useNotificationsKey();
+
+  return useMutation({
+    mutationFn: (registration: PushRegistration) =>
+      turnOffNotifications({ calClient, relay: createRelayClient(registration.relayOrigin), registration }),
+    retry: false,
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+  });
+}

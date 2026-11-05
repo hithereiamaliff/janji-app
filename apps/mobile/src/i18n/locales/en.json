@@ -410,6 +410,9 @@
     "signOutFailed": "Couldn't remove the API key from this device. Try again.",
     "comingSoon": "Notification settings are coming soon."
   },
+  "notifications": {
+    "channel": "Bookings"
+  },
   "signIn": {
     "server": {
       "title": "Connect your server",
