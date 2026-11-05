@@ -332,6 +332,11 @@
     "hint": "Opens the list of times",
     "cancel": "Cancel"
   },
+  "calendar": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "today": "Today, {{date}}"
+  },
   "timeZonePicker": {
     "label": "Time zone, {{zone}}",
     "hint": "Opens a search for a city",
