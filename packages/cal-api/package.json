@@ -9,7 +9,8 @@
     "./errors": "./src/errors.ts",
     "./probe": "./src/probe.ts",
     "./schema": "./src/generated/openapi.d.ts",
-    "./server-url": "./src/server-url.ts"
+    "./server-url": "./src/server-url.ts",
+    "./timezones": "./src/timezones.ts"
   },
   "scripts": {
     "generate": "bun scripts/generate.ts",
