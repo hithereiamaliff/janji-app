@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { Pressable, Text } from "react-native";
 import { QueryProvider } from "@/data/QueryProvider";
-import { useEventTypes, useSetEventTypeHidden } from "@/event-types/useEventTypes";
+import { useEventTypes, useSetEventTypeHidden, useUpdateEventType } from "@/event-types/useEventTypes";
 import { saveSession } from "@/session/account-storage";
 import { SessionProvider, useSession } from "@/session/SessionProvider";
 import { apiEventType, eventTypesResponse, jsonResponse, testAccount } from "@/test-utils/fixtures";
@@ -24,6 +24,7 @@ const consultation = { id: 2, title: "Consultation", slug: "consultation", hidde
 function EventTypes() {
   const eventTypes = useEventTypes();
   const setHidden = useSetEventTypeHidden();
+  const update = useUpdateEventType(2);
   if (!eventTypes.data) return <Text>loading</Text>;
   return (
     <>
@@ -33,6 +34,9 @@ function EventTypes() {
       {setHidden.isError ? <Text>failed</Text> : null}
       <Pressable accessibilityRole="button" onPress={() => setHidden.mutate({ id: 2, hidden: false })}>
         <Text>Show</Text>
+      </Pressable>
+      <Pressable accessibilityRole="button" onPress={() => update.mutate({ title: "Discovery call" })}>
+        <Text>Rename</Text>
       </Pressable>
     </>
   );
@@ -96,5 +100,22 @@ describe("useSetEventTypeHidden", () => {
 
     expect(await screen.findByText("failed")).toBeOnTheScreen();
     expect(screen.getByText("Consultation: hidden")).toBeOnTheScreen();
+  });
+});
+
+describe("useUpdateEventType", () => {
+  beforeEach(() => mockStore.clear());
+  afterEach(() => jest.restoreAllMocks());
+
+  it("shows the event type as the server saved it", async () => {
+    const release = await renderEventTypes(() =>
+      jsonResponse({ status: "success", data: apiEventType({ ...consultation, title: "Discovery call" }) })
+    );
+
+    await fireEvent.press(screen.getByRole("button", { name: "Rename" }));
+    release();
+
+    expect(await screen.findByText("Discovery call: hidden")).toBeOnTheScreen();
+    expect(screen.queryByText("Consultation: hidden")).toBeNull();
   });
 });

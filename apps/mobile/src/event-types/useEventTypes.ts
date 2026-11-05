@@ -4,7 +4,7 @@ import { useAccountKey } from "@/data/useAccountKey";
 import { useCalClient } from "@/session/SessionProvider";
 
 import type { EventTypeSummary } from "./event-type";
-import { fetchEventTypes, setEventTypeHidden } from "./event-types-api";
+import { type EventTypeChanges, fetchEventTypes, updateEventType } from "./event-types-api";
 
 function useEventTypesKey() {
   return ["eventTypes", useAccountKey()] as const;
@@ -44,7 +44,7 @@ export function useSetEventTypeHidden() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, hidden }: HiddenChange) => setEventTypeHidden(client, id, hidden),
+    mutationFn: ({ id, hidden }: HiddenChange) => updateEventType(client, id, { hidden }),
     retry: false,
     onMutate: async (change) => {
       // A list request still on its way could otherwise land after this and undo the change on screen.
@@ -56,6 +56,23 @@ export function useSetEventTypeHidden() {
     onError: (_error, _change, context) => {
       queryClient.setQueryData(queryKey, context?.before);
     },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<EventTypeSummary[]>(queryKey, (eventTypes) =>
+        eventTypes?.map((eventType) => (eventType.id === updated.id ? updated : eventType))
+      );
+    },
+  });
+}
+
+/** Saves changes to an event type's settings, then shows it as the server returned it. */
+export function useUpdateEventType(id: number) {
+  const client = useCalClient();
+  const queryKey = useEventTypesKey();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (changes: EventTypeChanges) => updateEventType(client, id, changes),
+    retry: false,
     onSuccess: (updated) => {
       queryClient.setQueryData<EventTypeSummary[]>(queryKey, (eventTypes) =>
         eventTypes?.map((eventType) => (eventType.id === updated.id ? updated : eventType))

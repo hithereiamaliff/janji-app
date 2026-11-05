@@ -1,4 +1,4 @@
-import { bookingLink, toEventTypeSummary } from "@/event-types/event-type";
+import { bookingLink, readableLink, toEventTypeSummary } from "@/event-types/event-type";
 import { apiEventType } from "@/test-utils/fixtures";
 
 describe("toEventTypeSummary", () => {
@@ -20,6 +20,7 @@ describe("toEventTypeSummary", () => {
       lengthInMinutes: 180,
       lengthOptions: [],
       description: null,
+      minimumBookingNotice: 0,
       hidden: true,
     });
   });
@@ -34,6 +35,13 @@ describe("toEventTypeSummary", () => {
     });
 
     expect(toEventTypeSummary(eventType).lengthOptions).toEqual([15, 30, 60]);
+  });
+
+  it("keeps the minimum notice in minutes", () => {
+    expect(
+      toEventTypeSummary(apiEventType({ id: 1, title: "Call", slug: "call", minimumBookingNotice: 1440 }))
+        .minimumBookingNotice
+    ).toBe(1440);
   });
 
   it("treats a blank description as none", () => {
@@ -53,6 +61,20 @@ describe("bookingLink", () => {
   it("escapes characters that don't belong in a path", () => {
     expect(bookingLink("https://book.example.com/", "alan lee", "call?now")).toBe(
       "https://book.example.com/alan%20lee/call%3Fnow"
+    );
+  });
+});
+
+describe("readableLink", () => {
+  it("drops the scheme", () => {
+    expect(readableLink("https://book.example.com/alan/consultation")).toBe(
+      "book.example.com/alan/consultation"
+    );
+  });
+
+  it("shows a slug in another script as it was typed", () => {
+    expect(readableLink(bookingLink("https://book.example.com", "alan", "预约-咨询"))).toBe(
+      "book.example.com/alan/预约-咨询"
     );
   });
 });

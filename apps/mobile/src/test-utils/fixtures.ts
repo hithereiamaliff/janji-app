@@ -121,6 +121,8 @@ export type TestEventType = {
   lengthInMinutes?: number;
   lengthInMinutesOptions?: number[];
   description?: string;
+  /** In minutes. */
+  minimumBookingNotice?: number;
   hidden?: boolean;
 };
 
@@ -133,6 +135,7 @@ export function apiEventType(eventType: TestEventType): ApiEventType {
     lengthInMinutes: eventType.lengthInMinutes ?? 30,
     ...(eventType.lengthInMinutesOptions ? { lengthInMinutesOptions: eventType.lengthInMinutesOptions } : {}),
     description: eventType.description ?? "",
+    minimumBookingNotice: eventType.minimumBookingNotice ?? 0,
     locations: [],
     bookingFields: [],
     disableGuests: false,

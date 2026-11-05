@@ -7,7 +7,7 @@ import { LoadErrorState } from "@/components/LoadErrorState";
 import { useSignedInAccount } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 import { EventTypeRow } from "./EventTypeRow";
-import { bookingLink } from "./event-type";
+import { bookingLink, readableLink } from "./event-type";
 import { useEventTypes } from "./useEventTypes";
 
 function RowGap() {
@@ -60,10 +60,7 @@ export function EventTypesScreen() {
       renderItem={({ item }) => (
         <EventTypeRow
           eventType={item}
-          link={bookingLink(account.serverOrigin, account.user.username, item.slug).replace(
-            /^https?:\/\//,
-            ""
-          )}
+          link={readableLink(bookingLink(account.serverOrigin, account.user.username, item.slug))}
           onPress={() => router.push({ pathname: "/event-type/[id]", params: { id: String(item.id) } })}
         />
       )}

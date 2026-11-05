@@ -1,4 +1,5 @@
 import { type CalClient, unwrap } from "@janji/cal-api/client";
+import { CalApiError } from "@janji/cal-api/errors";
 
 import { type EventTypeSummary, toEventTypeSummary } from "./event-type";
 
@@ -8,17 +9,36 @@ export async function fetchEventTypes(client: CalClient): Promise<EventTypeSumma
   return body.data.map(toEventTypeSummary);
 }
 
-/** Shows an event type on the public booking page, or hides it from there. */
-export async function setEventTypeHidden(
+/** The settings the app can change. Only what's given is sent, so everything else stays as it is. */
+export type EventTypeChanges = {
+  title?: string;
+  slug?: string;
+  lengthInMinutes?: number;
+  description?: string;
+  /** In minutes. */
+  minimumBookingNotice?: number;
+  /** Leaves the event type off the public booking page. */
+  hidden?: boolean;
+};
+
+export async function updateEventType(
   client: CalClient,
   id: number,
-  hidden: boolean
+  changes: EventTypeChanges
 ): Promise<EventTypeSummary> {
   const body = unwrap(
     await client.PATCH("/v2/event-types/{eventTypeId}", {
       params: { path: { eventTypeId: id } },
-      body: { hidden },
+      body: changes,
     })
   );
   return toEventTypeSummary(body.data);
+}
+
+/**
+ * Whether Cal.diy refused a change because another of the person's event types already uses the slug. The app
+ * checks this itself before saving, so it only happens when that other event type was set up meanwhile.
+ */
+export function isSlugTakenError(error: unknown): boolean {
+  return error instanceof CalApiError && error.serverMessage === "error_event_type_url_duplicate";
 }

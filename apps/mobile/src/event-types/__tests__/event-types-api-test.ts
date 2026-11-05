@@ -1,6 +1,6 @@
 import { createCalClient } from "@janji/cal-api/client";
 
-import { fetchEventTypes, setEventTypeHidden } from "@/event-types/event-types-api";
+import { fetchEventTypes, isSlugTakenError, updateEventType } from "@/event-types/event-types-api";
 import { apiEventType, eventTypesResponse, jsonResponse } from "@/test-utils/fixtures";
 
 type SentRequest = { method: string; path: string; version: string | null; body: unknown };
@@ -43,8 +43,8 @@ describe("fetchEventTypes", () => {
   });
 });
 
-describe("setEventTypeHidden", () => {
-  it("changes only whether the event type is hidden", async () => {
+describe("updateEventType", () => {
+  it("sends only the settings being changed", async () => {
     const { client, sent } = clientAnswering(() =>
       jsonResponse({
         status: "success",
@@ -52,11 +52,64 @@ describe("setEventTypeHidden", () => {
       })
     );
 
-    const updated = await setEventTypeHidden(client, 2, false);
+    const updated = await updateEventType(client, 2, { hidden: false });
 
     expect(sent).toEqual([
       { method: "PATCH", path: "/api/v2/event-types/2", version: "2024-06-14", body: { hidden: false } },
     ]);
     expect(updated).toMatchObject({ id: 2, hidden: false });
+  });
+
+  it("changes several settings at once", async () => {
+    const { client, sent } = clientAnswering(() =>
+      jsonResponse({
+        status: "success",
+        data: apiEventType({
+          id: 2,
+          title: "Planning call",
+          slug: "planning",
+          lengthInMinutes: 45,
+          minimumBookingNotice: 120,
+        }),
+      })
+    );
+
+    const updated = await updateEventType(client, 2, {
+      title: "Planning call",
+      slug: "planning",
+      lengthInMinutes: 45,
+      minimumBookingNotice: 120,
+    });
+
+    expect(sent[0]?.body).toEqual({
+      title: "Planning call",
+      slug: "planning",
+      lengthInMinutes: 45,
+      minimumBookingNotice: 120,
+    });
+    expect(updated).toMatchObject({
+      title: "Planning call",
+      slug: "planning",
+      lengthInMinutes: 45,
+      minimumBookingNotice: 120,
+    });
+  });
+});
+
+describe("isSlugTakenError", () => {
+  async function refusal(message: string, status: number): Promise<unknown> {
+    const { client } = clientAnswering(() =>
+      jsonResponse({ status: "error", error: { code: "TRPCError", message } }, { status })
+    );
+    return updateEventType(client, 2, { slug: "chat" }).catch((error: unknown) => error);
+  }
+
+  it("recognises Cal.diy refusing a slug another event type has", async () => {
+    expect(isSlugTakenError(await refusal("error_event_type_url_duplicate", 400))).toBe(true);
+  });
+
+  it("doesn't mistake other refusals for it", async () => {
+    expect(isSlugTakenError(await refusal("Event type with id 2 not found", 404))).toBe(false);
+    expect(isSlugTakenError(new Error("error_event_type_url_duplicate"))).toBe(false);
   });
 });
