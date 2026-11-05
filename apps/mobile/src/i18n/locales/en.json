@@ -2,6 +2,17 @@
   "common": {
     "loading": "Loading"
   },
+  "loadErrors": {
+    "unauthorized": "Your API key no longer works. It may have expired or been deleted. Sign in again with a new key.",
+    "network": "Couldn't reach your server. Check your internet connection.",
+    "rate_limited_one": "Too many requests. Try again in {{count}} second.",
+    "rate_limited_other": "Too many requests. Try again in {{count}} seconds.",
+    "rate_limited_unknown": "Too many requests. Wait a minute and try again.",
+    "server_error": "Your server ran into a problem. Try again in a moment.",
+    "not_cal_api": "Your server stopped answering as Cal API v2. Check that the API is still running.",
+    "retry": "Try again",
+    "signInAgain": "Sign in again"
+  },
   "tabs": {
     "bookings": "Bookings",
     "eventTypes": "Event types",
@@ -43,18 +54,7 @@
       "cancelled": "No cancelled bookings.",
       "search": "No bookings with an attendee called “{{search}}”."
     },
-    "errors": {
-      "unauthorized": "Your API key no longer works. It may have expired or been deleted. Sign in again with a new key.",
-      "network": "Couldn't reach your server. Check your internet connection.",
-      "rate_limited_one": "Too many requests. Try again in {{count}} second.",
-      "rate_limited_other": "Too many requests. Try again in {{count}} seconds.",
-      "rate_limited_unknown": "Too many requests. Wait a minute and try again.",
-      "server_error": "Your server ran into a problem. Try again in a moment.",
-      "not_cal_api": "Your server stopped answering as Cal API v2. Check that the API is still running.",
-      "unexpected": "Couldn't load your bookings. Try again."
-    },
-    "retry": "Try again",
-    "signInAgain": "Sign in again",
+    "loadFailed": "Couldn't load your bookings. Try again.",
     "refreshFailed": "Couldn't refresh, so these bookings may be out of date."
   },
   "settings": {

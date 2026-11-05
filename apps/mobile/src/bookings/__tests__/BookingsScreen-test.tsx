@@ -147,6 +147,19 @@ describe("BookingsScreen", () => {
     expect(server.requests).toHaveLength(2);
   });
 
+  it("keeps the bookings on screen when a refresh fails", async () => {
+    const server = await renderBookings();
+    await screen.findByText("Strategy call");
+    server.nextResponses.push(
+      jsonResponse({ status: "error", error: { message: "Too Many Requests" } }, { status: 429 })
+    );
+
+    await fireEvent(screen.getByTestId("bookings-list"), "refresh");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.bookings.refreshFailed);
+    expect(screen.getByText("Strategy call")).toBeOnTheScreen();
+  });
+
   it("asks for a new sign-in when the API key stops working", async () => {
     const server = await renderBookings();
     server.nextResponses.push(
@@ -154,8 +167,8 @@ describe("BookingsScreen", () => {
     );
     await fireEvent.press(await screen.findByRole("tab", { name: en.bookings.filters.cancelled }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(en.bookings.errors.unauthorized);
-    await fireEvent.press(screen.getByRole("button", { name: en.bookings.signInAgain }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.loadErrors.unauthorized);
+    await fireEvent.press(screen.getByRole("button", { name: en.loadErrors.signInAgain }));
 
     expect(await screen.findByRole("header", { name: en.signIn.server.title })).toBeOnTheScreen();
   });
@@ -171,7 +184,7 @@ describe("BookingsScreen", () => {
     await fireEvent.press(await screen.findByRole("tab", { name: en.bookings.filters.past }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Too many requests. Try again in 30 seconds.");
-    await fireEvent.press(screen.getByRole("button", { name: en.bookings.retry }));
+    await fireEvent.press(screen.getByRole("button", { name: en.loadErrors.retry }));
 
     expect(await screen.findByText("Welcome call")).toBeOnTheScreen();
   });
