@@ -1,4 +1,5 @@
 import type { ApiEventType } from "@/event-types/event-type";
+import type { ApiPrivateLink } from "@/event-types/private-links";
 import type { Account } from "@/session/account";
 
 // Kept apart from app-routes.ts so unit tests don't load every screen just to get test data.
@@ -159,4 +160,27 @@ export function apiEventType(eventType: TestEventType): ApiEventType {
 /** A GET /v2/event-types body holding the given event types. */
 export function eventTypesResponse(eventTypes: TestEventType[]): Response {
   return jsonResponse({ status: "success", data: eventTypes.map(apiEventType) });
+}
+
+/** A private link that ends on a date, or after a number of bookings (one, unless given). */
+export type TestPrivateLink =
+  | { id: string; expiresAt: string; expired?: boolean }
+  | { id: string; used?: number; max?: number; expired?: boolean };
+
+/** One private link as API v2 sends it, with the bookingUrl a server without WEBSITE_URL builds. */
+export function apiPrivateLink(link: TestPrivateLink, eventTypeId = 2): ApiPrivateLink {
+  const base = {
+    linkId: link.id,
+    eventTypeId,
+    isExpired: link.expired ?? false,
+    bookingUrl: `https://cal.com/d/${link.id}`,
+  };
+  return "expiresAt" in link
+    ? { ...base, expiresAt: link.expiresAt }
+    : { ...base, maxUsageCount: link.max ?? 1, usageCount: link.used ?? 0 };
+}
+
+/** A GET /v2/event-types/{id}/private-links body holding the given links. */
+export function privateLinksResponse(links: TestPrivateLink[], eventTypeId = 2): Response {
+  return jsonResponse({ status: "success", data: links.map((link) => apiPrivateLink(link, eventTypeId)) });
 }
