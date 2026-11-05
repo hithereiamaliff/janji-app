@@ -278,7 +278,20 @@
     "keep": "Keep it",
     "deleted": "Schedule deleted.",
     "deleteFailed": "Couldn't delete the schedule. Try again.",
-    "notFound": "This schedule no longer exists."
+    "notFound": "This schedule no longer exists.",
+    "new": {
+      "action": "New schedule",
+      "title": "New schedule",
+      "description": "It starts with Cal.diy's usual hours: {{hours}}.",
+      "nameLabel": "Name",
+      "nameHint": "For example, Weekends or Ramadan hours.",
+      "nameMissing": "Add a name.",
+      "timeZoneNote": "It uses your Cal.diy time zone, {{city}} ({{zone}}).",
+      "firstIsDefault": "As your first schedule, it will be your default.",
+      "create": "Create schedule",
+      "created": "Schedule created.",
+      "failed": "Couldn't create the schedule. Try again."
+    }
   },
   "settings": {
     "accountHeading": "Account",
