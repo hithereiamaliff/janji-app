@@ -2,17 +2,58 @@ import "@/i18n";
 
 import { Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useTranslation } from "react-i18next";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
+import { SessionProvider, useSession } from "@/session/SessionProvider";
 import { getNavigationTheme } from "@/theme/navigationTheme";
 import { useTheme } from "@/theme/useTheme";
+
+function RootNavigator() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { session } = useSession();
+
+  // Rendering the navigator only once the saved session is known avoids flashing the sign-in screen at
+  // people who are already signed in.
+  if (session.status === "loading") {
+    return (
+      <View style={[styles.loading, { backgroundColor: colors.background }]}>
+        <ActivityIndicator accessibilityLabel={t("common.loading")} color={colors.accent} />
+      </View>
+    );
+  }
+
+  const signedIn = session.status === "signedIn";
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={signedIn}>
+        <Stack.Screen name="(tabs)" />
+      </Stack.Protected>
+      <Stack.Protected guard={!signedIn}>
+        <Stack.Screen name="sign-in" />
+      </Stack.Protected>
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const { isDark, colors } = useTheme();
 
   return (
-    <ThemeProvider value={getNavigationTheme(isDark, colors)}>
-      <Stack screenOptions={{ headerShown: false }} />
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <SessionProvider>
+      <ThemeProvider value={getNavigationTheme(isDark, colors)}>
+        <RootNavigator />
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </SessionProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

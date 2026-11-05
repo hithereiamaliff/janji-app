@@ -1,4 +1,7 @@
 {
+  "common": {
+    "loading": "Loading"
+  },
   "tabs": {
     "bookings": "Bookings",
     "eventTypes": "Event types",
@@ -6,10 +9,17 @@
     "settings": "Settings"
   },
   "placeholder": {
-    "bookings": "Your bookings will show up here once you connect your Cal.diy server.",
+    "bookings": "Your bookings will show up here.",
     "eventTypes": "Your event types will show up here.",
-    "availability": "Your schedules and working hours will show up here.",
-    "settings": "Server, account and notification settings will live here."
+    "availability": "Your schedules and working hours will show up here."
+  },
+  "settings": {
+    "accountHeading": "Account",
+    "server": "Server: {{server}}",
+    "signOut": "Sign out",
+    "signOutHint": "Removes the API key from this device",
+    "signOutFailed": "Couldn't remove the API key from this device. Try again.",
+    "comingSoon": "Profile and notification settings are coming soon."
   },
   "signIn": {
     "server": {

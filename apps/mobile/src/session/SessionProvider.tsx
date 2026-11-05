@@ -57,9 +57,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Remove the key from the device first: if that fails, staying signed in (and saying so) beats an app
+    // that looks signed out but restores the old session on its next launch.
+    await clearSavedSession();
     apiKeyRef.current = null;
     setSession({ status: "signedOut" });
-    await clearSavedSession();
   }, []);
 
   const apiRootUrl = session.status === "signedIn" ? session.account.apiRootUrl : null;
