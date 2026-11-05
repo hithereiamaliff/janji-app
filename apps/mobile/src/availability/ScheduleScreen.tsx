@@ -1,8 +1,17 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocales } from "expo-localization";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  AccessibilityInfo,
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { timeZoneCity } from "@/bookings/format";
 import { Badge } from "@/components/Badge";
@@ -58,31 +67,41 @@ function OverridesSection({ schedule }: { schedule: Schedule }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [{ languageTag: locale }] = useLocales();
+  const router = useRouter();
   const days = upcomingOverrideDays(schedule.overrides, schedule.timeZone);
+  const id = String(schedule.id);
 
   return (
     <Section title={t("availability.overrides.title")}>
       {days.length === 0 ? (
         <Text style={[styles.body, { color: colors.textMuted }]}>{t("availability.overrides.none")}</Text>
       ) : (
-        <View style={styles.group}>
-          {days.map((day) => {
-            const hours = overrideHoursText(t, day, locale);
-            return (
-              <View
-                key={day.date}
-                accessible
-                accessibilityLabel={`${calendarDateText(day.date, locale, "long")}, ${hours}`}
-                style={styles.override}
-              >
+        days.map((day) => {
+          const hours = overrideHoursText(t, day, locale);
+          return (
+            <Pressable
+              key={day.date}
+              accessibilityRole="button"
+              accessibilityLabel={`${calendarDateText(day.date, locale, "long")}, ${hours}`}
+              accessibilityHint={t("availability.overrides.editHint")}
+              onPress={() =>
+                router.push({ pathname: "/schedule/[id]/override/[date]", params: { id, date: day.date } })
+              }
+              style={({ pressed }) => [
+                styles.override,
+                { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+              ]}
+            >
+              <View style={styles.overrideText}>
                 <Text style={[styles.overrideDate, { color: colors.text }]}>
                   {calendarDateText(day.date, locale)}
                 </Text>
                 <Text style={[styles.body, { color: colors.textMuted }]}>{hours}</Text>
               </View>
-            );
-          })}
-        </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </Pressable>
+          );
+        })
       )}
     </Section>
   );
@@ -288,7 +307,17 @@ const styles = StyleSheet.create({
   group: {
     gap: 12,
   },
+  // 48 pt keeps each date an easy touch target.
   override: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+  },
+  overrideText: {
+    flex: 1,
     gap: 2,
   },
   overrideDate: {
