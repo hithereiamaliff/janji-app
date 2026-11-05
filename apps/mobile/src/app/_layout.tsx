@@ -52,6 +52,7 @@ function RootNavigator() {
         <Stack.Screen name="booking/[uid]/guests" options={{ presentation: "modal" }} />
         <Stack.Screen name="booking/[uid]/reschedule" options={{ presentation: "modal" }} />
         <Stack.Screen name="event-type/[id]/edit" options={{ presentation: "modal" }} />
+        <Stack.Screen name="event-type/[id]/private-link" options={{ presentation: "modal" }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />

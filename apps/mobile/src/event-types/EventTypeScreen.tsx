@@ -3,16 +3,7 @@ import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  AccessibilityInfo,
-  ActivityIndicator,
-  Platform,
-  ScrollView,
-  Share,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { AccessibilityInfo, ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
@@ -20,6 +11,7 @@ import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
 import { ThemedSwitch } from "@/components/ThemedSwitch";
 import { actionErrorMessage } from "@/lib/action-error";
+import { shareLink } from "@/lib/share-link";
 import { useSignedInAccount } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
@@ -39,12 +31,6 @@ function LinkSection({ link }: { link: string }) {
     AccessibilityInfo.announceForAccessibility(t("eventTypes.linkCopied"));
   }
 
-  function handleShare() {
-    // iOS shares a url as a link, with a preview; Android only takes a message. Closing the share sheet, or
-    // a browser without sharing, isn't an error worth showing.
-    Share.share(Platform.OS === "ios" ? { url: link } : { message: link }).catch(() => undefined);
-  }
-
   return (
     <Section title={t("eventTypes.link")}>
       <Text selectable style={[styles.body, { color: colors.text }]}>
@@ -55,7 +41,7 @@ function LinkSection({ link }: { link: string }) {
           <Button variant="secondary" label={t("eventTypes.copyLink")} onPress={() => void handleCopy()} />
         </View>
         <View style={styles.action}>
-          <Button variant="secondary" label={t("eventTypes.share")} onPress={handleShare} />
+          <Button variant="secondary" label={t("eventTypes.share")} onPress={() => shareLink(link)} />
         </View>
       </View>
       {copied ? (
