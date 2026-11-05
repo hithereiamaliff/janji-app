@@ -1,4 +1,5 @@
 import { useLocales } from "expo-localization";
+import { useRouter } from "expo-router";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -8,20 +9,10 @@ import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
 import { weekdayName } from "@/lib/calendar-date";
-import { dateTimeFormat } from "@/lib/date-format";
+import { clockExample } from "@/profile/profile-text";
 import { useProfile } from "@/profile/useProfile";
 import { useSession, useSignedInAccount } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
-
-/** "1:00 PM" or "13:00": an afternoon time on the given clock, as an example of it. */
-function clockExample(timeFormat: 12 | 24, locale: string): string {
-  return dateTimeFormat(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: timeFormat === 12,
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(1970, 0, 1, 13)));
-}
 
 function Setting({ label, value }: { label: string; value: string }) {
   const { colors } = useTheme();
@@ -37,6 +28,7 @@ function ProfileSection() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [{ languageTag: locale }] = useLocales();
+  const router = useRouter();
   const profile = useProfile();
 
   let content: ReactNode;
@@ -55,6 +47,11 @@ function ProfileSection() {
           })}
         />
         <Setting label={t("settings.profile.weekStart")} value={weekdayName(weekStart, locale)} />
+        <Button
+          variant="secondary"
+          label={t("settings.edit.action")}
+          onPress={() => router.push("/profile")}
+        />
       </>
     );
   } else if (profile.isPending) {

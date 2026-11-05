@@ -377,6 +377,18 @@
       "weekStart": "Weeks start on",
       "loadFailed": "Couldn't load your profile. Try again."
     },
+    "edit": {
+      "action": "Edit profile",
+      "title": "Edit profile",
+      "nameLabel": "Name",
+      "nameMissing": "Add your name.",
+      "timeZoneHint": "Your default schedule moves to this time zone too, as it does on the web.",
+      "clock12": "12-hour ({{example}})",
+      "clock24": "24-hour ({{example}})",
+      "save": "Save profile",
+      "saved": "Profile saved.",
+      "failed": "Couldn't save your profile. Try again."
+    },
     "signOut": "Sign out",
     "signOutHint": "Removes the API key from this device",
     "signOutFailed": "Couldn't remove the API key from this device. Try again.",

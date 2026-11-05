@@ -40,4 +40,28 @@ describe("FilterTabs", () => {
 
     expect(onChange).toHaveBeenCalledWith("past");
   });
+
+  it("can be a set of radio buttons for a setting, which can be turned off", async () => {
+    const onChange = jest.fn();
+    await render(
+      <FilterTabs
+        kind="choices"
+        options={[
+          { value: "12", label: "12-hour" },
+          { value: "24", label: "24-hour" },
+        ]}
+        value="12"
+        onChange={onChange}
+        accessibilityLabel="Clock"
+        disabled
+      />
+    );
+
+    expect(screen.getByLabelText("Clock")).toHaveProp("accessibilityRole", "radiogroup");
+    expect(screen.getByRole("radio", { name: "12-hour" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "24-hour" })).not.toBeChecked();
+    expect(screen.getByRole("radio", { name: "24-hour" })).toBeDisabled();
+    await fireEvent.press(screen.getByRole("radio", { name: "24-hour" }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
