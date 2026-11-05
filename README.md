@@ -25,7 +25,7 @@ apps/mobile/        Expo (React Native) app
 apps/relay/         push notification relay (Cloudflare Worker)
 packages/cal-api/   typed Cal API v2 client, generated from Cal.diy's OpenAPI spec
 packages/shared/    types the app and the relay share
-docs/               server setup and privacy
+docs/               server setup, privacy and releases
 ```
 
 ## Development
@@ -41,7 +41,8 @@ bun run test         # unit tests in every workspace
 ```
 
 The app uses [Expo](https://expo.dev) SDK 58 and Expo Router. Features that need native code, such as push
-notifications, run in an Expo development build rather than Expo Go.
+notifications, run in an Expo development build rather than Expo Go. [docs/release.md](./docs/release.md)
+explains how to make one, and the store builds.
 
 ## License
 
