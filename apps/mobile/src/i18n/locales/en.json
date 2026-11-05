@@ -368,10 +368,19 @@
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
+    "profile": {
+      "title": "Profile",
+      "timeZone": "Time zone",
+      "clock": "Clock",
+      "clock12": "12-hour, such as {{example}}",
+      "clock24": "24-hour, such as {{example}}",
+      "weekStart": "Weeks start on",
+      "loadFailed": "Couldn't load your profile. Try again."
+    },
     "signOut": "Sign out",
     "signOutHint": "Removes the API key from this device",
     "signOutFailed": "Couldn't remove the API key from this device. Try again.",
-    "comingSoon": "Profile and notification settings are coming soon."
+    "comingSoon": "Notification settings are coming soon."
   },
   "signIn": {
     "server": {

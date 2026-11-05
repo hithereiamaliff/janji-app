@@ -86,11 +86,15 @@ export function monthTitle({ year, month }: CalendarMonth, locale: string): stri
   );
 }
 
+/** A weekday's name, where day runs from 0 for Sunday to 6 for Saturday: "Monday", or "Mon" when short. */
+export function weekdayName(day: number, locale: string, width: "short" | "long" = "long"): string {
+  // 4 January 1970 was a Sunday, so adding a weekday's number lands on that weekday.
+  return dateTimeFormat(locale, { weekday: width, timeZone: "UTC" }).format(
+    new Date(Date.UTC(1970, 0, 4 + day))
+  );
+}
+
 /** Short weekday names for a calendar's columns, starting on weekStart: "Mon", "Tue" and on. */
 export function weekdayNames(weekStart: number, locale: string): string[] {
-  const format = dateTimeFormat(locale, { weekday: "short", timeZone: "UTC" });
-  // 4 January 1970 was a Sunday, so adding a weekday's number lands on that weekday.
-  return Array.from({ length: 7 }, (_, index) =>
-    format.format(new Date(Date.UTC(1970, 0, 4 + ((weekStart + index) % 7))))
-  );
+  return Array.from({ length: 7 }, (_, index) => weekdayName((weekStart + index) % 7, locale, "short"));
 }
