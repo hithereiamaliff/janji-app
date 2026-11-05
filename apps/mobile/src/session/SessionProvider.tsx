@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 
-import type { Account } from "./account";
+import type { Account, AccountUser } from "./account";
 import { clearSavedSession, loadSavedSession, saveSession } from "./account-storage";
 
 export type SessionState =
@@ -24,6 +24,8 @@ export type SessionContextValue = {
   calClient: CalClient | null;
   signIn: (account: Account, apiKey: string) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Replaces the signed-in person's details, such as after their profile changed, and saves them. */
+  updateUser: (user: AccountUser) => Promise<void>;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -64,6 +66,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setSession({ status: "signedOut" });
   }, []);
 
+  const updateUser = useCallback(
+    async (user: AccountUser) => {
+      const apiKey = apiKeyRef.current;
+      if (session.status !== "signedIn" || !apiKey) return;
+      const account = { ...session.account, user };
+      await saveSession({ account, apiKey });
+      setSession({ status: "signedIn", account });
+    },
+    [session]
+  );
+
   const apiRootUrl = session.status === "signedIn" ? session.account.apiRootUrl : null;
   const calClient = useMemo(
     () => (apiRootUrl ? createCalClient({ apiRootUrl, getApiKey: () => apiKeyRef.current }) : null),
@@ -71,8 +84,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ session, calClient, signIn, signOut }),
-    [session, calClient, signIn, signOut]
+    () => ({ session, calClient, signIn, signOut, updateUser }),
+    [session, calClient, signIn, signOut, updateUser]
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
