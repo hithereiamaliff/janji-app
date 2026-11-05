@@ -35,6 +35,10 @@ jobs:
       - name: Lint and format (Biome)
         run: bun run check:ci
 
+      - name: Generated Cal API v2 types match the pinned spec
+        working-directory: packages/cal-api
+        run: bun run generate:check
+
       - name: Type check
         run: bun run typecheck
 

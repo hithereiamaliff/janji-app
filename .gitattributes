@@ -1,0 +1,4 @@
+# Collapsed in GitHub diffs and left out of language stats.
+bun.lock linguist-generated=true
+packages/cal-api/openapi/cal-diy-api-v2.json linguist-generated=true
+packages/cal-api/src/generated/** linguist-generated=true

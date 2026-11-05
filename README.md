@@ -20,9 +20,9 @@ service next to the Cal.diy web app, so it may not be running on your server yet
 ## Repository layout
 
 ```
-apps/mobile/   Expo (React Native) app
-apps/relay/    push notification relay (Cloudflare Worker), coming later
-packages/      shared code: the Cal API v2 client and the app ↔ relay contract, coming later
+apps/mobile/        Expo (React Native) app
+apps/relay/         push notification relay (Cloudflare Worker), coming later
+packages/cal-api/   typed Cal API v2 client, generated from Cal.diy's OpenAPI spec
 ```
 
 ## Development
