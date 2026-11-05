@@ -38,37 +38,48 @@ export type TestBooking = {
   start: string;
   end?: string;
   status?: "accepted" | "pending" | "cancelled" | "rejected";
-  attendees?: { name: string; email: string }[];
+  location?: string;
+  recurringBookingUid?: string;
+  attendees?: { name: string; email: string; timeZone?: string; phoneNumber?: string; absent?: boolean }[];
 };
 
-/** A GET /v2/bookings body (cal-api-version 2024-08-13) holding the given bookings. */
+/** One booking as API v2 (cal-api-version 2024-08-13) sends it. */
+export function apiBooking(booking: TestBooking, id = 1) {
+  const end = booking.end ?? booking.start;
+  return {
+    id,
+    uid: booking.uid,
+    title: booking.title,
+    description: "",
+    hosts: [],
+    status: booking.status ?? "accepted",
+    start: booking.start,
+    end,
+    duration: (Date.parse(end) - Date.parse(booking.start)) / 60_000,
+    eventTypeId: 3,
+    eventType: { id: 3, slug: "30min" },
+    location: booking.location ?? "",
+    ...(booking.recurringBookingUid ? { recurringBookingUid: booking.recurringBookingUid } : {}),
+    absentHost: false,
+    createdAt: "2026-11-01T00:00:00.000Z",
+    updatedAt: "2026-11-01T00:00:00.000Z",
+    attendees: (booking.attendees ?? []).map(
+      ({ absent = false, timeZone = "Asia/Kuala_Lumpur", ...attendee }) => ({
+        ...attendee,
+        displayEmail: attendee.email,
+        timeZone,
+        absent,
+      })
+    ),
+    bookingFieldsResponses: {},
+  };
+}
+
+/** A GET /v2/bookings body holding the given bookings. */
 export function bookingsResponse(bookings: TestBooking[], { hasNextPage = false } = {}): Response {
   return jsonResponse({
     status: "success",
-    data: bookings.map((booking, index) => ({
-      id: index + 1,
-      uid: booking.uid,
-      title: booking.title,
-      description: "",
-      hosts: [],
-      status: booking.status ?? "accepted",
-      start: booking.start,
-      end: booking.end ?? booking.start,
-      duration: 30,
-      eventTypeId: 3,
-      eventType: { id: 3, slug: "30min" },
-      location: "",
-      absentHost: false,
-      createdAt: "2026-11-01T00:00:00.000Z",
-      updatedAt: "2026-11-01T00:00:00.000Z",
-      attendees: (booking.attendees ?? []).map((attendee) => ({
-        ...attendee,
-        displayEmail: attendee.email,
-        timeZone: "Asia/Kuala_Lumpur",
-        absent: false,
-      })),
-      bookingFieldsResponses: {},
-    })),
+    data: bookings.map((booking, index) => apiBooking(booking, index + 1)),
     pagination: {
       totalItems: bookings.length,
       remainingItems: hasNextPage ? 1 : 0,
@@ -80,4 +91,9 @@ export function bookingsResponse(bookings: TestBooking[], { hasNextPage = false 
       hasPreviousPage: false,
     },
   });
+}
+
+/** A GET /v2/bookings/{uid} body for one booking. */
+export function bookingResponse(booking: TestBooking): Response {
+  return jsonResponse({ status: "success", data: apiBooking(booking) });
 }

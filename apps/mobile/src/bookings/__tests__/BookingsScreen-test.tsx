@@ -5,7 +5,13 @@ import { formatDayHeading } from "@/bookings/format";
 import en from "@/i18n/locales/en.json";
 import { saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
-import { bookingsResponse, jsonResponse, type TestBooking, testAccount } from "@/test-utils/fixtures";
+import {
+  bookingResponse,
+  bookingsResponse,
+  jsonResponse,
+  type TestBooking,
+  testAccount,
+} from "@/test-utils/fixtures";
 
 const mockStore = new Map<string, string>();
 
@@ -51,6 +57,11 @@ type FakeServer = {
 
 function serve(server: FakeServer, input: RequestInfo | URL): Response {
   const url = new URL(input instanceof Request ? input.url : String(input));
+  const detailUid = /^\/api\/v2\/bookings\/([^/]+)$/.exec(url.pathname)?.[1];
+  const detail = Object.values(server.bookings)
+    .flat()
+    .find((booking) => booking?.uid === detailUid);
+  if (detail) return bookingResponse(detail);
   if (url.pathname !== "/api/v2/bookings") return new Response("Not found", { status: 404 });
   server.requests.push(url.searchParams);
   const override = server.nextResponses.shift();
@@ -136,6 +147,15 @@ describe("BookingsScreen", () => {
 
     await waitFor(() => expect(server.requests).toHaveLength(2));
     expect(server.requests.map((params) => params.get("skip"))).toEqual(["0", String(BOOKINGS_PAGE_SIZE)]);
+  });
+
+  it("opens a booking's details", async () => {
+    await renderBookings();
+
+    await fireEvent.press(await screen.findByRole("button", { name: /Strategy call/ }));
+
+    expect(await screen.findByRole("header", { name: "Strategy call" })).toBeOnTheScreen();
+    expect(screen).toHavePathname("/booking/u1");
   });
 
   it("fetches again on pull to refresh", async () => {

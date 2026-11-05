@@ -1,4 +1,5 @@
 import { useLocales } from "expo-localization";
+import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, SectionList, StyleSheet, Text, TextInput, View } from "react-native";
@@ -23,6 +24,7 @@ function RowGap() {
 export function BookingsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const router = useRouter();
   const [{ languageTag: locale }] = useLocales();
   const [filter, setFilter] = useState<BookingFilter>("upcoming");
   const [searchInput, setSearchInput] = useState("");
@@ -80,7 +82,13 @@ export function BookingsScreen() {
         testID="bookings-list"
         sections={sections}
         keyExtractor={(booking) => booking.uid}
-        renderItem={({ item }) => <BookingRow booking={item} locale={locale} />}
+        renderItem={({ item }) => (
+          <BookingRow
+            booking={item}
+            locale={locale}
+            onPress={() => router.push({ pathname: "/booking/[uid]", params: { uid: item.uid } })}
+          />
+        )}
         renderSectionHeader={({ section }) => (
           <Text
             accessibilityRole="header"

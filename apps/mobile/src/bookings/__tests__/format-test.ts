@@ -1,4 +1,4 @@
-import { dayKey, formatDayHeading, formatTimeRange } from "@/bookings/format";
+import { dayKey, formatDayHeading, formatFullDate, formatTimeRange } from "@/bookings/format";
 
 // Jest runs in UTC (jest.global-setup.js), so "local time" in these tests is UTC.
 const now = new Date("2026-11-05T09:00:00Z");
@@ -39,5 +39,11 @@ describe("formatTimeRange", () => {
       "7:00 AM – 7:30 AM"
     );
     expect(formatTimeRange("2026-11-06T07:00:00Z", "2026-11-06T13:15:00Z", "en-GB")).toBe("7:00 – 13:15");
+  });
+});
+
+describe("formatFullDate", () => {
+  it("spells out the weekday, day, month and year", () => {
+    expect(formatFullDate("2026-11-06T07:00:00Z", "en-GB")).toMatch(/^Friday\W+6 November 2026$/);
   });
 });

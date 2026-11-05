@@ -42,3 +42,13 @@ export function formatTimeRange(startIso: string, endIso: string, locale: string
   const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" });
   return `${time.format(new Date(startIso))} – ${time.format(new Date(endIso))}`;
 }
+
+/** "Friday, 6 November 2026", in the locale's own order. */
+export function formatFullDate(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
+}
