@@ -88,6 +88,18 @@ describe("SessionProvider", () => {
     await expect(loadSavedSession()).resolves.toBeNull();
   });
 
+  it("replaces the signed-in person's details and saves them with the key", async () => {
+    await saveSession({ account, apiKey: "cal_saved" });
+    await renderSession();
+    await screen.findByText("signed in as alan");
+    const user = { ...account.user, username: "alan-r", timeZone: "Europe/London" };
+
+    await act(() => current().updateUser(user));
+
+    expect(screen.getByText("signed in as alan-r")).toBeOnTheScreen();
+    await expect(loadSavedSession()).resolves.toEqual({ account: { ...account, user }, apiKey: "cal_saved" });
+  });
+
   it("gives screens a client that sends the signed-in account's key", async () => {
     const fetchSpy = jest.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ status: "success", data: [] }), {

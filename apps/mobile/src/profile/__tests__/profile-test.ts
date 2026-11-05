@@ -1,14 +1,21 @@
 import { createCalClient } from "@janji/cal-api/client";
 
 import { type ApiProfile, toProfile } from "@/profile/profile";
-import { fetchProfile } from "@/profile/profile-api";
+import { fetchProfile, updateProfile } from "@/profile/profile-api";
 import { jsonResponse, testMeResponse } from "@/test-utils/fixtures";
 
 const me: ApiProfile = testMeResponse.data;
 
 describe("toProfile", () => {
-  it("keeps the settings the app follows", () => {
-    expect(toProfile(me)).toEqual({ timeZone: "Asia/Kuala_Lumpur", timeFormat: 12, weekStart: 1 });
+  it("keeps what the app shows and follows", () => {
+    expect(toProfile(me)).toEqual({
+      name: "Alan",
+      email: "alan@example.com",
+      username: "alan",
+      timeZone: "Asia/Kuala_Lumpur",
+      timeFormat: 12,
+      weekStart: 1,
+    });
     expect(toProfile({ ...me, timeFormat: 24 }).timeFormat).toBe(24);
   });
 
@@ -37,11 +44,41 @@ describe("fetchProfile", () => {
       },
     });
 
-    expect(await fetchProfile(client)).toEqual({
-      timeZone: "Asia/Kuala_Lumpur",
-      timeFormat: 12,
-      weekStart: 0,
-    });
+    expect(await fetchProfile(client)).toMatchObject({ timeZone: "Asia/Kuala_Lumpur", weekStart: 0 });
     expect(sent).toEqual([{ path: "/api/v2/me", version: null }]);
+  });
+});
+
+describe("updateProfile", () => {
+  it("sends only the changes, with the week start as Cal.diy names it", async () => {
+    const sent: { method: string; path: string; version: string | null; body: unknown }[] = [];
+    const client = createCalClient({
+      apiRootUrl: "https://book.example.com/api",
+      getApiKey: () => "cal_secret",
+      fetch: async (request) => {
+        sent.push({
+          method: request.method,
+          path: new URL(request.url).pathname,
+          version: request.headers.get("cal-api-version"),
+          body: await request.json(),
+        });
+        return jsonResponse({
+          ...testMeResponse,
+          data: { ...me, timeZone: "Europe/London", weekStart: "Sunday" },
+        });
+      },
+    });
+
+    const saved = await updateProfile(client, { timeZone: "Europe/London", weekStart: 0 });
+
+    expect(sent).toEqual([
+      {
+        method: "PATCH",
+        path: "/api/v2/me",
+        version: null,
+        body: { timeZone: "Europe/London", weekStart: "Sunday" },
+      },
+    ]);
+    expect(saved).toMatchObject({ timeZone: "Europe/London", weekStart: 0 });
   });
 });
