@@ -4,8 +4,13 @@ import type { Account } from "@/session/account";
 
 import { askPushPermission, getPushToken, type PushPermission } from "./push";
 import type { PushSetup } from "./push-setup";
-import { clearPushRegistration, type PushRegistration, savePushRegistration } from "./registration-storage";
-import type { RelayClient } from "./relay-client";
+import {
+  clearPushRegistration,
+  loadPushRegistration,
+  type PushRegistration,
+  savePushRegistration,
+} from "./registration-storage";
+import { createRelayClient, type RelayClient } from "./relay-client";
 import { connectWebhook, disconnectWebhook } from "./webhooks-api";
 
 export type TurnOnResult =
@@ -78,6 +83,24 @@ export async function turnOffNotifications({ calClient, relay, registration }: T
   // deleting it failed only gets 410 answers from the relay.
   await disconnectWebhook(calClient, registration.webhookId).catch(() => undefined);
   await clearPushRegistration();
+}
+
+/**
+ * Undoes this phone's notifications as the person signs out, while the API key can still delete the webhook.
+ * Unless the relay confirms it forgot the device, the registration is kept, so the device can still be
+ * removed later.
+ */
+export async function releaseNotifications(
+  calClient: CalClient,
+  relayFor: (relayOrigin: string) => RelayClient = createRelayClient
+): Promise<void> {
+  const registration = await loadPushRegistration();
+  if (!registration) return;
+  const [removed] = await Promise.allSettled([
+    relayFor(registration.relayOrigin).remove(registration),
+    disconnectWebhook(calClient, registration.webhookId),
+  ]);
+  if (removed.status === "fulfilled") await clearPushRegistration();
 }
 
 /** Whether a saved registration is the signed-in account's, rather than one left from another account. */

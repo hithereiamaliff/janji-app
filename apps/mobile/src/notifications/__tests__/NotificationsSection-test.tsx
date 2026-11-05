@@ -182,6 +182,22 @@ describe("booking notifications in Settings", () => {
     ]);
   });
 
+  it("turns them off for this phone when the person signs out", async () => {
+    mockStore.set("janji.notifications", JSON.stringify(registration));
+    mockPermission = granted;
+    const sent = await openSettings();
+    await notificationsSwitch();
+
+    await fireEvent.press(screen.getByRole("button", { name: en.settings.signOut }));
+
+    expect(await screen.findByRole("header", { name: en.signIn.server.title })).toBeOnTheScreen();
+    expect(sent).toEqual([
+      `DELETE https://relay.example/v1/devices/${registration.deviceId}`,
+      "DELETE https://book.example.com/api/v2/webhooks/12",
+    ]);
+    expect(mockStore.size).toBe(0);
+  });
+
   it("says when this version of Janji can't send them", async () => {
     mockSetup = null;
     await openSettings();

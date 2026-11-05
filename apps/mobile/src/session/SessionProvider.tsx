@@ -30,7 +30,31 @@ export type SessionContextValue = {
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-export function SessionProvider({ children }: { children: ReactNode }) {
+// How long signing out waits for `beforeSignOut`, so a slow or missing connection doesn't hold it up.
+const BEFORE_SIGN_OUT_MS = 5000;
+
+async function atMost(ms: number, work: Promise<unknown>): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, ms);
+  });
+  try {
+    await Promise.race([work, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+type SessionProviderProps = {
+  children: ReactNode;
+  /**
+   * Runs when the person signs out, while the API key still works, such as to undo this phone's
+   * notifications. Signing out waits a few seconds for it at most, and goes ahead if it fails.
+   */
+  beforeSignOut?: (client: CalClient) => Promise<void>;
+};
+
+export function SessionProvider({ children, beforeSignOut }: SessionProviderProps) {
   const [session, setSession] = useState<SessionState>({ status: "loading" });
   // The key lives in a ref rather than state so it never appears in React DevTools or in render props.
   const apiKeyRef = useRef<string | null>(null);
@@ -52,6 +76,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const apiRootUrl = session.status === "signedIn" ? session.account.apiRootUrl : null;
+  const calClient = useMemo(
+    () => (apiRootUrl ? createCalClient({ apiRootUrl, getApiKey: () => apiKeyRef.current }) : null),
+    [apiRootUrl]
+  );
+
   const signIn = useCallback(async (account: Account, apiKey: string) => {
     await saveSession({ account, apiKey });
     apiKeyRef.current = apiKey;
@@ -59,12 +89,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    if (calClient && beforeSignOut)
+      await atMost(
+        BEFORE_SIGN_OUT_MS,
+        beforeSignOut(calClient).catch(() => undefined)
+      );
     // Remove the key from the device first: if that fails, staying signed in (and saying so) beats an app
     // that looks signed out but restores the old session on its next launch.
     await clearSavedSession();
     apiKeyRef.current = null;
     setSession({ status: "signedOut" });
-  }, []);
+  }, [calClient, beforeSignOut]);
 
   const updateUser = useCallback(
     async (user: AccountUser) => {
@@ -75,12 +110,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setSession({ status: "signedIn", account });
     },
     [session]
-  );
-
-  const apiRootUrl = session.status === "signedIn" ? session.account.apiRootUrl : null;
-  const calClient = useMemo(
-    () => (apiRootUrl ? createCalClient({ apiRootUrl, getApiKey: () => apiKeyRef.current }) : null),
-    [apiRootUrl]
   );
 
   const value = useMemo(
