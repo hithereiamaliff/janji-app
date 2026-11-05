@@ -70,8 +70,7 @@ export function useTurnOffNotifications() {
   const queryKey = useNotificationsKey();
 
   return useMutation({
-    mutationFn: (registration: PushRegistration) =>
-      turnOffNotifications({ calClient, relay: createRelayClient(registration.relayOrigin), registration }),
+    mutationFn: () => turnOffNotifications({ calClient }),
     retry: false,
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });

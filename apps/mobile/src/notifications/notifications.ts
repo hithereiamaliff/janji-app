@@ -2,7 +2,10 @@ import type { CalClient } from "@janji/cal-api/client";
 
 import type { Account } from "@/session/account";
 
-import { askPushPermission, getPushToken, type PushPermission } from "./push";
+/** Which account something is for: its server and user. */
+type AccountRef = Pick<Account, "serverOrigin"> & { user: Pick<Account["user"], "id"> };
+
+import { askPushPermission, getPushToken, type PushPermission, readPushPermission } from "./push";
 import type { PushSetup } from "./push-setup";
 import {
   clearPushRegistration,
@@ -10,8 +13,27 @@ import {
   type PushRegistration,
   savePushRegistration,
 } from "./registration-storage";
-import { createRelayClient, type RelayClient } from "./relay-client";
-import { connectWebhook, disconnectWebhook } from "./webhooks-api";
+import { createRelayClient, type RelayClient, RelayRequestError } from "./relay-client";
+import {
+  connectWebhook,
+  disconnectWebhook,
+  fetchRelayWebhooks,
+  type HookWebhook,
+  hookPrefix,
+} from "./webhooks-api";
+
+type RelayFor = (relayOrigin: string) => RelayClient;
+
+// Turning notifications on and off, releasing them at sign-out and the start-up sync all read and change the
+// saved registration, so they take turns: a sync still running as the person turns notifications off could
+// otherwise bring them back.
+let turn: Promise<unknown> = Promise.resolve();
+
+function takeTurn<T>(work: () => Promise<T>): Promise<T> {
+  const result = turn.then(work, work);
+  turn = result.catch(() => undefined);
+  return result;
+}
 
 export type TurnOnResult =
   | { status: "on"; registration: PushRegistration }
@@ -33,7 +55,11 @@ type TurnOnInput = {
  * Turns on notifications for this phone: asks to notify, registers the phone with the relay, points a Cal.diy
  * webhook at it, and saves the registration.
  */
-export async function turnOnNotifications({
+export function turnOnNotifications(input: TurnOnInput): Promise<TurnOnResult> {
+  return takeTurn(() => turnOn(input));
+}
+
+async function turnOn({
   calClient,
   relay,
   setup,
@@ -71,16 +97,23 @@ export async function turnOnNotifications({
 
 type TurnOffInput = {
   calClient: CalClient;
-  /** The relay the phone registered with. */
-  relay: RelayClient;
-  registration: PushRegistration;
+  relayFor?: RelayFor;
 };
 
-/** Turns this phone's notifications off: the relay forgets the phone, then its Cal.diy webhook goes too. */
-export async function turnOffNotifications({ calClient, relay, registration }: TurnOffInput): Promise<void> {
-  await relay.remove(registration);
+/**
+ * Turns this phone's notifications off: the relay forgets the phone, then its Cal.diy webhook goes too. It
+ * reads the registration as it runs, since the start-up sync may have changed it.
+ */
+export function turnOffNotifications(input: TurnOffInput): Promise<void> {
+  return takeTurn(() => turnOff(input));
+}
+
+async function turnOff({ calClient, relayFor = createRelayClient }: TurnOffInput): Promise<void> {
+  const registration = await loadPushRegistration();
+  if (!registration) return;
+  await relayFor(registration.relayOrigin).remove(registration);
   // Once the relay has forgotten the phone, nothing reaches it any more. A webhook left behind because
-  // deleting it failed only gets 410 answers from the relay.
+  // deleting it failed only gets 410 answers from the relay, and the next start deletes it.
   await disconnectWebhook(calClient, registration.webhookId).catch(() => undefined);
   await clearPushRegistration();
 }
@@ -90,10 +123,14 @@ export async function turnOffNotifications({ calClient, relay, registration }: T
  * Unless the relay confirms it forgot the device, the registration is kept, so the device can still be
  * removed later.
  */
-export async function releaseNotifications(
+export function releaseNotifications(
   calClient: CalClient,
-  relayFor: (relayOrigin: string) => RelayClient = createRelayClient
+  relayFor: RelayFor = createRelayClient
 ): Promise<void> {
+  return takeTurn(() => release(calClient, relayFor));
+}
+
+async function release(calClient: CalClient, relayFor: RelayFor): Promise<void> {
   const registration = await loadPushRegistration();
   if (!registration) return;
   const [removed] = await Promise.allSettled([
@@ -104,6 +141,119 @@ export async function releaseNotifications(
 }
 
 /** Whether a saved registration is the signed-in account's, rather than one left from another account. */
-export function belongsTo(registration: PushRegistration, account: Account): boolean {
+export function belongsTo(registration: PushRegistration, account: AccountRef): boolean {
   return registration.serverOrigin === account.serverOrigin && registration.userId === account.user.id;
+}
+
+// The relay's device IDs: 16 random bytes in base64url.
+const DEVICE_ID = /^[\w-]{22}$/;
+
+type SyncInput = {
+  calClient: CalClient;
+  setup: PushSetup;
+  account: AccountRef;
+  /** The phone's language now. */
+  locale: string;
+  relayFor?: RelayFor;
+};
+
+type ReconnectInput = {
+  calClient: CalClient;
+  relay: RelayClient;
+  setup: PushSetup;
+  registration: PushRegistration;
+  expoPushToken: string;
+  locale: string;
+};
+
+/**
+ * Registers the phone with the relay again and points its webhook at the hook URL that gives. A device or
+ * webhook this replaces is removed.
+ */
+async function reconnect({ calClient, relay, setup, registration, expoPushToken, locale }: ReconnectInput) {
+  const device = await relay.register({ expoPushToken, platform: setup.platform, locale });
+  // Registering gave the device new credentials, so they're kept before anything else can fail.
+  const registered = {
+    ...registration,
+    deviceId: device.deviceId,
+    deviceToken: device.deviceToken,
+    expoPushToken,
+    locale,
+  };
+  await savePushRegistration(registered);
+  const webhookId = await connectWebhook(calClient, {
+    hookUrl: device.hookUrl,
+    secret: device.webhookSecret,
+  });
+  await savePushRegistration({ ...registered, webhookId });
+  if (device.deviceId !== registration.deviceId) await relay.remove(registration).catch(() => undefined);
+  if (webhookId !== registration.webhookId) {
+    await disconnectWebhook(calClient, registration.webhookId).catch(() => undefined);
+  }
+}
+
+/** Whether the relay answered that the device is gone, or that its token or push token now belong to another. */
+function needsRegistering(error: unknown): boolean {
+  return (
+    error instanceof RelayRequestError &&
+    (error.status === 401 || error.status === 404 || error.status === 409)
+  );
+}
+
+/**
+ * Keeps notifications working, each time the app starts signed in:
+ * - another account's registration, kept because signing out couldn't reach the relay, has its device removed;
+ * - the account's webhooks for phones the relay no longer knows, as after an uninstall, are deleted, since
+ *   Cal.diy would call them forever;
+ * - this phone's registration follows a new push token or language, and is made again when its device or
+ *   webhook is gone, as when the webhook was deleted on the web.
+ */
+export function syncNotifications(input: SyncInput): Promise<void> {
+  return takeTurn(() => sync(input));
+}
+
+async function sync({
+  calClient,
+  setup,
+  account,
+  locale,
+  relayFor = createRelayClient,
+}: SyncInput): Promise<void> {
+  let registration = await loadPushRegistration();
+  if (registration && !belongsTo(registration, account)) {
+    // That account's webhook can't be deleted with this one's key; once the relay forgets the device, it
+    // only gets 410 answers.
+    await relayFor(registration.relayOrigin).remove(registration);
+    await clearPushRegistration();
+    registration = null;
+  }
+
+  const relay = relayFor(setup.relayOrigin);
+  const prefix = hookPrefix(setup.relayOrigin);
+  const deviceOf = (webhook: HookWebhook) => webhook.subscriberUrl.slice(prefix.length);
+  const webhooks = await fetchRelayWebhooks(calClient, setup.relayOrigin);
+  const ids = [...new Set(webhooks.map(deviceOf).filter((id) => DEVICE_ID.test(id)))];
+  const known = new Set(ids.length > 0 ? await relay.knownDevices(ids) : []);
+  for (const webhook of webhooks) {
+    if (!known.has(deviceOf(webhook))) await disconnectWebhook(calClient, webhook.id).catch(() => undefined);
+  }
+
+  // A registration with another relay keeps working through it; it isn't this build's to change.
+  if (!registration || registration.relayOrigin !== setup.relayOrigin) return;
+  if ((await readPushPermission()) !== "granted") return;
+  const expoPushToken = await getPushToken(setup.projectId);
+  const { deviceId, webhookId } = registration;
+  const connected =
+    known.has(deviceId) && webhooks.some((w) => w.id === webhookId && deviceOf(w) === deviceId);
+  if (connected) {
+    if (expoPushToken === registration.expoPushToken && locale === registration.locale) return;
+    try {
+      await relay.update(registration, { expoPushToken, locale });
+      await savePushRegistration({ ...registration, expoPushToken, locale });
+      return;
+    } catch (error) {
+      if (!needsRegistering(error)) throw error;
+    }
+  }
+  await reconnect({ calClient, relay, setup, registration, expoPushToken, locale });
 }
