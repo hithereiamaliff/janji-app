@@ -78,6 +78,19 @@ describe("Settings", () => {
     );
   });
 
+  it("opens Janji's privacy policy and help pages", async () => {
+    await openSettings();
+
+    await fireEvent.press(await screen.findByRole("button", { name: en.settings.about.privacy }));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenLastCalledWith(
+      "https://github.com/hithereiamaliff/janji-app/blob/main/docs/privacy.md"
+    );
+    await fireEvent.press(screen.getByRole("button", { name: en.settings.about.help }));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenLastCalledWith(
+      "https://github.com/hithereiamaliff/janji-app/blob/main/docs/support.md"
+    );
+  });
+
   it("says which version of Janji this is", async () => {
     await openSettings();
 

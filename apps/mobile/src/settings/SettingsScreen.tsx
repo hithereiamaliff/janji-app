@@ -77,6 +77,8 @@ function ProfileSection() {
 }
 
 const SOURCE_CODE_URL = "https://github.com/hithereiamaliff/janji-app";
+const PRIVACY_URL = `${SOURCE_CODE_URL}/blob/main/docs/privacy.md`;
+const SUPPORT_URL = `${SOURCE_CODE_URL}/blob/main/docs/support.md`;
 
 function openInBrowser(url: string) {
   // Without a browser to open there's nothing more to do; the button stays for another try.
@@ -117,6 +119,16 @@ function AboutSection() {
           variant="secondary"
           label={t("settings.about.source")}
           onPress={() => openInBrowser(SOURCE_CODE_URL)}
+        />
+        <Button
+          variant="secondary"
+          label={t("settings.about.privacy")}
+          onPress={() => openInBrowser(PRIVACY_URL)}
+        />
+        <Button
+          variant="secondary"
+          label={t("settings.about.help")}
+          onPress={() => openInBrowser(SUPPORT_URL)}
         />
       </View>
     </Section>
