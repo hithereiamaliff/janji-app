@@ -30,14 +30,13 @@ const booking = {
   attendees: [
     {
       name: "Jane",
-      email: "jane@example.com",
+      email: "jane+a1b2c3d4e5f6g7h8i9j0k1l2m@example.com",
       displayEmail: "jane@example.com",
       timeZone: "Europe/London",
       phoneNumber: "+44 20 7946 0000",
       absent: false,
     },
   ],
-  guests: ["sam@example.com"],
   reschedulingReason: "  ",
   bookingFieldsResponses: {},
 } satisfies ApiBooking;
@@ -46,8 +45,12 @@ const booking = {
 const answersAsSent: Record<string, unknown> = {
   name: "Jane",
   email: "jane@example.com",
+  displayEmail: "jane@example.com",
+  guests: ["sam@example.com"],
+  displayGuests: ["sam@example.com"],
   location: { value: "integrations:google:meet", optionValue: "" },
   notes: "Travelling with two kids",
+  rescheduleReason: "Flight moved",
   "arrival-date": "2026-12-01",
   citiesToVisit: ["Penang", "Ipoh", ""],
   "needs-visa": false,
@@ -57,7 +60,7 @@ const answersAsSent: Record<string, unknown> = {
 };
 
 describe("toBookingDetail", () => {
-  it("keeps the people, place and timing the detail screen shows", () => {
+  it("keeps the people, place and timing the detail screen shows, with addresses as displayed", () => {
     const detail = toBookingDetail(booking);
 
     expect(detail).toMatchObject({
@@ -65,7 +68,7 @@ describe("toBookingDetail", () => {
       title: "1-to-1 call with Alan",
       description: "Planning the Penang leg",
       durationMinutes: 60,
-      meetingUrl: "https://meet.google.com/abc-defg-hij",
+      location: "https://meet.google.com/abc-defg-hij",
       hosts: [{ name: "Alan", email: "alan@example.com", timeZone: "Asia/Kuala_Lumpur", noShow: false }],
       attendees: [
         {
@@ -76,7 +79,6 @@ describe("toBookingDetail", () => {
           noShow: false,
         },
       ],
-      guests: ["sam@example.com"],
       eventTypeId: 3,
     });
   });
@@ -85,9 +87,15 @@ describe("toBookingDetail", () => {
     expect(toBookingDetail(booking)).toMatchObject({ reschedulingReason: null, cancellationReason: null });
   });
 
+  it("keeps the rescheduling reason API v2 reports, but not its placeholder", () => {
+    expect(toBookingDetail({ ...booking, reschedulingReason: "Flight moved" }).reschedulingReason).toBe(
+      "Flight moved"
+    );
+    expect(toBookingDetail({ ...booking, reschedulingReason: "unknown" }).reschedulingReason).toBeNull();
+  });
+
   it("turns booking question answers into displayable values, skipping ones shown elsewhere", () => {
     expect(bookingAnswers(answersAsSent)).toEqual([
-      { field: "notes", value: "Travelling with two kids" },
       { field: "arrival-date", value: "2026-12-01" },
       { field: "citiesToVisit", value: "Penang, Ipoh" },
       { field: "needs-visa", value: false },
@@ -96,7 +104,7 @@ describe("toBookingDetail", () => {
   });
 
   it("has no booking-level answers for seated bookings", () => {
-    const { bookingFieldsResponses: _responses, guests: _guests, ...rest } = booking;
+    const { bookingFieldsResponses: _responses, ...rest } = booking;
     const seated = {
       ...rest,
       attendees: [
@@ -114,7 +122,6 @@ describe("toBookingDetail", () => {
 
     expect(toBookingDetail(seated)).toMatchObject({
       answers: [],
-      guests: [],
       attendees: [{ name: "Sam", phoneNumber: null, noShow: true }],
     });
   });

@@ -10,7 +10,6 @@ function booking(uid: string, start: string): BookingSummary {
     status: "accepted",
     attendees: [],
     location: null,
-    meetingUrl: null,
     isRecurring: false,
   };
 }

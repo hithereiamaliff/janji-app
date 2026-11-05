@@ -1,6 +1,6 @@
 import type { components } from "@janji/cal-api/schema";
 
-import { type ApiBooking, type BookingSummary, toBookingSummary } from "./booking";
+import { API_PLACEHOLDER, type ApiBooking, type BookingSummary, toBookingSummary } from "./booking";
 
 /** GET /v2/bookings/{uid}'s `data`: one booking, or every occurrence when the uid names a recurring series. */
 export type ApiBookingResult = components["schemas"]["GetBookingOutput_2024_08_13"]["data"];
@@ -21,26 +21,32 @@ export type BookingAnswer = {
 };
 
 export type BookingDetail = Omit<BookingSummary, "attendees"> & {
+  /** The booker's additional notes: Cal.diy saves the `notes` answer as the booking's description. */
   description: string | null;
   durationMinutes: number;
   hosts: BookingPerson[];
+  /** The booker and their guests, whom Cal.diy adds as attendees. */
   attendees: BookingPerson[];
-  guests: string[];
   answers: BookingAnswer[];
   cancellationReason: string | null;
   reschedulingReason: string | null;
   eventTypeId: number;
 };
 
-// Answers the detail screen already shows in its own place (people, location, reasons, the title).
+// Answers the detail screen shows in their own place (people, notes, location, reasons, the title), plus
+// displayEmail and displayGuests, which API v2 adds as copies of email and guests.
 const FIELDS_SHOWN_ELSEWHERE = new Set([
   "name",
   "email",
-  "location",
-  "guests",
-  "rescheduleReason",
+  "displayEmail",
   "attendeePhoneNumber",
+  "guests",
+  "displayGuests",
+  "notes",
+  "location",
   "title",
+  "rescheduleReason",
+  "rescheduledReason",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -76,6 +82,15 @@ export function bookingAnswers(responses: Record<string, unknown>): BookingAnswe
   return answers;
 }
 
+// API v2 reports only the reason it stored itself (`rescheduledReason`), while the web booker saves it as the
+// `rescheduleReason` answer. When it can't read a booking's answers, it reports its placeholder instead.
+function reschedulingReason(booking: ApiBooking, responses: Record<string, unknown>): string | null {
+  const reported = textOrNull(booking.reschedulingReason);
+  if (reported === API_PLACEHOLDER) return null;
+  const answered = responses.rescheduleReason;
+  return reported ?? (typeof answered === "string" ? textOrNull(answered) : null);
+}
+
 /** Picks the requested booking when API v2 answers with a whole recurring series. */
 export function pickBooking(data: ApiBookingResult, uid: string): ApiBooking | undefined {
   if (!Array.isArray(data)) return data;
@@ -91,24 +106,24 @@ export function toBookingDetail(booking: ApiBooking): BookingDetail {
     ...toBookingSummary(booking),
     description: textOrNull(booking.description),
     durationMinutes: booking.duration,
+    // displayEmail drops the alias API v2 adds to some addresses, leaving the one people actually use.
     hosts: booking.hosts.map((host) => ({
       name: host.name,
-      email: host.email,
+      email: host.displayEmail,
       timeZone: host.timeZone,
       phoneNumber: null,
       noShow: booking.absentHost,
     })),
     attendees: booking.attendees.map((attendee) => ({
       name: attendee.name,
-      email: attendee.email,
+      email: attendee.displayEmail,
       timeZone: attendee.timeZone,
       phoneNumber: textOrNull(attendee.phoneNumber),
       noShow: attendee.absent,
     })),
-    guests: "guests" in booking ? (booking.guests ?? []) : [],
     answers: bookingAnswers(responses),
     cancellationReason: textOrNull(booking.cancellationReason),
-    reschedulingReason: textOrNull(booking.reschedulingReason),
+    reschedulingReason: reschedulingReason(booking, responses),
     eventTypeId: booking.eventTypeId,
   };
 }

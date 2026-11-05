@@ -39,18 +39,15 @@ describe("toBookingSummary", () => {
       status: "accepted",
       attendees: [{ name: "Jane", email: "jane@example.com" }],
       location: "https://meet.google.com/abc-defg-hij",
-      meetingUrl: "https://meet.google.com/abc-defg-hij",
       isRecurring: false,
     });
   });
 
-  it("treats API v2's empty location as no location", () => {
-    const { meetingUrl: _meetingUrl, ...withoutMeetingUrl } = base;
-
-    expect(toBookingSummary({ ...withoutMeetingUrl, location: "" })).toMatchObject({
-      location: null,
-      meetingUrl: null,
-    });
+  it.each([
+    ["empty", ""],
+    ["placeholder", "unknown"],
+  ])("treats API v2's %s location as no location", (_kind, location) => {
+    expect(toBookingSummary({ ...base, location, meetingUrl: location }).location).toBeNull();
   });
 
   it("marks occurrences of a recurring booking", () => {

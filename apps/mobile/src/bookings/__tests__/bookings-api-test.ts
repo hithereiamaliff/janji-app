@@ -133,15 +133,20 @@ describe("fetchBooking", () => {
   it("includes the booking question answers from the response", async () => {
     const withAnswers = {
       ...single("abc"),
-      bookingFieldsResponses: { notes: "Travelling with kids", "arrival-date": "2026-12-01" },
+      description: "Travelling with kids",
+      bookingFieldsResponses: {
+        notes: "Travelling with kids",
+        "arrival-date": "2026-12-01",
+        rescheduleReason: "Flight moved",
+      },
     };
     const { client } = clientRespondingWith(() => jsonResponse({ status: "success", data: withAnswers }));
 
     await expect(fetchBooking(client, "abc")).resolves.toMatchObject({
-      answers: [
-        { field: "notes", value: "Travelling with kids" },
-        { field: "arrival-date", value: "2026-12-01" },
-      ],
+      description: "Travelling with kids",
+      answers: [{ field: "arrival-date", value: "2026-12-01" }],
+      // Rescheduled in the web booker, which keeps the reason as an answer API v2 doesn't report.
+      reschedulingReason: "Flight moved",
     });
   });
 
