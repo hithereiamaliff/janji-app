@@ -229,7 +229,31 @@
     "deleteConfirm": "Delete link",
     "keep": "Keep it",
     "deleted": "Private link deleted.",
-    "deleteFailed": "Couldn't delete the link. Try again."
+    "deleteFailed": "Couldn't delete the link. Try again.",
+    "new": {
+      "action": "New private link",
+      "title": "New private link",
+      "description": "Anyone with the link can book {{title}}, even while it's hidden from your booking page.",
+      "limitLabel": "The link stops working",
+      "afterBookings": "After bookings",
+      "afterADate": "After a date",
+      "bookingsLabel": "Number of bookings",
+      "bookingsHint": "1 makes it a single-use link.",
+      "bookingsInvalid": "Enter a whole number of bookings, at least 1.",
+      "lastDayLabel": "How long it works",
+      "today": "Today",
+      "untilTomorrow": "Until tomorrow",
+      "oneWeek": "1 week",
+      "twoWeeks": "2 weeks",
+      "thirtyDays": "30 days",
+      "endsAt": "It stops working at the end of {{date}}.",
+      "create": "Create link",
+      "failed": "Couldn't create the link. Try again.",
+      "created": "Private link created.",
+      "readyTitle": "Your private link is ready",
+      "readyDescription": "Send it to whoever should book. You'll also find it under Private links.",
+      "done": "Done"
+    }
   },
   "settings": {
     "accountHeading": "Account",

@@ -1,3 +1,5 @@
+import { wholeNumber } from "@/lib/whole-number";
+
 import type { EventTypeSummary } from "./event-type";
 import type { EventTypeChanges } from "./event-types-api";
 
@@ -73,10 +75,6 @@ export type FormErrors = {
 };
 
 export type FormCheck = { ok: true; changes: EventTypeChanges } | { ok: false; errors: FormErrors };
-
-function wholeNumber(text: string): number | null {
-  return /^\d+$/.test(text.trim()) ? Number(text.trim()) : null;
-}
 
 /**
  * Checks the form and works out what changed, so only those settings are sent. `original` is the event type as

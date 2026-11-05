@@ -1,36 +1,23 @@
 import * as Clipboard from "expo-clipboard";
 import { useLocales } from "expo-localization";
-import type { TFunction } from "i18next";
+import { useRouter } from "expo-router";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, ActivityIndicator, Platform, Share, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
 import { actionErrorMessage } from "@/lib/action-error";
+import { shareLink } from "@/lib/share-link";
 import { useSignedInAccount } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
 import { type EventTypeSummary, readableLink } from "./event-type";
+import { linkStatus } from "./private-link-status";
 import { type PrivateLink, privateLinkUrl } from "./private-links";
 import { useDeletePrivateLink, usePrivateLinks } from "./usePrivateLinks";
-
-/** How long a link keeps working, or why it no longer does. */
-export function linkStatus(t: TFunction, link: PrivateLink, locale: string): string {
-  if (link.limit.kind === "date") {
-    const end = new Date(link.limit.expiresAt);
-    const parts = {
-      date: new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(end),
-      time: new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(end),
-    };
-    return link.expired ? t("privateLinks.ended", parts) : t("privateLinks.worksUntil", parts);
-  }
-  const { used, max } = link.limit;
-  if (link.expired) return t("privateLinks.usedUp", { count: max });
-  return t("privateLinks.bookingsLeft", { count: max, left: Math.max(max - used, 0) });
-}
 
 function PrivateLinkRow({ link, url, eventTypeId }: { link: PrivateLink; url: string; eventTypeId: number }) {
   const { t } = useTranslation();
@@ -45,11 +32,6 @@ function PrivateLinkRow({ link, url, eventTypeId }: { link: PrivateLink; url: st
     await Clipboard.setStringAsync(url);
     setCopied(true);
     AccessibilityInfo.announceForAccessibility(t("eventTypes.linkCopied"));
-  }
-
-  function handleShare() {
-    // As for the booking link: iOS shares a url with a preview, Android only takes a message.
-    Share.share(Platform.OS === "ios" ? { url } : { message: url }).catch(() => undefined);
   }
 
   function handleDelete() {
@@ -108,7 +90,7 @@ function PrivateLinkRow({ link, url, eventTypeId }: { link: PrivateLink; url: st
                   variant="secondary"
                   label={t("eventTypes.share")}
                   accessibilityHint={status}
-                  onPress={handleShare}
+                  onPress={() => shareLink(url)}
                 />
               </View>
             </>
@@ -143,6 +125,7 @@ export function PrivateLinksSection({ eventType }: { eventType: EventTypeSummary
   const { t } = useTranslation();
   const { colors } = useTheme();
   const account = useSignedInAccount();
+  const router = useRouter();
   const links = usePrivateLinks(eventType.id);
 
   let content: ReactNode;
@@ -173,6 +156,15 @@ export function PrivateLinksSection({ eventType }: { eventType: EventTypeSummary
     <Section title={t("privateLinks.title")}>
       <Text style={[styles.body, { color: colors.textMuted }]}>{t("privateLinks.intro")}</Text>
       {content}
+      <View style={styles.newLink}>
+        <Button
+          variant="secondary"
+          label={t("privateLinks.new.action")}
+          onPress={() =>
+            router.push({ pathname: "/event-type/[id]/private-link", params: { id: String(eventType.id) } })
+          }
+        />
+      </View>
     </Section>
   );
 }
@@ -202,5 +194,8 @@ const styles = StyleSheet.create({
   },
   action: {
     flex: 1,
+  },
+  newLink: {
+    marginTop: 12,
   },
 });
