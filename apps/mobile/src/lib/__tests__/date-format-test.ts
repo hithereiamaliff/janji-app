@@ -1,6 +1,8 @@
 import { dateTimeFormat } from "@/lib/date-format";
 
 describe("dateTimeFormat", () => {
+  afterEach(() => jest.restoreAllMocks());
+
   it("builds a format once for each locale and set of options, then reuses it", () => {
     const time = dateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
 
@@ -15,5 +17,15 @@ describe("dateTimeFormat", () => {
     expect(
       dateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(date)
     ).toBe("5:30 PM");
+  });
+
+  it("builds a new format once the device's time zone has moved, for formats in the device's zone", () => {
+    const local = dateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" });
+    const utc = dateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+    const offset = new Date().getTimezoneOffset();
+    jest.spyOn(Date.prototype, "getTimezoneOffset").mockReturnValue(offset - 60);
+
+    expect(dateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" })).not.toBe(local);
+    expect(dateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })).toBe(utc);
   });
 });

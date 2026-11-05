@@ -1,5 +1,7 @@
 import type { TFunction } from "i18next";
 
+import { dateTimeFormat } from "@/lib/date-format";
+
 import type { PrivateLink } from "./private-links";
 
 /** How long a link keeps working, or why it no longer does. */
@@ -7,8 +9,8 @@ export function linkStatus(t: TFunction, link: PrivateLink, locale: string): str
   if (link.limit.kind === "date") {
     const end = new Date(link.limit.expiresAt);
     const parts = {
-      date: new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(end),
-      time: new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(end),
+      date: dateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(end),
+      time: dateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(end),
     };
     return link.expired ? t("privateLinks.ended", parts) : t("privateLinks.worksUntil", parts);
   }
