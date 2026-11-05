@@ -15,6 +15,7 @@ import NewPrivateLinkRoute from "@/app/event-type/[id]/private-link";
 import ScheduleDetailsRoute from "@/app/schedule/[id]/details";
 import WeeklyHoursRoute from "@/app/schedule/[id]/hours";
 import ScheduleRoute from "@/app/schedule/[id]/index";
+import DateOverrideRoute from "@/app/schedule/[id]/override/[date]";
 import NewScheduleRoute from "@/app/schedule/new";
 import SignInScreen from "@/app/sign-in";
 
@@ -38,5 +39,6 @@ export const appRoutes = {
   "schedule/[id]/index": ScheduleRoute,
   "schedule/[id]/hours": WeeklyHoursRoute,
   "schedule/[id]/details": ScheduleDetailsRoute,
+  "schedule/[id]/override/[date]": DateOverrideRoute,
   "schedule/new": NewScheduleRoute,
 };

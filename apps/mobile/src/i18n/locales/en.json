@@ -327,7 +327,20 @@
     "overrides": {
       "title": "Date overrides",
       "none": "No upcoming date overrides.",
-      "unavailable": "Unavailable all day"
+      "unavailable": "Unavailable all day",
+      "addHint": "Adds more hours to this override",
+      "editHint": "Changes or removes this date's override",
+      "description": "Pick the hours that replace the weekly ones, or make the day unavailable. Times are on {{city}} time.",
+      "start": "Start",
+      "end": "End",
+      "removeRange": "Remove {{range}}",
+      "save": "Save override",
+      "saved": "Date override saved.",
+      "failed": "Couldn't save the override. Try again.",
+      "remove": "Remove override",
+      "removeHint": "This date goes back to the weekly hours",
+      "removed": "Date override removed.",
+      "removeFailed": "Couldn't remove the override. Try again."
     }
   },
   "timePicker": {
