@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 
-import { dateTimeFormat } from "@/lib/date-format";
+import { todayIn, toUtcDate } from "@/lib/calendar-date";
 
 import { clockTime } from "./hours-text";
 import { type DateOverride, WEEK_DAYS, type WeekDay, type WeeklyHours } from "./schedule";
@@ -23,24 +23,6 @@ export function overrideDays(overrides: readonly DateOverride[]): OverrideDay[] 
   return [...days]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, ranges]) => ({ date, ranges: sortRanges(ranges) }));
-}
-
-const pad = (value: number) => String(value).padStart(2, "0");
-
-/** Today's date ("YYYY-MM-DD") on the clock of the time zone, or of the device if Intl doesn't know the zone. */
-export function todayIn(timeZone: string, now: Date = new Date()): string {
-  try {
-    const parts = dateTimeFormat("en-US", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(now);
-    const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((each) => each.type === type)?.value;
-    return `${part("year")}-${part("month")}-${part("day")}`;
-  } catch {
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-  }
 }
 
 /**
@@ -86,34 +68,15 @@ export function withoutOverride(overrides: readonly DateOverride[], date: string
   return overrides.filter((override) => override.date !== date);
 }
 
-function utcDate(date: string): Date {
-  const [year = 1970, month = 1, day = 1] = date.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day));
-}
-
 export function weekdayOf(date: string): WeekDay {
   // getUTCDay counts from Sunday, while WEEK_DAYS starts on Monday.
-  return WEEK_DAYS[(utcDate(date).getUTCDay() + 6) % 7] ?? "Monday";
+  return WEEK_DAYS[(toUtcDate(date).getUTCDay() + 6) % 7] ?? "Monday";
 }
 
 /** Where a new override for the date starts, as on the web: its weekday's hours, or 9:00–17:00 if it has none. */
 export function defaultOverrideRanges(hours: readonly WeeklyHours[], date: string): TimeRange[] {
   const ranges = toDayRanges(hours)[weekdayOf(date)];
   return ranges.length > 0 ? ranges : [DEFAULT_RANGE];
-}
-
-/**
- * "Thu, 25 Dec 2026", or in full ("Thursday, 25 December 2026") for screen readers. It's a date on the
- * schedule's calendar rather than a moment, so it's formatted in UTC, where it can't move to another day.
- */
-export function overrideDateText(date: string, locale: string, width: "short" | "long" = "short"): string {
-  return dateTimeFormat(locale, {
-    weekday: width,
-    day: "numeric",
-    month: width,
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(utcDate(date));
 }
 
 /** "Unavailable all day", or the times such as "9:00 AM – 12:00 PM, 2:00 PM – 5:00 PM". */
