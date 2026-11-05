@@ -205,7 +205,12 @@
         "slugTaken": "Another of your event types already uses this link.",
         "lengthInvalid": "Enter a length of at least 1 minute, as a whole number.",
         "noticeInvalid": "Enter a whole number, or 0 for no minimum notice."
-      }
+      },
+      "scheduleLabel": "Schedule",
+      "defaultSchedule": "Your default schedule",
+      "followsDefaultHint": "Bookings are offered in your default schedule's hours, and follow it if you make another schedule the default.",
+      "scheduleHint": "Bookings are offered in this schedule's hours, whichever schedule is your default.",
+      "noSchedules": "You have no schedules yet. Add one in Availability."
     }
   },
   "privateLinks": {

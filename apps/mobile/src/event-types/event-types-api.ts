@@ -19,6 +19,11 @@ export type EventTypeChanges = {
   minimumBookingNotice?: number;
   /** Leaves the event type off the public booking page. */
   hidden?: boolean;
+  /**
+   * The schedule its hours come from. API v2 takes a schedule's ID here but no way back to "the default",
+   * so the app only ever sets one, as the web's schedule menu does.
+   */
+  scheduleId?: number;
 };
 
 export async function updateEventType(

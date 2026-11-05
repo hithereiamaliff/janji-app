@@ -44,6 +44,8 @@ export type EventTypeForm = {
   description: string;
   noticeAmount: string;
   noticeUnit: NoticeUnit;
+  /** The schedule picked, or null while it's left on the person's default. */
+  scheduleId: number | null;
 };
 
 export function formFor(eventType: EventTypeSummary): EventTypeForm {
@@ -56,6 +58,7 @@ export function formFor(eventType: EventTypeSummary): EventTypeForm {
     description: eventType.description ?? "",
     noticeAmount: String(notice.amount),
     noticeUnit: notice.unit,
+    scheduleId: eventType.scheduleId,
   };
 }
 
@@ -124,6 +127,9 @@ export function checkEventTypeForm(
       if (notice !== original.minimumBookingNotice) changes.minimumBookingNotice = notice;
     }
   }
+
+  if (form.scheduleId !== null && form.scheduleId !== original.scheduleId)
+    changes.scheduleId = form.scheduleId;
 
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, changes };
 }

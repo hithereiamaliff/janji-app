@@ -17,6 +17,7 @@ const consultation: EventTypeSummary = {
   description: "A first chat about your project.",
   minimumBookingNotice: 120,
   hidden: false,
+  scheduleId: null,
 };
 
 const flexible: EventTypeSummary = {
@@ -75,6 +76,16 @@ describe("slugToSave", () => {
 });
 
 describe("checkEventTypeForm", () => {
+  it("sends a schedule picked, but never one left on the default", () => {
+    expect(checkEventTypeForm({ ...formFor(consultation), scheduleId: 4 }, consultation, [])).toEqual({
+      ok: true,
+      changes: { scheduleId: 4 },
+    });
+    expect(checkEventTypeForm(formFor(consultation), consultation, [])).toEqual({ ok: true, changes: {} });
+    const ownSchedule = { ...consultation, scheduleId: 4 };
+    expect(checkEventTypeForm(formFor(ownSchedule), ownSchedule, [])).toEqual({ ok: true, changes: {} });
+  });
+
   it("sends nothing when nothing changed", () => {
     expect(checkEventTypeForm(formFor(consultation), consultation, ["chat"])).toEqual({
       ok: true,

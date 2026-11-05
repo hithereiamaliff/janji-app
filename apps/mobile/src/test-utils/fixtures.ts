@@ -126,6 +126,8 @@ export type TestEventType = {
   /** In minutes. */
   minimumBookingNotice?: number;
   hidden?: boolean;
+  /** Null, the default, for an event type that follows the person's default schedule. */
+  scheduleId?: number | null;
 };
 
 /** One event type as API v2 (cal-api-version 2024-06-14) sends it. */
@@ -149,7 +151,7 @@ export function apiEventType(eventType: TestEventType): ApiEventType {
     forwardParamsSuccessRedirect: null,
     successRedirectUrl: null,
     isInstantEvent: false,
-    scheduleId: null,
+    scheduleId: eventType.scheduleId ?? null,
     hidden: eventType.hidden ?? false,
     bookingRequiresAuthentication: false,
     ownerId: 7,

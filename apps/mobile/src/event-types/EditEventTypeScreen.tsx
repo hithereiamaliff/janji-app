@@ -1,10 +1,12 @@
 import { useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AccessibilityInfo, ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
+import { useSchedules } from "@/availability/useSchedules";
 import { Button } from "@/components/Button";
+import { ChoiceList } from "@/components/ChoiceList";
 import { FilterTabs } from "@/components/FilterTabs";
 import { FormScreen } from "@/components/FormScreen";
 import { TextField } from "@/components/TextField";
@@ -40,6 +42,62 @@ function errorMessages(t: TFunction, errors: FormErrors) {
     length: errors.length ? t("eventTypes.edit.errors.lengthInvalid") : null,
     notice: errors.notice ? t("eventTypes.edit.errors.noticeInvalid") : null,
   };
+}
+
+type ScheduleChoiceProps = {
+  /** The schedule picked, or null while the event type follows the person's default. */
+  value: number | null;
+  onChange: (id: number, isDefault: boolean) => void;
+  disabled: boolean;
+};
+
+function ScheduleChoice({ value, onChange, disabled }: ScheduleChoiceProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const schedules = useSchedules();
+
+  let content: ReactNode;
+  if (schedules.data) {
+    const list = schedules.data;
+    const current = value ?? list.find((schedule) => schedule.isDefault)?.id ?? null;
+    content =
+      list.length === 0 ? (
+        <Text style={[styles.hint, { color: colors.textMuted }]}>{t("eventTypes.edit.noSchedules")}</Text>
+      ) : (
+        <ChoiceList
+          choices={list.map((schedule) => ({
+            value: schedule.id,
+            label: schedule.name,
+            detail: schedule.isDefault ? t("eventTypes.edit.defaultSchedule") : undefined,
+          }))}
+          // No choice is marked when there's no default to follow.
+          value={current ?? -1}
+          onChange={(id) => {
+            if (id !== current) onChange(id, list.find((schedule) => schedule.id === id)?.isDefault ?? false);
+          }}
+          accessibilityLabel={t("eventTypes.edit.scheduleLabel")}
+          disabled={disabled}
+        />
+      );
+  } else if (schedules.isPending) {
+    content = <ActivityIndicator accessibilityLabel={t("common.loading")} color={colors.accent} />;
+  } else {
+    content = (
+      <Text accessibilityRole="alert" style={[styles.hint, { color: colors.danger }]}>
+        {t("availability.loadFailed")}
+      </Text>
+    );
+  }
+
+  return (
+    <View style={styles.group}>
+      <Text style={[styles.label, { color: colors.text }]}>{t("eventTypes.edit.scheduleLabel")}</Text>
+      {content}
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        {value === null ? t("eventTypes.edit.followsDefaultHint") : t("eventTypes.edit.scheduleHint")}
+      </Text>
+    </View>
+  );
 }
 
 function EditForm({ eventType }: { eventType: EventTypeSummary }) {
@@ -158,6 +216,14 @@ function EditForm({ eventType }: { eventType: EventTypeSummary }) {
           containerPadding={FORM_PADDING}
         />
       </View>
+      <ScheduleChoice
+        value={form.scheduleId}
+        // Picking the default again, for an event type that followed it, keeps it following the default.
+        onChange={(id, isDefault) =>
+          change({ scheduleId: isDefault && original.scheduleId === null ? null : id })
+        }
+        disabled={update.isPending}
+      />
       <TextField
         label={t("eventTypes.edit.descriptionLabel")}
         value={form.description}
