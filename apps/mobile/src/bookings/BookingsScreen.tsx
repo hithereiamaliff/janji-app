@@ -1,14 +1,11 @@
-import { CalApiError } from "@janji/cal-api/errors";
 import { useLocales } from "expo-localization";
-import type { TFunction } from "i18next";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, SectionList, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { Button } from "@/components/Button";
 import { FilterTabs } from "@/components/FilterTabs";
+import { LoadErrorState } from "@/components/LoadErrorState";
 import { useDebouncedValue } from "@/lib/useDebouncedValue";
-import { useSession } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
 import { BookingRow } from "./BookingRow";
@@ -19,23 +16,6 @@ import { useBookings } from "./useBookings";
 
 const SEARCH_DELAY_MS = 400;
 
-function loadErrorMessage(t: TFunction, error: unknown): string {
-  if (!(error instanceof CalApiError)) return t("bookings.errors.unexpected");
-  switch (error.kind) {
-    case "unauthorized":
-    case "network":
-    case "server_error":
-    case "not_cal_api":
-      return t(`bookings.errors.${error.kind}`);
-    case "rate_limited":
-      return error.retryAfterSeconds === null
-        ? t("bookings.errors.rate_limited_unknown")
-        : t("bookings.errors.rate_limited", { count: Math.ceil(error.retryAfterSeconds) });
-    default:
-      return t("bookings.errors.unexpected");
-  }
-}
-
 function RowGap() {
   return <View style={styles.rowGap} />;
 }
@@ -43,7 +23,6 @@ function RowGap() {
 export function BookingsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { signOut } = useSession();
   const [{ languageTag: locale }] = useLocales();
   const [filter, setFilter] = useState<BookingFilter>("upcoming");
   const [searchInput, setSearchInput] = useState("");
@@ -86,25 +65,14 @@ export function BookingsScreen() {
         <ActivityIndicator accessibilityLabel={t("common.loading")} color={colors.accent} />
       </View>
     );
-  } else if (bookingsQuery.isError) {
-    const unauthorized =
-      bookingsQuery.error instanceof CalApiError && bookingsQuery.error.kind === "unauthorized";
+  } else if (bookingsQuery.isLoadingError) {
+    // isError would also cover a failed refresh, which keeps the bookings already shown (see ListHeaderComponent).
     body = (
-      <View style={styles.centered}>
-        <Text accessibilityRole="alert" style={[styles.message, { color: colors.text }]}>
-          {loadErrorMessage(t, bookingsQuery.error)}
-        </Text>
-        {unauthorized ? (
-          // A failed sign-out leaves the person signed in; Settings explains that case.
-          <Button label={t("bookings.signInAgain")} onPress={() => signOut().catch(() => undefined)} />
-        ) : (
-          <Button
-            variant="secondary"
-            label={t("bookings.retry")}
-            onPress={() => void bookingsQuery.refetch()}
-          />
-        )}
-      </View>
+      <LoadErrorState
+        error={bookingsQuery.error}
+        onRetry={() => void bookingsQuery.refetch()}
+        fallbackMessage={t("bookings.loadFailed")}
+      />
     );
   } else {
     body = (
