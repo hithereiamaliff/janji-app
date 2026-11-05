@@ -37,6 +37,9 @@ check the web bundle with `bunx expo export --platform web`.
 - Dates: `date-fns`, `@date-fns/tz` or `Intl`. No Day.js or Moment.
 - Secrets: API keys and relay tokens are stored only through `src/lib/secure-storage` (Keychain/Keystore).
   Never log them, and never log or store webhook payloads in the relay.
+- Cal API calls from screens use `useCalClient()` from `src/session/SessionProvider`, which already carries
+  the signed-in account's server and key. Map API responses to app types (like `Account`) instead of
+  passing generated API types into components.
 - Comments explain why, not what.
 - Tests use `jest-expo` with React Native Testing Library 14 (`await render(...)`). Put them in
   `__tests__` folders, never inside `src/app/`.
