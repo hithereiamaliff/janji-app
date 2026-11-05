@@ -4,6 +4,7 @@ import AvailabilityScreen from "@/app/(tabs)/availability";
 import EventTypesScreen from "@/app/(tabs)/event-types";
 import BookingsScreen from "@/app/(tabs)/index";
 import SettingsScreen from "@/app/(tabs)/settings";
+import CancelBookingRoute from "@/app/booking/[uid]/cancel";
 import DeclineBookingRoute from "@/app/booking/[uid]/decline";
 import BookingRoute from "@/app/booking/[uid]/index";
 import SignInScreen from "@/app/sign-in";
@@ -19,4 +20,5 @@ export const appRoutes = {
   "(tabs)/settings": SettingsScreen,
   "booking/[uid]/index": BookingRoute,
   "booking/[uid]/decline": DeclineBookingRoute,
+  "booking/[uid]/cancel": CancelBookingRoute,
 };

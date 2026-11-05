@@ -262,6 +262,22 @@ function PendingActions({ uid, confirming, confirmError, onConfirm }: PendingAct
   );
 }
 
+/** What can still be done to a confirmed booking that hasn't ended. */
+function ManageActions({ uid }: { uid: string }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+
+  return (
+    <View style={styles.manage}>
+      <Button
+        variant="destructive"
+        label={t("bookingActions.cancel")}
+        onPress={() => router.push({ pathname: "/booking/[uid]/cancel", params: { uid } })}
+      />
+    </View>
+  );
+}
+
 export function BookingDetailScreen({ uid }: { uid: string }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -308,6 +324,8 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
 
   const booking = bookingQuery.data;
   const inactive = booking.status === "cancelled" || booking.status === "rejected";
+  // Cal.diy refuses to cancel a booking that has ended.
+  const manageable = booking.status === "accepted" && Date.parse(booking.end) > Date.now();
 
   return (
     <ScrollView
@@ -380,6 +398,7 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
         </Section>
       ) : null}
       {booking.answers.length > 0 ? <AnswersSection answers={booking.answers} /> : null}
+      {manageable ? <ManageActions uid={uid} /> : null}
     </ScrollView>
   );
 }
@@ -411,6 +430,10 @@ const styles = StyleSheet.create({
   },
   actions: {
     marginTop: 12,
+    gap: 12,
+  },
+  manage: {
+    marginTop: 8,
     gap: 12,
   },
   notice: {

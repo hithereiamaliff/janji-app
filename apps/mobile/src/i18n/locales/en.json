@@ -100,7 +100,19 @@
     "declined": "Booking declined.",
     "declineFailed": "Couldn't decline the booking. Try again.",
     "goBack": "Go back",
-    "serverSaid": "Your Cal.diy server said: “{{message}}”"
+    "serverSaid": "Your Cal.diy server said: “{{message}}”",
+    "cancel": "Cancel booking",
+    "cancelTitle": "Cancel this booking?",
+    "cancelDescription": "Cal.diy will email {{name}} that the booking was cancelled.",
+    "cancelDescriptionNoName": "Cal.diy will email the attendees that the booking was cancelled.",
+    "cancelReasonLabel": "Reason for cancelling",
+    "cancelReasonHint": "Included in that email.",
+    "cancelReasonMissing": "Add a reason. Cal.diy asks hosts for one when they cancel.",
+    "cancelLaterOccurrences": "Also cancel the later occurrences",
+    "cancelSubmit": "Cancel booking",
+    "cancelled": "Booking cancelled.",
+    "cancelFailed": "Couldn't cancel the booking. Try again.",
+    "keep": "Keep booking"
   },
   "settings": {
     "accountHeading": "Account",
