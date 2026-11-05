@@ -62,6 +62,7 @@ function RootNavigator() {
         <Stack.Screen name="event-type/[id]/edit" options={{ presentation: "modal" }} />
         <Stack.Screen name="event-type/[id]/private-link" options={{ presentation: "modal" }} />
         <Stack.Screen name="schedule/new" options={{ presentation: "modal" }} />
+        <Stack.Screen name="schedule/[id]/hours" options={{ presentation: "modal" }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />
