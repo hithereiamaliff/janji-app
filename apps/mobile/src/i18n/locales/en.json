@@ -1,0 +1,14 @@
+{
+  "tabs": {
+    "bookings": "Bookings",
+    "eventTypes": "Event types",
+    "availability": "Availability",
+    "settings": "Settings"
+  },
+  "placeholder": {
+    "bookings": "Your bookings will show up here once you connect your Cal.diy server.",
+    "eventTypes": "Your event types will show up here.",
+    "availability": "Your schedules and working hours will show up here.",
+    "settings": "Server, account and notification settings will live here."
+  }
+}
