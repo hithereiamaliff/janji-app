@@ -389,6 +389,17 @@
       "saved": "Profile saved.",
       "failed": "Couldn't save your profile. Try again."
     },
+    "web": {
+      "title": "Cal.diy on the web",
+      "description": "Connect calendars and apps, set up payments and change anything else the app doesn't have on your Cal.diy server.",
+      "open": "Open Cal.diy"
+    },
+    "about": {
+      "title": "About Janji",
+      "version": "Version {{version}}",
+      "license": "Janji is open source under the MIT licence.",
+      "source": "Source code"
+    },
     "signOut": "Sign out",
     "signOutHint": "Removes the API key from this device",
     "signOutFailed": "Couldn't remove the API key from this device. Try again.",
