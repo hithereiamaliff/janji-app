@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@janji/shared": "workspace:*",
     "hono": "4.13.13"
   },
   "devDependencies": {
