@@ -13,6 +13,29 @@
     "eventTypes": "Your event types will show up here.",
     "availability": "Your schedules and working hours will show up here."
   },
+  "bookings": {
+    "filters": {
+      "label": "Which bookings to show",
+      "upcoming": "Upcoming",
+      "unconfirmed": "Unconfirmed",
+      "past": "Past",
+      "cancelled": "Cancelled"
+    },
+    "days": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday"
+    },
+    "attendeesOne": "with {{name}}",
+    "attendeesTwo": "with {{first}} and {{second}}",
+    "attendeesMore_other": "with {{first}} and {{count}} others",
+    "recurring": "Repeats",
+    "status": {
+      "pending": "Unconfirmed",
+      "cancelled": "Cancelled",
+      "rejected": "Declined"
+    }
+  },
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
