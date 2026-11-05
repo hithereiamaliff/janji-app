@@ -9,7 +9,9 @@ import {
   deleteSchedule,
   fetchSchedules,
   type NewSchedule,
+  type ScheduleChanges,
   setDefaultSchedule,
+  updateSchedule,
 } from "./schedules-api";
 
 function useSchedulesKey() {
@@ -64,6 +66,21 @@ export function useSetDefaultSchedule() {
 
   return useMutation({
     mutationFn: (id: number) => setDefaultSchedule(client, id),
+    retry: false,
+    onSuccess: (saved) => {
+      queryClient.setQueryData<Schedule[]>(queryKey, (schedules) => withSchedule(schedules, saved));
+    },
+  });
+}
+
+/** Saves changes to a schedule, then shows it as the server returned it. */
+export function useUpdateSchedule(id: number) {
+  const client = useCalClient();
+  const queryKey = useSchedulesKey();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (changes: ScheduleChanges) => updateSchedule(client, id, changes),
     retry: false,
     onSuccess: (saved) => {
       queryClient.setQueryData<Schedule[]>(queryKey, (schedules) => withSchedule(schedules, saved));

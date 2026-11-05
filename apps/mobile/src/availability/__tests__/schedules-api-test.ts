@@ -5,6 +5,7 @@ import {
   deleteSchedule,
   fetchSchedules,
   setDefaultSchedule,
+  updateSchedule,
 } from "@/availability/schedules-api";
 import { apiSchedule, jsonResponse, schedulesResponse } from "@/test-utils/fixtures";
 
@@ -81,6 +82,42 @@ describe("setDefaultSchedule", () => {
       { method: "PATCH", path: "/api/v2/schedules/3", version: "2024-06-11", body: { isDefault: true } },
     ]);
     expect(saved.isDefault).toBe(true);
+  });
+});
+
+describe("updateSchedule", () => {
+  it("sends only the settings being changed, the weekly hours as availability", async () => {
+    const { client, sent } = clientAnswering(() =>
+      jsonResponse({ status: "success", data: apiSchedule({ id: 3, name: "Weekend mornings" }) })
+    );
+
+    const saved = await updateSchedule(client, 3, {
+      name: "Weekend mornings",
+      hours: [{ days: ["Saturday", "Sunday"], startTime: "09:00", endTime: "12:00" }],
+    });
+
+    expect(sent).toEqual([
+      {
+        method: "PATCH",
+        path: "/api/v2/schedules/3",
+        version: "2024-06-11",
+        body: {
+          name: "Weekend mornings",
+          availability: [{ days: ["Saturday", "Sunday"], startTime: "09:00", endTime: "12:00" }],
+        },
+      },
+    ]);
+    expect(saved.name).toBe("Weekend mornings");
+  });
+
+  it("clears the weekly hours when given none", async () => {
+    const { client, sent } = clientAnswering(() =>
+      jsonResponse({ status: "success", data: apiSchedule({ id: 3, name: "Weekends", availability: [] }) })
+    );
+
+    await updateSchedule(client, 3, { hours: [] });
+
+    expect(sent[0]?.body).toEqual({ availability: [] });
   });
 });
 

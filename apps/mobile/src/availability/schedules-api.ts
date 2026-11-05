@@ -1,6 +1,6 @@
 import { type CalClient, unwrap } from "@janji/cal-api/client";
 
-import { type Schedule, sortSchedules, toSchedule } from "./schedule";
+import { type Schedule, sortSchedules, toSchedule, type WeeklyHours } from "./schedule";
 
 /** The signed-in person's schedules, the default first. */
 export async function fetchSchedules(client: CalClient): Promise<Schedule[]> {
@@ -28,6 +28,28 @@ export async function setDefaultSchedule(client: CalClient, id: number): Promise
     await client.PATCH("/v2/schedules/{scheduleId}", {
       params: { path: { scheduleId: String(id) } },
       body: { isDefault: true },
+    })
+  );
+  return toSchedule(body.data);
+}
+
+/** The settings the app can change. Only what's given is sent; weekly hours given replace all of them. */
+export type ScheduleChanges = {
+  name?: string;
+  timeZone?: string;
+  hours?: WeeklyHours[];
+};
+
+export async function updateSchedule(
+  client: CalClient,
+  id: number,
+  changes: ScheduleChanges
+): Promise<Schedule> {
+  const { hours, ...rest } = changes;
+  const body = unwrap(
+    await client.PATCH("/v2/schedules/{scheduleId}", {
+      params: { path: { scheduleId: String(id) } },
+      body: { ...rest, ...(hours ? { availability: hours } : {}) },
     })
   );
   return toSchedule(body.data);

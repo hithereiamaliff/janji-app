@@ -7,6 +7,7 @@ import {
   useDeleteSchedule,
   useSchedules,
   useSetDefaultSchedule,
+  useUpdateSchedule,
 } from "@/availability/useSchedules";
 import { QueryProvider } from "@/data/QueryProvider";
 import { saveSession } from "@/session/account-storage";
@@ -38,6 +39,7 @@ function Schedules() {
   const create = useCreateSchedule();
   const setDefault = useSetDefaultSchedule();
   const remove = useDeleteSchedule();
+  const update = useUpdateSchedule(3);
   if (!schedules.data) return <Text>loading</Text>;
   return (
     <>
@@ -52,6 +54,7 @@ function Schedules() {
       />
       <Button label="Make default" onPress={() => setDefault.mutate(3)} />
       <Button label="Delete" onPress={() => remove.mutate(3)} />
+      <Button label="Rename" onPress={() => update.mutate({ name: "Weekend mornings" })} />
     </>
   );
 }
@@ -109,6 +112,16 @@ describe("schedule hooks", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Make default" }));
 
     expect(await screen.findByText("Weekends (default), Consultation hours")).toBeOnTheScreen();
+  });
+
+  it("shows a changed schedule as the server saved it", async () => {
+    await renderSchedules(() =>
+      jsonResponse({ status: "success", data: apiSchedule({ id: 3, name: "Weekend mornings" }) })
+    );
+
+    await fireEvent.press(screen.getByRole("button", { name: "Rename" }));
+
+    expect(await screen.findByText("Consultation hours (default), Weekend mornings")).toBeOnTheScreen();
   });
 
   it("takes a deleted schedule off the list", async () => {
