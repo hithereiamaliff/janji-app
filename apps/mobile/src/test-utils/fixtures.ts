@@ -1,3 +1,4 @@
+import type { ApiSchedule } from "@/availability/schedule";
 import type { ApiEventType } from "@/event-types/event-type";
 import type { ApiPrivateLink } from "@/event-types/private-links";
 import type { Account } from "@/session/account";
@@ -183,4 +184,29 @@ export function apiPrivateLink(link: TestPrivateLink, eventTypeId = 2): ApiPriva
 /** A GET /v2/event-types/{id}/private-links body holding the given links. */
 export function privateLinksResponse(links: TestPrivateLink[], eventTypeId = 2): Response {
   return jsonResponse({ status: "success", data: links.map((link) => apiPrivateLink(link, eventTypeId)) });
+}
+
+export type TestSchedule = Partial<ApiSchedule> & { id: number; name: string };
+
+/** One schedule as API v2 (cal-api-version 2024-06-11) sends it: Monday to Friday, 9 to 5, unless given. */
+export function apiSchedule(schedule: TestSchedule): ApiSchedule {
+  return {
+    ownerId: 7,
+    timeZone: "Asia/Kuala_Lumpur",
+    availability: [
+      {
+        days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        startTime: "09:00",
+        endTime: "17:00",
+      },
+    ],
+    isDefault: false,
+    overrides: [],
+    ...schedule,
+  };
+}
+
+/** A GET /v2/schedules body holding the given schedules. */
+export function schedulesResponse(schedules: TestSchedule[]): Response {
+  return jsonResponse({ status: "success", data: schedules.map(apiSchedule) });
 }
