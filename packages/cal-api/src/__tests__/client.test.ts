@@ -136,6 +136,23 @@ describe("unwrap", () => {
     expect(error).toMatchObject({ kind: "rate_limited", status: 429, retryAfterSeconds: 42 });
   });
 
+  it("reads errors that reach NestJS's fallback handler, such as Cal.diy's HttpError", async () => {
+    const { cal } = clientWith(() =>
+      json({ statusCode: 400, message: "Cancellation reason is required" }, { status: 400 })
+    );
+
+    const error = await cal
+      .GET("/v2/me")
+      .then(unwrap)
+      .catch((e: unknown) => e);
+
+    expect(error).toMatchObject({
+      kind: "invalid_request",
+      status: 400,
+      serverMessage: "Cancellation reason is required",
+    });
+  });
+
   it("recognises the web app's HTML 404 page as 'not Cal API v2'", async () => {
     const { cal } = clientWith(
       () =>
