@@ -1,7 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 
 // Booking times are shown in the device's time zone (where the person is right now), so these helpers use
-// local time throughout. A booking's own time zone matters on the detail screen, not in the list.
+// local time unless they're given another time zone, as the detail screen does for attendees.
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
@@ -51,4 +51,40 @@ export function formatFullDate(iso: string, locale: string): string {
     month: "long",
     year: "numeric",
   }).format(new Date(iso));
+}
+
+// The weekday is part of the range because another time zone can put the booking on a different day.
+function formatZonedTimeRange(startIso: string, endIso: string, locale: string, timeZone?: string): string {
+  const start = new Intl.DateTimeFormat(locale, {
+    weekday: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone,
+  });
+  const end = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone });
+  return `${start.format(new Date(startIso))} – ${end.format(new Date(endIso))}`;
+}
+
+/**
+ * The time range as clocks in another time zone show it ("Fri 4:00 pm – 5:00 pm"). Returns null when those
+ * clocks read the same as the device's, or when the device doesn't know the time zone.
+ */
+export function timeRangeElsewhere(
+  startIso: string,
+  endIso: string,
+  locale: string,
+  timeZone: string
+): string | null {
+  try {
+    const there = formatZonedTimeRange(startIso, endIso, locale, timeZone);
+    return there === formatZonedTimeRange(startIso, endIso, locale) ? null : there;
+  } catch {
+    // Intl throws a RangeError for a time zone it doesn't know.
+    return null;
+  }
+}
+
+/** A time zone's city, which reads better than its id: "Asia/Kuala_Lumpur" → "Kuala Lumpur". */
+export function timeZoneCity(timeZone: string): string {
+  return timeZone.slice(timeZone.lastIndexOf("/") + 1).replace(/_/g, " ");
 }

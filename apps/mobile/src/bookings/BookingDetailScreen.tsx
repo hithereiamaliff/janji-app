@@ -1,15 +1,30 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocales } from "expo-localization";
-import { type ReactNode, useState } from "react";
+import { type ComponentProps, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
+import { Badge } from "@/components/Badge";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { useSession } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
-import type { BookingDetail } from "./booking-detail";
-import { formatFullDate, formatTimeRange } from "./format";
+import type { BookingDetail, BookingPerson } from "./booking-detail";
+import { formatFullDate, formatTimeRange, timeRangeElsewhere, timeZoneCity } from "./format";
+import { describeLocation, phoneUrl } from "./location";
 import { StatusBadge } from "./StatusBadge";
 import { useBooking } from "./useBooking";
+
+type IconName = ComponentProps<typeof Ionicons>["name"];
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const { colors } = useTheme();
@@ -23,6 +38,32 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+type LinkRowProps = {
+  icon: IconName;
+  label: string;
+  url: string;
+  /** Says what the link does when the visible label is only an address or number. */
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+};
+
+function LinkRow({ icon, label, url, accessibilityLabel, accessibilityHint }: LinkRowProps) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="link"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityHint={accessibilityHint}
+      // With no app to handle the link there's nothing more to do; the address stays on screen.
+      onPress={() => Linking.openURL(url).catch(() => undefined)}
+      style={({ pressed }) => [styles.linkRow, { opacity: pressed ? 0.7 : 1 }]}
+    >
+      <Ionicons name={icon} size={20} color={colors.accent} />
+      <Text style={[styles.linkText, { color: colors.accent }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 type SectionProps = {
   booking: BookingDetail;
   locale: string;
@@ -31,6 +72,13 @@ type SectionProps = {
 function WhenSection({ booking, locale }: SectionProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { session } = useSession();
+  // Confirmation emails and the web app show times in the profile's time zone, so when the device is
+  // elsewhere, the profile's time helps match them up.
+  const profileTimeZone = session.status === "signedIn" ? session.account.user.timeZone : null;
+  const profileTime = profileTimeZone
+    ? timeRangeElsewhere(booking.start, booking.end, locale, profileTimeZone)
+    : null;
 
   return (
     <Section title={t("bookingDetail.when")}>
@@ -41,10 +89,106 @@ function WhenSection({ booking, locale }: SectionProps) {
       <Text style={[styles.body, { color: colors.textMuted }]}>
         {t("bookingDetail.duration", { count: booking.durationMinutes })}
       </Text>
+      {profileTime && profileTimeZone ? (
+        <Text style={[styles.body, { color: colors.textMuted }]}>
+          {t("bookingDetail.inProfileTimeZone", { time: profileTime, zone: timeZoneCity(profileTimeZone) })}
+        </Text>
+      ) : null}
       {booking.isRecurring ? (
         <Text style={[styles.body, { color: colors.textMuted }]}>{t("bookingDetail.recurring")}</Text>
       ) : null}
     </Section>
+  );
+}
+
+function WhereSection({ location }: { location: string }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const place = describeLocation(location);
+
+  let content: ReactNode;
+  switch (place.kind) {
+    case "link":
+      content = (
+        <LinkRow
+          icon="videocam-outline"
+          label={t("bookingDetail.joinMeeting")}
+          accessibilityHint={t("bookingDetail.joinMeetingHint", { host: place.host })}
+          url={place.url}
+        />
+      );
+      break;
+    case "phone":
+      content = (
+        <LinkRow
+          icon="call-outline"
+          label={place.number}
+          accessibilityLabel={t("bookingDetail.call", { number: place.number })}
+          url={phoneUrl(place.number)}
+        />
+      );
+      break;
+    case "app":
+      content = <Text style={[styles.body, { color: colors.text }]}>{t("bookingDetail.onlineMeeting")}</Text>;
+      break;
+    case "text":
+      content = (
+        <Text selectable style={[styles.body, { color: colors.text }]}>
+          {place.text}
+        </Text>
+      );
+      break;
+  }
+
+  return (
+    <Section title={t("bookingDetail.where")}>
+      {content}
+      {place.kind === "link" ? (
+        <Text style={[styles.body, { color: colors.textMuted }]}>{place.host}</Text>
+      ) : null}
+    </Section>
+  );
+}
+
+type AttendeeProps = SectionProps & {
+  person: BookingPerson;
+  /** Draws a line above, separating this attendee from the one before. */
+  divided: boolean;
+};
+
+function Attendee({ person, booking, locale, divided }: AttendeeProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const theirTime = person.timeZone
+    ? timeRangeElsewhere(booking.start, booking.end, locale, person.timeZone)
+    : null;
+
+  return (
+    <View style={[styles.person, divided ? [styles.divided, { borderTopColor: colors.border }] : null]}>
+      <View style={styles.nameLine}>
+        <Text style={[styles.strong, styles.name, { color: colors.text }]}>{person.name}</Text>
+        {person.noShow ? <Badge label={t("bookingDetail.noShow")} color={colors.danger} /> : null}
+      </View>
+      <LinkRow
+        icon="mail-outline"
+        label={person.email}
+        accessibilityLabel={t("bookingDetail.email", { email: person.email })}
+        url={`mailto:${person.email}`}
+      />
+      {person.phoneNumber ? (
+        <LinkRow
+          icon="call-outline"
+          label={person.phoneNumber}
+          accessibilityLabel={t("bookingDetail.call", { number: person.phoneNumber })}
+          url={phoneUrl(person.phoneNumber)}
+        />
+      ) : null}
+      {theirTime && person.timeZone ? (
+        <Text style={[styles.body, { color: colors.textMuted }]}>
+          {t("bookingDetail.theirTime", { time: theirTime, zone: timeZoneCity(person.timeZone) })}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
@@ -115,6 +259,20 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
       </View>
 
       <WhenSection booking={booking} locale={locale} />
+      {booking.location ? <WhereSection location={booking.location} /> : null}
+      {booking.attendees.length > 0 ? (
+        <Section title={t("bookingDetail.attendees")}>
+          {booking.attendees.map((person, index) => (
+            <Attendee
+              key={person.email}
+              person={person}
+              booking={booking}
+              locale={locale}
+              divided={index > 0}
+            />
+          ))}
+        </Section>
+      ) : null}
     </ScrollView>
   );
 }
@@ -164,5 +322,33 @@ const styles = StyleSheet.create({
   body: {
     fontSize: 15,
     lineHeight: 21,
+  },
+  // 44 pt keeps each link above the iOS minimum touch target.
+  linkRow: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  linkText: {
+    flexShrink: 1,
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  person: {
+    paddingVertical: 4,
+  },
+  divided: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: 8,
+    paddingTop: 12,
+  },
+  nameLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  name: {
+    flexShrink: 1,
   },
 });
