@@ -1,13 +1,29 @@
-import type { ReactNode } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Clipboard from "expo-clipboard";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  AccessibilityInfo,
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { Badge } from "@/components/Badge";
+import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { ThemedSwitch } from "@/components/ThemedSwitch";
+import { actionErrorMessage } from "@/lib/action-error";
+import { useSignedInAccount } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
+import { bookingLink, type EventTypeSummary } from "./event-type";
 import { lengthDetails } from "./lengths";
-import { useEventType } from "./useEventTypes";
+import { useEventType, useSetEventTypeHidden } from "./useEventTypes";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const { colors } = useTheme();
@@ -21,9 +37,82 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+function LinkSection({ link }: { link: string }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    await Clipboard.setStringAsync(link);
+    setCopied(true);
+    AccessibilityInfo.announceForAccessibility(t("eventTypes.linkCopied"));
+  }
+
+  function handleShare() {
+    // iOS shares a url as a link, with a preview; Android only takes a message. Closing the share sheet, or
+    // a browser without sharing, isn't an error worth showing.
+    Share.share(Platform.OS === "ios" ? { url: link } : { message: link }).catch(() => undefined);
+  }
+
+  return (
+    <Section title={t("eventTypes.link")}>
+      <Text selectable style={[styles.body, { color: colors.text }]}>
+        {link}
+      </Text>
+      <View style={styles.actions}>
+        <View style={styles.action}>
+          <Button variant="secondary" label={t("eventTypes.copyLink")} onPress={() => void handleCopy()} />
+        </View>
+        <View style={styles.action}>
+          <Button variant="secondary" label={t("eventTypes.share")} onPress={handleShare} />
+        </View>
+      </View>
+      {copied ? (
+        <View style={styles.notice}>
+          <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
+          <Text style={[styles.body, { color: colors.text }]}>{t("eventTypes.linkCopied")}</Text>
+        </View>
+      ) : null}
+    </Section>
+  );
+}
+
+function VisibilitySection({ eventType, page }: { eventType: EventTypeSummary; page: string }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const setHidden = useSetEventTypeHidden();
+
+  return (
+    <Section title={t("eventTypes.visibility")}>
+      <View style={styles.switchRow}>
+        <Text style={[styles.body, styles.switchLabel, { color: colors.text }]}>
+          {t("eventTypes.showOnPage")}
+        </Text>
+        <ThemedSwitch
+          accessibilityLabel={t("eventTypes.showOnPage")}
+          value={!eventType.hidden}
+          onValueChange={(shown) => setHidden.mutate({ id: eventType.id, hidden: !shown })}
+        />
+      </View>
+      <Text style={[styles.body, { color: colors.textMuted }]}>
+        {t("eventTypes.visibilityHint", { page })}
+      </Text>
+      {setHidden.isError ? (
+        <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
+          {actionErrorMessage(t, setHidden.error, {
+            fallback: t("eventTypes.visibilityFailed"),
+            notFound: t("eventTypes.notFound"),
+          })}
+        </Text>
+      ) : null}
+    </Section>
+  );
+}
+
 export function EventTypeScreen({ id }: { id: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const account = useSignedInAccount();
   const eventType = useEventType(id);
 
   if (eventType.isPending) {
@@ -75,6 +164,11 @@ export function EventTypeScreen({ id }: { id: number }) {
       <Section title={t("eventTypes.length")}>
         <Text style={[styles.body, { color: colors.text }]}>{lengthDetails(t, details)}</Text>
       </Section>
+      <LinkSection link={bookingLink(account.serverOrigin, account.user.username, details.slug)} />
+      <VisibilitySection
+        eventType={details}
+        page={`${account.serverOrigin.replace(/^https?:\/\//, "")}/${account.user.username}`}
+      />
       {details.description ? (
         <Section title={t("eventTypes.description")}>
           <Text selectable style={[styles.body, { color: colors.text }]}>
@@ -134,5 +228,30 @@ const styles = StyleSheet.create({
   body: {
     fontSize: 15,
     lineHeight: 21,
+  },
+  actions: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 12,
+  },
+  action: {
+    flex: 1,
+  },
+  notice: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 8,
+  },
+  // 48 pt keeps the switch's row an easy touch target.
+  switchRow: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  switchLabel: {
+    flexShrink: 1,
   },
 });

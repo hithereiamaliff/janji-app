@@ -19,10 +19,10 @@ import {
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { actionErrorMessage } from "@/lib/action-error";
 import { useSession } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
-import { actionErrorMessage } from "./action-error";
 import { confirmBooking, markNoShow } from "./booking-actions";
 import { type BookingAnswer, type BookingDetail, type BookingPerson, fieldNameLabel } from "./booking-detail";
 import { formatFullDate, formatTimeRange, timeRangeElsewhere, timeZoneCity } from "./format";
@@ -292,7 +292,10 @@ function PendingActions({ uid, confirming, confirmError, onConfirm }: PendingAct
       </View>
       {confirmError ? (
         <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
-          {actionErrorMessage(t, confirmError, t("bookingActions.confirmFailed"))}
+          {actionErrorMessage(t, confirmError, {
+            fallback: t("bookingActions.confirmFailed"),
+            notFound: t("bookingDetail.notFound"),
+          })}
         </Text>
       ) : null}
     </Section>
@@ -472,7 +475,10 @@ export function BookingDetailScreen({ uid, notice }: BookingDetailScreenProps) {
           ))}
           {noShow.isError ? (
             <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
-              {actionErrorMessage(t, noShow.error, t("bookingActions.noShowFailed"))}
+              {actionErrorMessage(t, noShow.error, {
+                fallback: t("bookingActions.noShowFailed"),
+                notFound: t("bookingDetail.notFound"),
+              })}
             </Text>
           ) : null}
         </Section>

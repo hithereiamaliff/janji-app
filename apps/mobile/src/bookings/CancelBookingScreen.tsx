@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, StyleSheet, Switch, Text, View } from "react-native";
+import { AccessibilityInfo, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { FormScreen } from "@/components/FormScreen";
 import { TextField } from "@/components/TextField";
+import { ThemedSwitch } from "@/components/ThemedSwitch";
+import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
 
-import { actionErrorMessage } from "./action-error";
 import { cancelBooking } from "./booking-actions";
 import { useBooking } from "./useBooking";
 import { useBookingAction } from "./useBookingAction";
@@ -68,7 +69,7 @@ export function CancelBookingScreen({ uid }: { uid: string }) {
           <Text style={[styles.switchLabel, { color: colors.text }]}>
             {t("bookingActions.cancelLaterOccurrences")}
           </Text>
-          <Switch
+          <ThemedSwitch
             accessibilityLabel={t("bookingActions.cancelLaterOccurrences")}
             value={includeLaterOccurrences}
             onValueChange={setIncludeLaterOccurrences}
@@ -78,7 +79,10 @@ export function CancelBookingScreen({ uid }: { uid: string }) {
       ) : null}
       {cancel.isError ? (
         <Text accessibilityRole="alert" style={[styles.error, { color: colors.danger }]}>
-          {actionErrorMessage(t, cancel.error, t("bookingActions.cancelFailed"))}
+          {actionErrorMessage(t, cancel.error, {
+            fallback: t("bookingActions.cancelFailed"),
+            notFound: t("bookingDetail.notFound"),
+          })}
         </Text>
       ) : null}
       <Button

@@ -171,7 +171,15 @@
     "notFound": "This event type no longer exists. It may have been deleted.",
     "length": "Length",
     "lengthChoice": "{{lengths}}. Bookings are {{usual}} unless the booker picks another length.",
-    "description": "Description"
+    "description": "Description",
+    "link": "Booking link",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied.",
+    "share": "Share",
+    "visibility": "Visibility",
+    "showOnPage": "Show on your booking page",
+    "visibilityHint": "Hidden event types are left off your booking page, {{page}}, but can still be booked through their own link.",
+    "visibilityFailed": "Couldn't change whether this event type is shown. Try again."
   },
   "settings": {
     "accountHeading": "Account",
