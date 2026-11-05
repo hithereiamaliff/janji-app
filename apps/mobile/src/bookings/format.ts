@@ -1,5 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 
+import { dateTimeFormat } from "@/lib/date-format";
+
 // Booking times are shown in the device's time zone (where the person is right now), so these helpers use
 // local time unless they're given another time zone, as the detail screen does for attendees.
 
@@ -29,7 +31,7 @@ export function formatDayHeading(
   if (daysFromNow === 0) return labels.today;
   if (daysFromNow === 1) return labels.tomorrow;
   if (daysFromNow === -1) return labels.yesterday;
-  return new Intl.DateTimeFormat(locale, {
+  return dateTimeFormat(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -39,13 +41,13 @@ export function formatDayHeading(
 
 /** "3:00 pm – 3:30 pm", in the locale's own 12- or 24-hour style. */
 export function formatTimeRange(startIso: string, endIso: string, locale: string): string {
-  const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" });
+  const time = dateTimeFormat(locale, { hour: "numeric", minute: "2-digit" });
   return `${time.format(new Date(startIso))} – ${time.format(new Date(endIso))}`;
 }
 
 /** "Friday, 6 November 2026", in the locale's own order. */
 export function formatFullDate(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
+  return dateTimeFormat(locale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -55,13 +57,13 @@ export function formatFullDate(iso: string, locale: string): string {
 
 // The weekday is part of the range because another time zone can put the booking on a different day.
 function formatZonedTimeRange(startIso: string, endIso: string, locale: string, timeZone?: string): string {
-  const start = new Intl.DateTimeFormat(locale, {
+  const start = dateTimeFormat(locale, {
     weekday: "short",
     hour: "numeric",
     minute: "2-digit",
     timeZone,
   });
-  const end = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone });
+  const end = dateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone });
   return `${start.format(new Date(startIso))} – ${end.format(new Date(endIso))}`;
 }
 
@@ -91,10 +93,10 @@ export function timeZoneCity(timeZone: string): string {
 
 /** "3:00 pm", in the locale's own 12- or 24-hour style. */
 export function formatTime(iso: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+  return dateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(new Date(iso));
 }
 
 /** "6 Nov" or "Nov 6", in the locale's own order. */
 export function formatShortDate(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(date);
+  return dateTimeFormat(locale, { day: "numeric", month: "short" }).format(date);
 }
