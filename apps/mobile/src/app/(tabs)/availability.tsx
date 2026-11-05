@@ -1,8 +1,5 @@
-import { useTranslation } from "react-i18next";
-
-import { PlaceholderScreen } from "@/components/PlaceholderScreen";
+import { SchedulesScreen } from "@/availability/SchedulesScreen";
 
 export default function AvailabilityScreen() {
-  const { t } = useTranslation();
-  return <PlaceholderScreen message={t("placeholder.availability")} />;
+  return <SchedulesScreen />;
 }

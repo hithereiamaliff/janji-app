@@ -26,9 +26,6 @@
     "availability": "Availability",
     "settings": "Settings"
   },
-  "placeholder": {
-    "availability": "Your schedules and working hours will show up here."
-  },
   "bookings": {
     "filters": {
       "label": "Which bookings to show",
@@ -259,8 +256,12 @@
     "hoursLine": "{{days}}, {{start}} – {{end}}",
     "noWeeklyHours": "No weekly hours",
     "screenTitle": "Schedule",
+    "empty": "No schedules yet.",
     "loadFailed": "Couldn't load your schedules. Try again.",
+    "refreshFailed": "Couldn't refresh, so these schedules may be out of date.",
+    "openHint": "Opens the schedule",
     "default": "Default",
+    "zoneLine": "{{city}} time",
     "weeklyHours": "Weekly hours",
     "timeZone": "Time zone",
     "timeZoneValue": "{{city}} ({{zone}})",
