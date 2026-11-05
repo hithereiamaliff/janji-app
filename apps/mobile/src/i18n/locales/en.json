@@ -255,6 +255,10 @@
       "done": "Done"
     }
   },
+  "availability": {
+    "hoursLine": "{{days}}, {{start}} – {{end}}",
+    "noWeeklyHours": "No weekly hours"
+  },
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
