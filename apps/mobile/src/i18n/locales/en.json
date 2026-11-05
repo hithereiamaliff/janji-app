@@ -257,7 +257,27 @@
   },
   "availability": {
     "hoursLine": "{{days}}, {{start}} – {{end}}",
-    "noWeeklyHours": "No weekly hours"
+    "noWeeklyHours": "No weekly hours",
+    "screenTitle": "Schedule",
+    "loadFailed": "Couldn't load your schedules. Try again.",
+    "default": "Default",
+    "weeklyHours": "Weekly hours",
+    "timeZone": "Time zone",
+    "timeZoneValue": "{{city}} ({{zone}})",
+    "defaultTitle": "Default schedule",
+    "isDefault": "Event types use this schedule unless they're set to use another.",
+    "notDefault": "Only event types set to use this schedule use it.",
+    "makeDefault": "Make this the default",
+    "madeDefault": "This is now your default schedule.",
+    "makeDefaultFailed": "Couldn't make this the default. Try again.",
+    "cantDeleteDefault": "Your default schedule can't be deleted. To delete it, make another schedule the default first.",
+    "delete": "Delete schedule",
+    "deleteQuestion": "Delete {{name}}? Event types that use it will use your default schedule instead.",
+    "deleteConfirm": "Delete",
+    "keep": "Keep it",
+    "deleted": "Schedule deleted.",
+    "deleteFailed": "Couldn't delete the schedule. Try again.",
+    "notFound": "This schedule no longer exists."
   },
   "settings": {
     "accountHeading": "Account",

@@ -12,6 +12,7 @@ import RescheduleRoute from "@/app/booking/[uid]/reschedule";
 import EditEventTypeRoute from "@/app/event-type/[id]/edit";
 import EventTypeRoute from "@/app/event-type/[id]/index";
 import NewPrivateLinkRoute from "@/app/event-type/[id]/private-link";
+import ScheduleRoute from "@/app/schedule/[id]/index";
 import SignInScreen from "@/app/sign-in";
 
 /** The app's real routes, for expo-router's renderRouter in tests. */
@@ -31,4 +32,5 @@ export const appRoutes = {
   "event-type/[id]/index": EventTypeRoute,
   "event-type/[id]/edit": EditEventTypeRoute,
   "event-type/[id]/private-link": NewPrivateLinkRoute,
+  "schedule/[id]/index": ScheduleRoute,
 };
