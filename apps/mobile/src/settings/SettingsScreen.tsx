@@ -11,6 +11,7 @@ import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
 import { appVersion } from "@/lib/app-version";
 import { weekdayName } from "@/lib/calendar-date";
+import { NotificationsSection } from "@/notifications/NotificationsSection";
 import { clockExample } from "@/profile/profile-text";
 import { useProfile } from "@/profile/useProfile";
 import { useSession, useSignedInAccount } from "@/session/SessionProvider";
@@ -150,6 +151,7 @@ export function SettingsScreen() {
           {t("settings.server", { server: serverOrigin.replace(/^https?:\/\//, "") })}
         </Text>
       </Section>
+      <NotificationsSection />
       <ProfileSection />
       <WebSection serverOrigin={serverOrigin} />
       <AboutSection />
@@ -165,7 +167,6 @@ export function SettingsScreen() {
           {t("settings.signOutFailed")}
         </Text>
       ) : null}
-      <Text style={[styles.body, { color: colors.textMuted }]}>{t("settings.comingSoon")}</Text>
     </ScrollView>
   );
 }
