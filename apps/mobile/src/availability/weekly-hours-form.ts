@@ -21,6 +21,11 @@ function byStart(a: TimeRange, b: TimeRange): number {
   return a.start.localeCompare(b.start) || a.end.localeCompare(b.end);
 }
 
+/** The ranges earliest first, without changing the ones given. */
+export function sortRanges(ranges: readonly TimeRange[]): TimeRange[] {
+  return [...ranges].sort(byStart);
+}
+
 export function emptyWeek(): DayRanges {
   return { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [], Sunday: [] };
 }
@@ -39,7 +44,7 @@ export function toDayRanges(hours: readonly WeeklyHours[]): DayRanges {
 export function fromDayRanges(week: DayRanges): WeeklyHours[] {
   const groups = new Map<string, WeeklyHours>();
   for (const day of WEEK_DAYS) {
-    for (const range of [...week[day]].sort(byStart)) {
+    for (const range of sortRanges(week[day])) {
       const key = `${range.start}-${range.end}`;
       const group = groups.get(key);
       if (group) group.days.push(day);
@@ -61,7 +66,7 @@ function later(time: string, minutes: number): string {
  * open until its last quarter hour, which leaves no room for another.
  */
 export function nextRange(ranges: readonly TimeRange[]): TimeRange | null {
-  const last = [...ranges].sort(byStart).at(-1);
+  const last = sortRanges(ranges).at(-1);
   if (!last) return DEFAULT_RANGE;
   if (last.end >= "23:45") return null;
   return { start: last.end, end: later(last.end, 60) };
@@ -69,20 +74,24 @@ export function nextRange(ranges: readonly TimeRange[]): TimeRange | null {
 
 export type DayProblem = "endsBeforeStart" | "overlaps";
 
-/** What's wrong with each day's ranges, if anything: a range must end after it starts, and none may overlap. */
+/** What's wrong with one day's ranges, if anything: a range must end after it starts, and none may overlap. */
+export function checkRanges(dayRanges: readonly TimeRange[]): DayProblem | null {
+  const ranges = sortRanges(dayRanges);
+  if (ranges.some((range) => range.end <= range.start)) return "endsBeforeStart";
+  for (let index = 1; index < ranges.length; index++) {
+    const previous = ranges[index - 1];
+    const range = ranges[index];
+    if (previous && range && range.start < previous.end) return "overlaps";
+  }
+  return null;
+}
+
+/** What's wrong with each day's ranges, for the days where something is. */
 export function checkDayRanges(week: DayRanges): Partial<Record<WeekDay, DayProblem>> {
   const problems: Partial<Record<WeekDay, DayProblem>> = {};
   for (const day of WEEK_DAYS) {
-    const ranges = [...week[day]].sort(byStart);
-    if (ranges.some((range) => range.end <= range.start)) {
-      problems[day] = "endsBeforeStart";
-      continue;
-    }
-    for (let index = 1; index < ranges.length; index++) {
-      const previous = ranges[index - 1];
-      const range = ranges[index];
-      if (previous && range && range.start < previous.end) problems[day] = "overlaps";
-    }
+    const problem = checkRanges(week[day]);
+    if (problem) problems[day] = problem;
   }
   return problems;
 }

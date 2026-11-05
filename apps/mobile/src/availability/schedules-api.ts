@@ -1,6 +1,6 @@
 import { type CalClient, unwrap } from "@janji/cal-api/client";
 
-import { type Schedule, sortSchedules, toSchedule, type WeeklyHours } from "./schedule";
+import { type DateOverride, type Schedule, sortSchedules, toSchedule, type WeeklyHours } from "./schedule";
 
 /** The signed-in person's schedules, the default first. */
 export async function fetchSchedules(client: CalClient): Promise<Schedule[]> {
@@ -33,11 +33,12 @@ export async function setDefaultSchedule(client: CalClient, id: number): Promise
   return toSchedule(body.data);
 }
 
-/** The settings the app can change. Only what's given is sent; weekly hours given replace all of them. */
+/** The settings the app can change. Only what's given is sent; hours or overrides given replace all of them. */
 export type ScheduleChanges = {
   name?: string;
   timeZone?: string;
   hours?: WeeklyHours[];
+  overrides?: DateOverride[];
 };
 
 export async function updateSchedule(
