@@ -5,7 +5,7 @@ export type ThemeColors = {
   textMuted: string;
   /** Dividers and card outlines; decorative, so no contrast minimum. */
   border: string;
-  /** Text field outlines, which must stay visible: at least 3:1 against the surface (WCAG 1.4.11). */
+  /** Text field outlines and switches when off, which must stay visible: at least 3:1 against the surface (WCAG 1.4.11). */
   inputBorder: string;
   accent: string;
   /** Text and icons on an accent-coloured background. */

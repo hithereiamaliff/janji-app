@@ -10,9 +10,9 @@ import { FilterTabs } from "@/components/FilterTabs";
 import { FormScreen } from "@/components/FormScreen";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { TextField } from "@/components/TextField";
+import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
 
-import { actionErrorMessage } from "./action-error";
 import type { BookingDetail } from "./booking-detail";
 import {
   dayKey,
@@ -231,7 +231,10 @@ function ReschedulePicker({ booking }: { booking: BookingDetail }) {
       />
       {reschedule.isError ? (
         <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
-          {actionErrorMessage(t, reschedule.error, t("reschedule.failed"))}
+          {actionErrorMessage(t, reschedule.error, {
+            fallback: t("reschedule.failed"),
+            notFound: t("bookingDetail.notFound"),
+          })}
         </Text>
       ) : null}
       <Button

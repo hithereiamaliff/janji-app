@@ -5,9 +5,9 @@ import { AccessibilityInfo, StyleSheet, Text } from "react-native";
 import { Button } from "@/components/Button";
 import { FormScreen } from "@/components/FormScreen";
 import { TextField } from "@/components/TextField";
+import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
 
-import { actionErrorMessage } from "./action-error";
 import { declineBooking } from "./booking-actions";
 import { useBooking } from "./useBooking";
 import { useBookingAction } from "./useBookingAction";
@@ -51,7 +51,10 @@ export function DeclineBookingScreen({ uid }: { uid: string }) {
       />
       {decline.isError ? (
         <Text accessibilityRole="alert" style={[styles.error, { color: colors.danger }]}>
-          {actionErrorMessage(t, decline.error, t("bookingActions.declineFailed"))}
+          {actionErrorMessage(t, decline.error, {
+            fallback: t("bookingActions.declineFailed"),
+            notFound: t("bookingDetail.notFound"),
+          })}
         </Text>
       ) : null}
       <Button

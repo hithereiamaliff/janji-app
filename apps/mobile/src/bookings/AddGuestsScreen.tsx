@@ -7,9 +7,9 @@ import { AccessibilityInfo, StyleSheet, Text } from "react-native";
 import { Button } from "@/components/Button";
 import { FormScreen } from "@/components/FormScreen";
 import { TextField } from "@/components/TextField";
+import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
 
-import { actionErrorMessage } from "./action-error";
 import { addGuests } from "./booking-actions";
 import { checkGuestEmails, type GuestEmailsCheck } from "./guest-emails";
 import { useBooking } from "./useBooking";
@@ -36,7 +36,10 @@ function addGuestsErrorMessage(t: TFunction, error: unknown): string {
   if (error instanceof CalApiError && error.serverMessage === "emails_must_be_unique_valid") {
     return t("bookingActions.guestEmailsRejected");
   }
-  return actionErrorMessage(t, error, t("bookingActions.addGuestsFailed"));
+  return actionErrorMessage(t, error, {
+    fallback: t("bookingActions.addGuestsFailed"),
+    notFound: t("bookingDetail.notFound"),
+  });
 }
 
 export function AddGuestsScreen({ uid }: { uid: string }) {

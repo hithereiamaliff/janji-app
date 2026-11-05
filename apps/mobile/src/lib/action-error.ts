@@ -10,10 +10,21 @@ function readableServerMessage(message: string | null): string | null {
   return trimmed && /\s/.test(trimmed) ? trimmed : null;
 }
 
-/** Explains why an action on a booking failed. `fallback` names the action, e.g. "Couldn't confirm the booking." */
-export function actionErrorMessage(t: TFunction, error: unknown, fallback: string): string {
+export type ActionErrorMessages = {
+  /** Names the action, e.g. "Couldn't confirm the booking. Try again." */
+  fallback: string;
+  /** Says that what the action was for, a booking or an event type, no longer exists. */
+  notFound: string;
+};
+
+/** Explains why an action, such as confirming a booking or hiding an event type, failed. */
+export function actionErrorMessage(
+  t: TFunction,
+  error: unknown,
+  { fallback, notFound }: ActionErrorMessages
+): string {
   if (error instanceof CalApiError) {
-    if (error.kind === "not_found") return t("bookingDetail.notFound");
+    if (error.kind === "not_found") return notFound;
     if (error.kind === "invalid_request" || error.kind === "forbidden" || error.kind === "conflict") {
       const explanation = readableServerMessage(error.serverMessage);
       if (explanation) return t("bookingActions.serverSaid", { message: explanation });
