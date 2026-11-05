@@ -19,7 +19,8 @@ Signing out removes the key and your server's details from the phone.
 
 Everything Janji changes, it changes on your own server, through the same API the web app's settings use. Turning
 notifications on adds one webhook to your account on the server, for that phone; turning them off or signing out
-removes it.
+removes it. As it starts, the app also removes its webhooks for phones the relay no longer knows, such as after an
+uninstall.
 
 ## Push notifications
 
@@ -34,9 +35,10 @@ Notifications go through a small relay, a service that runs on Cloudflare. You c
 When your server sends the relay a webhook about a booking, the relay checks its signature, writes the
 notification and sends it. It doesn't keep or log the booking: the webhook is gone once the notification is sent.
 
-The notification itself, with the event's name, its start time and the first attendee's name, passes through
-**Expo's push service** and **Apple Push Notification service or Firebase Cloud Messaging** on its way to your
-phone, as all push notifications do.
+The notification itself passes through **Expo's push service** and **Apple Push Notification service or Firebase
+Cloud Messaging** on its way to your phone, as all push notifications do. It holds the event's name, its start time
+and the first attendee's name, and the booking's ID, so that tapping it opens the booking. A reschedule's
+notification also holds the ID of the booking it replaced.
 
 Turning notifications off, or signing out, deletes the phone from the relay. So does uninstalling the app, once
 Apple or Google tell Expo the phone can't get notifications any more.
