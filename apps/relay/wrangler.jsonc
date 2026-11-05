@@ -8,6 +8,10 @@
     // Registrations per minute from one IP address.
     { "name": "REGISTER_LIMIT", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }
   ],
+  "kv_namespaces": [
+    // Replaced with the ID `wrangler kv namespace create DEDUPE` prints, before the first deploy.
+    { "binding": "DEDUPE", "id": "00000000000000000000000000000000" }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
