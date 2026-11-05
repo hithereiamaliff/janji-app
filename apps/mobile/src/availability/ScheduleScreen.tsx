@@ -195,6 +195,15 @@ export function ScheduleScreen({ id }: { id: number }) {
         <Text style={[styles.body, { color: colors.text }]}>
           {t("availability.timeZoneValue", { city: timeZoneCity(details.timeZone), zone: details.timeZone })}
         </Text>
+        <View style={styles.sectionAction}>
+          <Button
+            variant="secondary"
+            label={t("availability.details.action")}
+            onPress={() =>
+              router.push({ pathname: "/schedule/[id]/details", params: { id: String(details.id) } })
+            }
+          />
+        </View>
       </Section>
       <DefaultSection schedule={details} />
       <DeleteControls schedule={details} remove={remove} />
