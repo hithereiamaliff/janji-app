@@ -162,7 +162,7 @@ describe("turnOffNotifications", () => {
     const { calClient, relay, sent } = servers();
     mockStore.set("janji.notifications", JSON.stringify(registration));
 
-    await turnOffNotifications({ calClient, relay, registration });
+    await turnOffNotifications({ calClient, relayFor: () => relay });
 
     expect(sent.map(({ to, method, path, token }) => ({ to, method, path, token }))).toEqual([
       {
@@ -182,7 +182,7 @@ describe("turnOffNotifications", () => {
     );
     mockStore.set("janji.notifications", JSON.stringify(registration));
 
-    await turnOffNotifications({ calClient, relay, registration });
+    await turnOffNotifications({ calClient, relayFor: () => relay });
 
     expect(mockStore.size).toBe(0);
   });
@@ -194,9 +194,9 @@ describe("turnOffNotifications", () => {
     });
     mockStore.set("janji.notifications", JSON.stringify(registration));
 
-    await expect(
-      turnOffNotifications({ calClient, relay: unreachable, registration })
-    ).rejects.toBeInstanceOf(RelayRequestError);
+    await expect(turnOffNotifications({ calClient, relayFor: () => unreachable })).rejects.toBeInstanceOf(
+      RelayRequestError
+    );
 
     expect(sent).toEqual([]);
     await expect(loadPushRegistration()).resolves.toEqual(registration);

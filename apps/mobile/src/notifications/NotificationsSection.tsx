@@ -11,7 +11,6 @@ import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
 
 import type { TurnOnResult } from "./notifications";
-import type { PushRegistration } from "./registration-storage";
 import { RelayRequestError } from "./relay-client";
 import { useNotifications, useTurnOffNotifications, useTurnOnNotifications } from "./useNotifications";
 
@@ -50,10 +49,10 @@ export function NotificationsSection() {
     });
   }
 
-  function handleTurnOff(registration: PushRegistration) {
+  function handleTurnOff() {
     setRefusal(null);
     turnOn.reset();
-    turnOff.mutate(registration);
+    turnOff.mutate();
   }
 
   const state = notifications.data;
@@ -90,7 +89,7 @@ export function NotificationsSection() {
             disabled={busy}
             onValueChange={(on) => {
               if (on) handleTurnOn();
-              else if (registration) handleTurnOff(registration);
+              else handleTurnOff();
             }}
           />
         </View>

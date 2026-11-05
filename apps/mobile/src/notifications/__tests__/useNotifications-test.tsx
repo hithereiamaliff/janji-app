@@ -67,7 +67,7 @@ function NotificationsSwitch() {
         <Text>Turn on</Text>
       </Pressable>
       {state.status === "on" ? (
-        <Pressable accessibilityRole="button" onPress={() => turnOff.mutate(state.registration)}>
+        <Pressable accessibilityRole="button" onPress={() => turnOff.mutate()}>
           <Text>Turn off</Text>
         </Pressable>
       ) : null}
