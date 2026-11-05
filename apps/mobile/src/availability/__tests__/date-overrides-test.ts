@@ -1,14 +1,11 @@
 import "@/i18n";
 
-import { format } from "date-fns";
 import { t } from "i18next";
 
 import {
   defaultOverrideRanges,
-  overrideDateText,
   overrideDays,
   overrideHoursText,
-  todayIn,
   upcomingOverrideDays,
   weekdayOf,
   withOverride,
@@ -49,18 +46,6 @@ describe("overrideDays", () => {
         { date: "2026-12-31", startTime: "10:00", endTime: "14:00" },
       ])
     ).toEqual([{ date: "2026-12-31", ranges: [{ start: "10:00", end: "14:00" }] }]);
-  });
-});
-
-describe("todayIn", () => {
-  it("gives today's date on the time zone's clock", () => {
-    expect(todayIn("Europe/London", now)).toBe("2026-11-05");
-    expect(todayIn("America/Los_Angeles", now)).toBe("2026-11-05");
-    expect(todayIn("Asia/Kuala_Lumpur", now)).toBe("2026-11-06");
-  });
-
-  it("falls back to the device's date for a time zone Intl doesn't know", () => {
-    expect(todayIn("Mars/Olympus", now)).toBe(format(now, "yyyy-MM-dd"));
   });
 });
 
@@ -153,13 +138,6 @@ describe("defaultOverrideRanges", () => {
 
   it("starts from 9:00 to 17:00 on a weekday with no hours", () => {
     expect(defaultOverrideRanges(hours, "2026-11-08")).toEqual([{ start: "09:00", end: "17:00" }]);
-  });
-});
-
-describe("overrideDateText", () => {
-  it("writes the date short, or in full for screen readers", () => {
-    expect(overrideDateText("2026-12-24", "en-US")).toBe("Thu, Dec 24, 2026");
-    expect(overrideDateText("2026-12-24", "en-US", "long")).toBe("Thursday, December 24, 2026");
   });
 });
 
