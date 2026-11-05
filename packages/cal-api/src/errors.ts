@@ -55,6 +55,22 @@ function isCalApiErrorBody(body: unknown): body is CalApiErrorBody {
   return typeof body === "object" && body !== null && "status" in body && body.status === "error";
 }
 
+/**
+ * What NestJS answers for errors API v2 has no filter for, such as the HttpError Cal.diy's booking code throws
+ * ("Cancellation reason is required"): its fallback handler sends `{ statusCode, message }` instead of the
+ * usual envelope.
+ */
+type NestErrorBody = {
+  statusCode: number;
+  message?: unknown;
+};
+
+function isNestErrorBody(body: unknown): body is NestErrorBody {
+  return (
+    typeof body === "object" && body !== null && "statusCode" in body && typeof body.statusCode === "number"
+  );
+}
+
 function kindForStatus(status: number): CalApiErrorKind {
   if (status === 401 || status === 498) return "unauthorized";
   if (status === 403) return "forbidden";
@@ -83,10 +99,14 @@ export function toCalApiError(response: Response, body: unknown): CalApiError {
   if (status >= 500) {
     return new CalApiError({ kind: "server_error", status });
   }
-  if (!isCalApiErrorBody(body)) {
+  let message: unknown;
+  if (isCalApiErrorBody(body)) {
+    message = body.error?.message;
+  } else if (isNestErrorBody(body)) {
+    message = body.message;
+  } else {
     return new CalApiError({ kind: "not_cal_api", status });
   }
-  const message = body.error?.message;
   return new CalApiError({
     kind: kindForStatus(status),
     status,
