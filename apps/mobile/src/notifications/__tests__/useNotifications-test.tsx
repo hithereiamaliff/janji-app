@@ -5,9 +5,9 @@ import type { ReactNode } from "react";
 import { Pressable, Text } from "react-native";
 
 import { QueryProvider } from "@/data/QueryProvider";
-import type { PushSetup } from "@/notifications/push-setup";
 import type { PushRegistration } from "@/notifications/registration-storage";
 import {
+  useChooseRelay,
   useNotifications,
   useNotificationsSync,
   useTurnOffNotifications,
@@ -18,7 +18,8 @@ import { SessionProvider, useSession } from "@/session/SessionProvider";
 import { jsonResponse, testAccount } from "@/test-utils/fixtures";
 
 const mockStore = new Map<string, string>();
-let mockSetup: PushSetup | null;
+// The app config's `extra`, as a build has it.
+let mockExtra: unknown;
 let mockToken = "ExponentPushToken[abc]";
 const mockTokenListeners = new Set<() => void>();
 
@@ -42,7 +43,17 @@ jest.mock("expo-notifications", () => ({
   },
 }));
 
-jest.mock("@/notifications/push-setup", () => ({ pushSetup: () => mockSetup }));
+jest.mock("expo-constants", () => ({
+  __esModule: true,
+  default: {
+    get expoConfig() {
+      return { extra: mockExtra };
+    },
+    easConfig: null,
+  },
+}));
+
+const build = { relayOrigin: "https://relay.example", eas: { projectId: "project-1" } };
 
 const hookUrl = "https://relay.example/v1/hooks/AAAAAAAAAAAAAAAAAAAAAA";
 const registration: PushRegistration = {
@@ -65,11 +76,19 @@ function NotificationsSwitch() {
   const notifications = useNotifications();
   const turnOn = useTurnOnNotifications();
   const turnOff = useTurnOffNotifications();
+  const chooseRelay = useChooseRelay();
   const state = notifications.data;
   if (!state) return <Text>loading</Text>;
   return (
     <>
       <Text>{state.status === "unavailable" ? "unavailable" : `${state.status}, ${state.permission}`}</Text>
+      {state.status === "unavailable" ? null : <Text>{`relay ${state.relay.origin}`}</Text>}
+      <Pressable accessibilityRole="button" onPress={() => chooseRelay.mutate("https://my-relay.example")}>
+        <Text>Use my relay</Text>
+      </Pressable>
+      <Pressable accessibilityRole="button" onPress={() => chooseRelay.mutate(null)}>
+        <Text>Use the build's relay</Text>
+      </Pressable>
       <Pressable accessibilityRole="button" onPress={() => turnOn.mutate()}>
         <Text>Turn on</Text>
       </Pressable>
@@ -90,7 +109,7 @@ async function renderSwitch() {
     const request = input instanceof Request ? input : new Request(String(input));
     const { origin, pathname } = new URL(request.url);
     sent.push(`${request.method} ${origin}${pathname}`);
-    if (origin === "https://relay.example") {
+    if (origin.endsWith("relay.example")) {
       if (request.method === "DELETE") return new Response(null, { status: 204 });
       registered.push(await request.json());
       return jsonResponse(
@@ -122,12 +141,12 @@ async function renderSwitch() {
 describe("useNotifications", () => {
   beforeEach(() => {
     mockStore.clear();
-    mockSetup = { platform: "ios", relayOrigin: "https://relay.example", projectId: "project-1" };
+    mockExtra = build;
   });
   afterEach(() => jest.restoreAllMocks());
 
   it("is unavailable in a build without notifications", async () => {
-    mockSetup = null;
+    mockExtra = {};
     await renderSwitch();
 
     expect(await screen.findByText("unavailable")).toBeOnTheScreen();
@@ -157,6 +176,29 @@ describe("useNotifications", () => {
     ]);
   });
 
+  it("goes through the relay chosen under Advanced, until it's set back to the build's", async () => {
+    const { sent } = await renderSwitch();
+    expect(await screen.findByText("relay https://relay.example")).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Use my relay" }));
+    expect(await screen.findByText("relay https://my-relay.example")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: "Turn on" }));
+    expect(await screen.findByText("on, granted")).toBeOnTheScreen();
+    expect(sent[0]).toBe("POST https://my-relay.example/v1/devices");
+
+    await fireEvent.press(screen.getByRole("button", { name: "Use the build's relay" }));
+    expect(await screen.findByText("relay https://relay.example")).toBeOnTheScreen();
+  });
+
+  it("has no relay in a build made without one, until one is chosen", async () => {
+    mockExtra = { eas: { projectId: "project-1" } };
+    await renderSwitch();
+
+    expect(await screen.findByText("relay null")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: "Use my relay" }));
+    expect(await screen.findByText("relay https://my-relay.example")).toBeOnTheScreen();
+  });
+
   it("doesn't count notifications another account turned on as this one's", async () => {
     mockStore.set("janji.notifications", JSON.stringify({ ...registration, userId: 8 }));
     await renderSwitch();
@@ -173,7 +215,7 @@ function Sync() {
 describe("useNotificationsSync", () => {
   beforeEach(() => {
     mockStore.clear();
-    mockSetup = { platform: "ios", relayOrigin: "https://relay.example", projectId: "project-1" };
+    mockExtra = build;
     mockToken = "ExponentPushToken[abc]";
   });
   afterEach(() => jest.restoreAllMocks());

@@ -119,7 +119,7 @@ export function NotificationsSection() {
     ) : (
       <ActivityIndicator accessibilityLabel={t("common.loading")} color={colors.accent} />
     );
-  } else if (state.status === "unavailable") {
+  } else if (state.status === "unavailable" || state.relay.origin === null) {
     content = (
       <Text style={[styles.body, { color: colors.textMuted }]}>{t("notifications.unavailable")}</Text>
     );

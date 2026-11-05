@@ -49,9 +49,10 @@ jest.mock("expo-notifications", () => ({
   setNotificationHandler: () => undefined,
 }));
 
-jest.mock("@/notifications/push-setup", () => ({
-  pushSetup: () => ({ platform: "ios", relayOrigin: "https://relay.example", projectId: "project-1" }),
-}));
+jest.mock("@/notifications/push-setup", () => {
+  const setup = { platform: "ios", relayOrigin: "https://relay.example", projectId: "project-1" };
+  return { pushBuild: () => setup, loadPushSetup: async () => setup };
+});
 
 const booking: TestBooking = {
   uid: "booking-1",
