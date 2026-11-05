@@ -413,7 +413,9 @@
       "title": "About Janji",
       "version": "Version {{version}}",
       "license": "Janji is open source under the MIT licence.",
-      "source": "Source code"
+      "source": "Source code",
+      "privacy": "Privacy policy",
+      "help": "Help and support"
     },
     "signOut": "Sign out",
     "signOutHint": "Removes the API key from this device",
