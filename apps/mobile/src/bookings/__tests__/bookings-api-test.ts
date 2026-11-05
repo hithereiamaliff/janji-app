@@ -1,7 +1,7 @@
 import { createCalClient } from "@janji/cal-api/client";
 import { CalApiError } from "@janji/cal-api/errors";
 
-import { BOOKINGS_PAGE_SIZE, fetchBookingsPage } from "@/bookings/bookings-api";
+import { BOOKINGS_PAGE_SIZE, fetchBooking, fetchBookingsPage } from "@/bookings/bookings-api";
 import { jsonResponse } from "@/test-utils/fixtures";
 
 function bookingsBody({ uids, hasNextPage }: { uids: string[]; hasNextPage: boolean }) {
@@ -113,5 +113,48 @@ describe("fetchBookingsPage", () => {
     await expect(fetchBookingsPage(client, { filter: "upcoming", page: 0 })).rejects.toBeInstanceOf(
       CalApiError
     );
+  });
+});
+
+describe("fetchBooking", () => {
+  const single = (uid: string) => bookingsBody({ uids: [uid], hasNextPage: false }).data[0];
+
+  it("loads one booking by uid as a BookingDetail", async () => {
+    const { client, urls } = clientRespondingWith(() =>
+      jsonResponse({ status: "success", data: single("abc") })
+    );
+
+    const detail = await fetchBooking(client, "abc");
+
+    expect(urls[0]?.pathname).toBe("/api/v2/bookings/abc");
+    expect(detail).toMatchObject({ uid: "abc", title: "Booking abc", answers: [], hosts: [] });
+  });
+
+  it("includes the booking question answers from the response", async () => {
+    const withAnswers = {
+      ...single("abc"),
+      bookingFieldsResponses: { notes: "Travelling with kids", "arrival-date": "2026-12-01" },
+    };
+    const { client } = clientRespondingWith(() => jsonResponse({ status: "success", data: withAnswers }));
+
+    await expect(fetchBooking(client, "abc")).resolves.toMatchObject({
+      answers: [
+        { field: "notes", value: "Travelling with kids" },
+        { field: "arrival-date", value: "2026-12-01" },
+      ],
+    });
+  });
+
+  it("picks the requested occurrence when the API returns a recurring series", async () => {
+    const series = ["first", "second"].map((uid) => ({ ...single(uid), recurringBookingUid: "series-1" }));
+    const { client } = clientRespondingWith(() => jsonResponse({ status: "success", data: series }));
+
+    await expect(fetchBooking(client, "second")).resolves.toMatchObject({ uid: "second", isRecurring: true });
+  });
+
+  it("reports an empty series as not found", async () => {
+    const { client } = clientRespondingWith(() => jsonResponse({ status: "success", data: [] }));
+
+    await expect(fetchBooking(client, "series-1")).rejects.toMatchObject({ kind: "not_found" });
   });
 });
