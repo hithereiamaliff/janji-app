@@ -33,6 +33,12 @@ describe("alertFor", () => {
     expect(alertFor(webhook({ attendee: null }), "en-US").body).toBe("Consultation · Thu, Nov 12, 3:00 PM");
   });
 
+  it("links a reschedule to the booking it replaced, too", () => {
+    const moved = webhook({ trigger: "BOOKING_RESCHEDULED", uid: "booking-2", rescheduleUid: "booking-1" });
+
+    expect(alertFor(moved, "en").data).toEqual({ bookingUid: "booking-2", rescheduledFrom: "booking-1" });
+  });
+
   it("still writes the alert for a locale the runtime doesn't know", () => {
     expect(alertFor(webhook(), "zz-ZZZZ").body).toContain("Consultation");
   });

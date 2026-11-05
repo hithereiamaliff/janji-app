@@ -40,6 +40,20 @@ describe("readBookingWebhook", () => {
       attendeeName: "Jane",
       requiresConfirmation: false,
       recurring: false,
+      rescheduledFrom: null,
+    });
+  });
+
+  it("notes the booking a reschedule replaces", () => {
+    const moved = webhookBody({
+      trigger: "BOOKING_RESCHEDULED",
+      uid: "booking-2",
+      rescheduleUid: "booking-1",
+    });
+
+    expect(readBookingWebhook(moved)).toMatchObject({ uid: "booking-2", rescheduledFrom: "booking-1" });
+    expect(readBookingWebhook(webhookBody({ rescheduleUid: "booking-1" }))).toMatchObject({
+      rescheduledFrom: null,
     });
   });
 

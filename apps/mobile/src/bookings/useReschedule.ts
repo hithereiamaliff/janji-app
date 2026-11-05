@@ -4,6 +4,7 @@ import { useAccountKey } from "@/data/useAccountKey";
 import { useCalClient, useSignedInAccount } from "@/session/SessionProvider";
 
 import type { BookingDetail } from "./booking-detail";
+import { noteChangedHere } from "./recent-changes";
 import { fetchRescheduleSlots, rescheduleBooking } from "./reschedule";
 
 export type SlotWindow = {
@@ -51,7 +52,10 @@ export function useRescheduleBooking(uid: string) {
     mutationFn: ({ start, reason }: RescheduleInput) =>
       rescheduleBooking(client, uid, { start, reason, rescheduledBy: account.user.email }),
     retry: false,
-    onSuccess: () => {
+    // Before the request, since Cal.diy's notification about it can reach the phone before the answer does.
+    onMutate: () => noteChangedHere(uid),
+    onSuccess: (newUid) => {
+      noteChangedHere(newUid);
       // Cal.diy cancels the original booking as rescheduled and creates a new one, so cached bookings and lists
       // reload, and this booking's free times no longer apply.
       void queryClient.invalidateQueries({ queryKey: ["booking", accountKey] });

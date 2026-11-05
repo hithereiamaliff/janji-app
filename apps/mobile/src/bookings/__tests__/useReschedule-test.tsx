@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import type { ReactNode } from "react";
 import { Pressable, Text } from "react-native";
 
+import { changedHereRecently } from "@/bookings/recent-changes";
 import { useBooking } from "@/bookings/useBooking";
 import { useBookings } from "@/bookings/useBookings";
 import { useRescheduleBooking } from "@/bookings/useReschedule";
@@ -107,5 +108,8 @@ describe("useRescheduleBooking", () => {
     await waitFor(() =>
       expect(sent.filter((request) => request.path === "/api/v2/bookings")).toHaveLength(2)
     );
+    // Cal.diy's notification names the new booking, and the relay adds the one it replaced.
+    expect(changedHereRecently("b1")).toBe(true);
+    expect(changedHereRecently("b2")).toBe(true);
   });
 });

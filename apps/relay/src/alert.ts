@@ -3,8 +3,8 @@ import type { BookingWebhook } from "./webhook";
 export type Alert = {
   title: string;
   body: string;
-  /** Opens the booking when the notification is tapped. */
-  data: { bookingUid: string };
+  /** Opens the booking when the notification is tapped; a reschedule also names the booking it replaced. */
+  data: { bookingUid: string; rescheduledFrom?: string };
 };
 
 // Only English so far; the app's other languages will bring theirs.
@@ -57,7 +57,9 @@ export function alertFor(webhook: BookingWebhook, locale: string): Alert {
     body: [webhook.eventTitle, startText(webhook.start, webhook.timeZone, locale), webhook.attendeeName]
       .filter(Boolean)
       .join(" · "),
-    data: { bookingUid: webhook.uid },
+    data: webhook.rescheduledFrom
+      ? { bookingUid: webhook.uid, rescheduledFrom: webhook.rescheduledFrom }
+      : { bookingUid: webhook.uid },
   };
 }
 

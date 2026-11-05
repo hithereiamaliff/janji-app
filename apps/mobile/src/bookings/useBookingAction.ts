@@ -5,6 +5,7 @@ import { useAccountKey } from "@/data/useAccountKey";
 import { useCalClient } from "@/session/SessionProvider";
 
 import type { BookingDetail } from "./booking-detail";
+import { noteChangedHere } from "./recent-changes";
 
 type BookingAction<Input> = (client: CalClient, uid: string, input: Input) => Promise<BookingDetail | null>;
 
@@ -21,6 +22,8 @@ export function useBookingAction<Input = void>(uid: string, action: BookingActio
   return useMutation({
     mutationFn: (input: Input) => action(client, uid, input),
     retry: false,
+    // Before the request, since Cal.diy's notification about it can reach the phone before the answer does.
+    onMutate: () => noteChangedHere(uid),
     onSuccess: (booking) => {
       // Cancelling or confirming a series changes its other occurrences too, so every cached booking goes
       // stale and reloads when next opened.

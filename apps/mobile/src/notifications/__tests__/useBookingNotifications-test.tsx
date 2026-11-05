@@ -1,6 +1,7 @@
 import { act, renderRouter, screen, waitFor } from "expo-router/testing-library";
 
-import { bookingUidOf } from "@/notifications/useBookingNotifications";
+import { noteChangedHere } from "@/bookings/recent-changes";
+import { bookingUidOf, presentationOf } from "@/notifications/useBookingNotifications";
 import { saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
 import {
@@ -45,6 +46,7 @@ jest.mock("expo-notifications", () => ({
     return { remove: () => mockArrivals.delete(listener) };
   },
   addPushTokenListener: () => ({ remove: () => undefined }),
+  setNotificationHandler: () => undefined,
 }));
 
 jest.mock("@/notifications/push-setup", () => ({
@@ -145,5 +147,34 @@ describe("bookingUidOf", () => {
     expect(bookingUidOf(about({ bookingUid: 4 }))).toBeNull();
     expect(bookingUidOf(about({ bookingUid: "" }))).toBeNull();
     expect(bookingUidOf({ request: { content: {} } })).toBeNull();
+  });
+});
+
+describe("presentationOf", () => {
+  const shown = {
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  };
+  const quiet = {
+    shouldShowBanner: false,
+    shouldShowList: false,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  };
+
+  it("shows a notification about someone else's change", () => {
+    expect(presentationOf(about({ bookingUid: "booked-elsewhere" }))).toEqual(shown);
+  });
+
+  it("keeps quiet about a booking just changed in Janji, and a reschedule of one", () => {
+    noteChangedHere("cancelled-here");
+    noteChangedHere("moved-here");
+
+    expect(presentationOf(about({ bookingUid: "cancelled-here" }))).toEqual(quiet);
+    expect(presentationOf(about({ bookingUid: "new-booking", rescheduledFrom: "moved-here" }))).toEqual(
+      quiet
+    );
   });
 });

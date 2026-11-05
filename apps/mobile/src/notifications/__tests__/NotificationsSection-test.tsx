@@ -38,6 +38,7 @@ jest.mock("expo-notifications", () => ({
   getLastNotificationResponse: () => null,
   addNotificationResponseReceivedListener: () => ({ remove: () => undefined }),
   addNotificationReceivedListener: () => ({ remove: () => undefined }),
+  setNotificationHandler: () => undefined,
 }));
 
 jest.mock("@/notifications/push-setup", () => ({ pushSetup: () => mockSetup }));
