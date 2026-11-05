@@ -1,5 +1,6 @@
 import { useLocales } from "expo-localization";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -8,6 +9,7 @@ import { timeZoneCity } from "@/bookings/format";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
+import { appVersion } from "@/lib/app-version";
 import { weekdayName } from "@/lib/calendar-date";
 import { clockExample } from "@/profile/profile-text";
 import { useProfile } from "@/profile/useProfile";
@@ -73,6 +75,53 @@ function ProfileSection() {
   );
 }
 
+const SOURCE_CODE_URL = "https://github.com/hithereiamaliff/janji-app";
+
+function openInBrowser(url: string) {
+  // Without a browser to open there's nothing more to do; the button stays for another try.
+  WebBrowser.openBrowserAsync(url).catch(() => undefined);
+}
+
+function WebSection({ serverOrigin }: { serverOrigin: string }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  return (
+    <Section title={t("settings.web.title")}>
+      <View style={styles.group}>
+        <Text style={[styles.body, { color: colors.textMuted }]}>{t("settings.web.description")}</Text>
+        <Button
+          variant="secondary"
+          label={t("settings.web.open")}
+          onPress={() => openInBrowser(serverOrigin)}
+        />
+      </View>
+    </Section>
+  );
+}
+
+function AboutSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const version = appVersion();
+  return (
+    <Section title={t("settings.about.title")}>
+      <View style={styles.group}>
+        {version ? (
+          <Text style={[styles.body, { color: colors.text }]}>
+            {t("settings.about.version", { version })}
+          </Text>
+        ) : null}
+        <Text style={[styles.body, { color: colors.textMuted }]}>{t("settings.about.license")}</Text>
+        <Button
+          variant="secondary"
+          label={t("settings.about.source")}
+          onPress={() => openInBrowser(SOURCE_CODE_URL)}
+        />
+      </View>
+    </Section>
+  );
+}
+
 export function SettingsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -102,6 +151,8 @@ export function SettingsScreen() {
         </Text>
       </Section>
       <ProfileSection />
+      <WebSection serverOrigin={serverOrigin} />
+      <AboutSection />
       <Button
         variant="destructive"
         label={t("settings.signOut")}

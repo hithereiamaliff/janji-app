@@ -1,4 +1,5 @@
 import { fireEvent, renderRouter, screen } from "expo-router/testing-library";
+import * as WebBrowser from "expo-web-browser";
 
 import en from "@/i18n/locales/en.json";
 import { saveSession } from "@/session/account-storage";
@@ -16,6 +17,9 @@ jest.mock("expo-secure-store", () => ({
     mockStore.delete(key);
   },
 }));
+jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn(async () => ({ type: "opened" })) }));
+// Jest has no built app, so the version app.config.ts would give comes from here.
+jest.mock("@/lib/app-version", () => ({ appVersion: () => "0.1.0" }));
 
 /** Opens Settings. The profile is answered with `profile` in turn, then as `me` describes it. */
 async function openSettings(me: Partial<typeof testMeResponse.data> = {}, profile: Response[] = []) {
@@ -60,5 +64,24 @@ describe("Settings", () => {
     await fireEvent.press(screen.getByRole("button", { name: en.loadErrors.retry }));
 
     expect(await screen.findByLabelText("Weeks start on, Monday")).toBeOnTheScreen();
+  });
+
+  it("opens the Cal.diy server and Janji's source code in the browser", async () => {
+    await openSettings();
+
+    await fireEvent.press(await screen.findByRole("button", { name: en.settings.web.open }));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenLastCalledWith("https://book.example.com");
+
+    await fireEvent.press(screen.getByRole("button", { name: en.settings.about.source }));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenLastCalledWith(
+      "https://github.com/hithereiamaliff/janji-app"
+    );
+  });
+
+  it("says which version of Janji this is", async () => {
+    await openSettings();
+
+    expect(await screen.findByText("Version 0.1.0")).toBeOnTheScreen();
+    expect(screen.getByText(en.settings.about.license)).toBeOnTheScreen();
   });
 });
