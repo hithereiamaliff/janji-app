@@ -68,5 +68,7 @@ A production build goes to the stores with `bunx eas-cli submit --platform ios` 
 ## Before the first store release
 
 - Replace the placeholder icon and splash screen, which come from Expo's template.
-- Make the repository public: the app links to its source code.
-- Review [`privacy.md`](./privacy.md), which the store listings link to.
+- Make the repository public: the app links to its source code, and the listings to its support and privacy
+  pages.
+- Review [`privacy.md`](./privacy.md) and [`support.md`](./support.md), which the store listings link to.
+- Fill in the listings and the stores' privacy forms from [`store-listing.md`](./store-listing.md).
