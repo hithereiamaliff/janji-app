@@ -7,6 +7,8 @@ export type WebhookOptions = {
   recurring?: boolean;
   requiresConfirmation?: boolean;
   attendee?: string | null;
+  /** For a reschedule, the booking it replaces. */
+  rescheduleUid?: string;
 };
 
 export function webhookBody({
@@ -16,6 +18,7 @@ export function webhookBody({
   recurring = false,
   requiresConfirmation = false,
   attendee = "Jane",
+  rescheduleUid,
 }: WebhookOptions = {}): string {
   return JSON.stringify({
     triggerEvent: trigger,
@@ -31,6 +34,7 @@ export function webhookBody({
       uid,
       requiresConfirmation,
       ...(recurring ? { recurringEvent: { freq: 2, count: 4, interval: 1 } } : {}),
+      ...(rescheduleUid ? { rescheduleUid } : {}),
     },
   });
 }

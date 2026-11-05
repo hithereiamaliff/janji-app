@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { Pressable, Text } from "react-native";
-
 import { confirmBooking } from "@/bookings/booking-actions";
+import { changedHereRecently } from "@/bookings/recent-changes";
 import { useBooking } from "@/bookings/useBooking";
 import { useBookingAction } from "@/bookings/useBookingAction";
 import { useBookings } from "@/bookings/useBookings";
@@ -105,6 +105,8 @@ describe("useBookingAction", () => {
     );
     // The confirm response already had the booking, so it isn't fetched again.
     expect(requests.filter((request) => request.path === "/api/v2/bookings/b1")).toHaveLength(1);
+    // So Cal.diy's notification about it stays quiet.
+    expect(changedHereRecently("b1")).toBe(true);
   });
 
   it("sends an action once, even when it fails", async () => {

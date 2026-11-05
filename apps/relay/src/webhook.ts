@@ -28,6 +28,8 @@ export type BookingWebhook = {
   requiresConfirmation: boolean;
   /** A recurring series fires once for each booking in it, with nothing to tie them together but this. */
   recurring: boolean;
+  /** For a reschedule, the booking it replaces, which is the one the app moved if the move was made there. */
+  rescheduledFrom: string | null;
 };
 
 function hexToBytes(hex: string): Uint8Array<ArrayBuffer> | null {
@@ -100,5 +102,6 @@ export function readBookingWebhook(body: string): BookingWebhook | "other" | nul
     attendeeName: isRecord(firstAttendee) ? text(firstAttendee.name) : null,
     requiresConfirmation: payload.requiresConfirmation === true,
     recurring: isRecord(payload.recurringEvent),
+    rescheduledFrom: trigger === "BOOKING_RESCHEDULED" ? text(payload.rescheduleUid) : null,
   };
 }
