@@ -11,7 +11,9 @@ export function Badge({ label, color }: BadgeProps) {
 }
 
 const styles = StyleSheet.create({
+  // Badges are a word or two; next to a long title in a row, the title should wrap rather than the badge.
   badge: {
+    flexShrink: 0,
     fontSize: 13,
     fontWeight: "600",
     borderWidth: 1,

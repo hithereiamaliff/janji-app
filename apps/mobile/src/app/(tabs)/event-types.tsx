@@ -1,8 +1,3 @@
-import { useTranslation } from "react-i18next";
+import { EventTypesScreen } from "@/event-types/EventTypesScreen";
 
-import { PlaceholderScreen } from "@/components/PlaceholderScreen";
-
-export default function EventTypesScreen() {
-  const { t } = useTranslation();
-  return <PlaceholderScreen message={t("placeholder.eventTypes")} />;
-}
+export default EventTypesScreen;
