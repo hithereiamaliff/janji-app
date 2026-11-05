@@ -407,11 +407,27 @@
     },
     "signOut": "Sign out",
     "signOutHint": "Removes the API key from this device",
-    "signOutFailed": "Couldn't remove the API key from this device. Try again.",
-    "comingSoon": "Notification settings are coming soon."
+    "signOutFailed": "Couldn't remove the API key from this device. Try again."
   },
   "notifications": {
-    "channel": "Bookings"
+    "channel": "Bookings",
+    "title": "Notifications",
+    "label": "Booking notifications",
+    "description": "Get a notification on this phone when someone books, asks you to confirm a booking, reschedules or cancels.",
+    "unavailable": "This version of Janji can't send notifications.",
+    "loadFailed": "Couldn't check this phone's notifications. Try again.",
+    "turningOn": "Turning on notifications",
+    "turningOff": "Turning off notifications",
+    "blocked": "Your phone's settings don't let Janji send notifications. Allow them there, then turn this on again.",
+    "blockedWhileOn": "Your phone's settings don't let Janji show notifications. Allow them there to get them again.",
+    "openSettings": "Open phone settings",
+    "notAllowed": "Notifications stay off until you allow them. Turn this on again and choose Allow.",
+    "notAllowedWhileOn": "This phone hasn't allowed Janji to show notifications yet.",
+    "allow": "Allow notifications",
+    "relayUnreachable": "Couldn't reach Janji's notification service. Check your internet connection and try again.",
+    "relayBusy": "Janji's notification service is busy. Wait a minute and try again.",
+    "turnOnFailed": "Couldn't turn on notifications. Try again.",
+    "turnOffFailed": "Couldn't turn off notifications. Try again."
   },
   "signIn": {
     "server": {
