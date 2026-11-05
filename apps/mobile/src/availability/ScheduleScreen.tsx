@@ -103,6 +103,13 @@ function OverridesSection({ schedule }: { schedule: Schedule }) {
           );
         })
       )}
+      <View style={styles.sectionAction}>
+        <Button
+          variant="secondary"
+          label={t("availability.overrides.add")}
+          onPress={() => router.push({ pathname: "/schedule/[id]/override/new", params: { id } })}
+        />
+      </View>
     </Section>
   );
 }
