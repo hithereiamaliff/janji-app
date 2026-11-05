@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { changedHereRecently } from "@/bookings/recent-changes";
 import { useAccountKey } from "@/data/useAccountKey";
 
-import { pushSetup } from "./push-setup";
+import { pushBuild } from "./push-setup";
 
 type BookingNotification = { request: { content: { data?: Record<string, unknown> } } };
 
@@ -41,7 +41,7 @@ export function useBookingNotifications(enabled: boolean) {
   const accountKey = useAccountKey();
 
   useEffect(() => {
-    if (!enabled || !pushSetup()) return;
+    if (!enabled || !pushBuild()) return;
     Notifications.setNotificationHandler({
       handleNotification: async (notification) => presentationOf(notification),
     });

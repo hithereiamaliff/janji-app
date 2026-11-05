@@ -2,7 +2,7 @@ import { fireEvent, renderRouter, screen, waitFor } from "expo-router/testing-li
 import { Linking } from "react-native";
 
 import en from "@/i18n/locales/en.json";
-import type { PushSetup } from "@/notifications/push-setup";
+import type { PushBuild } from "@/notifications/push-setup";
 import type { PushRegistration } from "@/notifications/registration-storage";
 import { saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
@@ -11,7 +11,7 @@ import { jsonResponse, testAccount, testMeResponse } from "@/test-utils/fixtures
 type MockPermission = { granted: boolean; canAskAgain: boolean };
 
 const mockStore = new Map<string, string>();
-let mockSetup: PushSetup | null;
+let mockSetup: PushBuild | null;
 let mockPermission: MockPermission;
 let mockAnswer: MockPermission;
 
@@ -41,7 +41,10 @@ jest.mock("expo-notifications", () => ({
   setNotificationHandler: () => undefined,
 }));
 
-jest.mock("@/notifications/push-setup", () => ({ pushSetup: () => mockSetup }));
+jest.mock("@/notifications/push-setup", () => ({
+  pushBuild: () => mockSetup,
+  loadPushSetup: async () => (mockSetup?.relayOrigin ? mockSetup : null),
+}));
 
 const granted: MockPermission = { granted: true, canAskAgain: false };
 const notAsked: MockPermission = { granted: false, canAskAgain: true };
@@ -255,6 +258,14 @@ describe("booking notifications in Settings", () => {
     ).toBeDisabled();
     expect(screen.getByRole("switch", { name: en.notifications.events.BOOKING_CREATED })).not.toBeChecked();
     expect(screen.getByText(en.notifications.events.lastOne)).toBeOnTheScreen();
+  });
+
+  it("says this version of Janji can't send them when it has no relay", async () => {
+    mockSetup = { platform: "ios", relayOrigin: null, projectId: "project-1" };
+    await openSettings();
+
+    expect(await screen.findByText(en.notifications.unavailable)).toBeOnTheScreen();
+    expect(screen.queryByRole("switch", { name: en.notifications.label })).toBeNull();
   });
 
   it("says when this version of Janji can't send them", async () => {

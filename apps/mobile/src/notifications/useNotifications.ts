@@ -14,16 +14,25 @@ import {
   turnOnNotifications,
 } from "./notifications";
 import { onPushTokenChange, type PushPermission, readPushPermission } from "./push";
-import { pushSetup } from "./push-setup";
+import { loadPushSetup, pushBuild } from "./push-setup";
 import { loadPushRegistration, type PushRegistration } from "./registration-storage";
 import { createRelayClient } from "./relay-client";
+import { loadRelayChoice, saveRelayChoice } from "./relay-setting";
 import type { HookTrigger } from "./webhooks-api";
 
+/** Which relay notifications go through. */
+export type RelayInfo = {
+  /** The one in use: chosen under Advanced, or else the build's. Null when there's neither. */
+  origin: string | null;
+  /** The relay the build was made with, if any. */
+  buildOrigin: string | null;
+};
+
 export type NotificationsState =
-  /** On web, and in builds made without a relay or an EAS project. */
+  /** On web, and in builds made without an EAS project. */
   | { status: "unavailable" }
-  | { status: "off"; permission: PushPermission }
-  | { status: "on"; permission: PushPermission; registration: PushRegistration };
+  | { status: "off"; permission: PushPermission; relay: RelayInfo }
+  | { status: "on"; permission: PushPermission; relay: RelayInfo; registration: PushRegistration };
 
 function useNotificationsKey() {
   return ["notifications", useAccountKey()] as const;
@@ -35,10 +44,18 @@ export function useNotifications() {
   return useQuery({
     queryKey: useNotificationsKey(),
     queryFn: async (): Promise<NotificationsState> => {
-      if (!pushSetup()) return { status: "unavailable" };
-      const [registration, permission] = await Promise.all([loadPushRegistration(), readPushPermission()]);
-      if (registration && belongsTo(registration, account)) return { status: "on", permission, registration };
-      return { status: "off", permission };
+      const build = pushBuild();
+      if (!build) return { status: "unavailable" };
+      const [registration, permission, chosen] = await Promise.all([
+        loadPushRegistration(),
+        readPushPermission(),
+        loadRelayChoice(),
+      ]);
+      const relay = { origin: chosen ?? build.relayOrigin, buildOrigin: build.relayOrigin };
+      if (registration && belongsTo(registration, account)) {
+        return { status: "on", permission, relay, registration };
+      }
+      return { status: "off", permission, relay };
     },
     // Reading it is cheap and stays on the phone, and the person may change the permission in the phone's
     // settings while Janji is in the background, so it's read again each time the app comes back.
@@ -55,9 +72,9 @@ export function useTurnOnNotifications() {
   const queryKey = useNotificationsKey();
 
   return useMutation({
-    mutationFn: () => {
-      const setup = pushSetup();
-      if (!setup) throw new Error("This build of Janji has no notifications");
+    mutationFn: async () => {
+      const setup = await loadPushSetup();
+      if (!setup) throw new Error("Janji has no relay to send notifications through");
       return turnOnNotifications({
         calClient,
         relay: createRelayClient(setup.relayOrigin),
@@ -79,6 +96,21 @@ export function useTurnOffNotifications() {
 
   return useMutation({
     mutationFn: () => turnOffNotifications({ calClient }),
+    retry: false,
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+  });
+}
+
+/**
+ * Chooses the relay notifications go through, or with null goes back to the build's. It's for when
+ * notifications are off: one that's on stays registered with the relay it was turned on with.
+ */
+export function useChooseRelay() {
+  const queryClient = useQueryClient();
+  const queryKey = useNotificationsKey();
+
+  return useMutation({
+    mutationFn: (origin: string | null) => saveRelayChoice(origin),
     retry: false,
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
@@ -109,24 +141,34 @@ export function useNotificationsSync() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const setup = pushSetup();
-    if (!setup) return;
-    let queue = Promise.resolve();
-    const sync = () => {
-      queue = queue
-        .then(() =>
-          syncNotifications({
-            calClient,
-            setup,
-            account: { serverOrigin, user: { id: userId } },
-            locale: languageTag,
-          })
-        )
-        // One that fails, as when offline, is tried again at the next start.
-        .catch(() => undefined)
-        .then(() => queryClient.invalidateQueries({ queryKey: ["notifications", accountKey] }));
+    let stopListening: () => void = () => undefined;
+    let stopped = false;
+    loadPushSetup()
+      .then((setup) => {
+        if (!setup || stopped) return;
+        let queue = Promise.resolve();
+        const sync = () => {
+          queue = queue
+            .then(() =>
+              syncNotifications({
+                calClient,
+                setup,
+                account: { serverOrigin, user: { id: userId } },
+                locale: languageTag,
+              })
+            )
+            // One that fails, as when offline, is tried again at the next start.
+            .catch(() => undefined)
+            .then(() => queryClient.invalidateQueries({ queryKey: ["notifications", accountKey] }));
+        };
+        sync();
+        stopListening = onPushTokenChange(sync);
+      })
+      // Without a readable relay choice there's nothing to sync with; the next start tries again.
+      .catch(() => undefined);
+    return () => {
+      stopped = true;
+      stopListening();
     };
-    sync();
-    return onPushTokenChange(sync);
   }, [calClient, serverOrigin, userId, accountKey, languageTag, queryClient]);
 }
