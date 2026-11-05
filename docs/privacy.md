@@ -7,10 +7,11 @@ doesn't sell or share anything about you. This page says what it keeps, where, a
 
 ## On your phone
 
-- **Your server's address and your API key.** The key is kept only in the phone's secure storage (Keychain on
-  iOS, Keystore on Android) and is sent only to your server, to use Cal API v2 for you.
-- **What your server shows the app**, such as bookings, event types, schedules and your profile, kept in
-  memory while you use it.
+- **Your server's address and your API key**, and your name, email, username and time zone as your server has
+  them. They're kept only in the phone's secure storage (Keychain on iOS, Keystore on Android), and the key is sent
+  only to your server, to use Cal API v2 for you.
+- **What your server shows the app**, such as bookings, event types and schedules, kept in memory while you use
+  it and not saved on the phone.
 
 Signing out removes the key and your server's details from the phone.
 
