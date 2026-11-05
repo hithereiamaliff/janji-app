@@ -1,19 +1,27 @@
 # @janji/cal-api
 
-TypeScript types and per-operation API versions for **Cal API v2** on self-hosted Cal.diy servers,
-generated from Cal.diy's OpenAPI spec.
+A typed client for **Cal API v2** on self-hosted Cal.diy servers, generated from Cal.diy's OpenAPI spec.
 
 ```ts
-import { apiVersionFor } from "@janji/cal-api/api-versions";
-import type { paths } from "@janji/cal-api/schema";
+import { createCalClient, unwrap } from "@janji/cal-api/client";
 
-apiVersionFor("GET", "/v2/bookings"); // "2024-08-13"
-apiVersionFor("GET", "/v2/event-types/{eventTypeId}/private-links"); // null: send no header
+const cal = createCalClient({
+  apiRootUrl: "https://book.example.com/api", // the spec's /v2/... paths are appended to this
+  getApiKey: () => storedApiKey,
+});
+const me = unwrap(await cal.GET("/v2/me")); // typed body, or throws CalApiError
 ```
 
-Every Cal API v2 request needs the right `cal-api-version` header. Without it, API v2 silently answers from
-its oldest controllers. Lookups use the exact method and templated path, not a path prefix, and some
-operations (such as private links) must be called without the header at all.
+## What the client handles
+
+- **API key.** It sends `Authorization: Bearer <key>`, reading the key on every request.
+- **API version.** It sends each operation's `cal-api-version` header (see `apiVersionFor`). Without the right
+  value, API v2 silently answers from its oldest controllers. Lookups use the exact method and templated
+  path, not a path prefix, and some operations (such as private links) must be called without the header.
+- **List filters.** It sends them comma-separated (`?status=upcoming,past`), which is what API v2 parses.
+- **Errors.** `CalApiError.kind` tells callers what went wrong: `unauthorized`, `rate_limited` (with
+  `retryAfterSeconds`), `not_cal_api` (for example the web app's HTML 404 when `/api/v2` isn't routed),
+  `network`, and so on. Messages never include the API key.
 
 ## The spec
 
