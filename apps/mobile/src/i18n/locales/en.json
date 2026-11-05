@@ -254,6 +254,7 @@
   },
   "availability": {
     "hoursLine": "{{days}}, {{start}} – {{end}}",
+    "timeRange": "{{start}} – {{end}}",
     "noWeeklyHours": "No weekly hours",
     "screenTitle": "Schedule",
     "empty": "No schedules yet.",
@@ -326,8 +327,7 @@
     "overrides": {
       "title": "Date overrides",
       "none": "No upcoming date overrides.",
-      "unavailable": "Unavailable all day",
-      "range": "{{start}} – {{end}}"
+      "unavailable": "Unavailable all day"
     }
   },
   "timePicker": {

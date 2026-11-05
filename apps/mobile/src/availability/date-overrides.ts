@@ -84,7 +84,7 @@ export function overrideHoursText(t: TFunction, day: OverrideDay, locale: string
   if (day.ranges.length === 0) return t("availability.overrides.unavailable");
   return day.ranges
     .map(({ start, end }) =>
-      t("availability.overrides.range", { start: clockTime(start, locale), end: clockTime(end, locale) })
+      t("availability.timeRange", { start: clockTime(start, locale), end: clockTime(end, locale) })
     )
     .join(", ");
 }
