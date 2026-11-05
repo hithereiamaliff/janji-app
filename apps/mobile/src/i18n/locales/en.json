@@ -119,7 +119,21 @@
     "undoNoShowLabel": "Undo no-show for {{name}}",
     "markedNoShow": "Marked {{name}} as a no-show.",
     "unmarkedNoShow": "{{name}} is no longer marked as a no-show.",
-    "noShowFailed": "Couldn't update the no-show. Try again."
+    "noShowFailed": "Couldn't update the no-show. Try again.",
+    "addGuests": "Add guests",
+    "addGuestsTitle": "Add guests",
+    "addGuestsDescription": "Cal.diy will email each new guest an invitation, and let you and the other attendees know.",
+    "guestEmailsLabel": "Email addresses",
+    "guestEmailsHint": "One per line, or separated by commas. Up to 10 at a time.",
+    "guestEmailsMissing": "Add at least one email address.",
+    "guestEmailsInvalid": "These don't look like email addresses: {{emails}}",
+    "guestEmailsTooMany": "Add up to 10 guests at a time.",
+    "guestEmailsAlreadyAttending": "Already on this booking: {{emails}}",
+    "guestEmailsRejected": "Cal.diy couldn't add any of these guests. They may already be on the booking, or their addresses may not be accepted.",
+    "addGuestsSubmit": "Add guests",
+    "guestsAdded_one": "Added {{count}} guest.",
+    "guestsAdded_other": "Added {{count}} guests.",
+    "addGuestsFailed": "Couldn't add the guests. Try again."
   },
   "settings": {
     "accountHeading": "Account",
