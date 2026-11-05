@@ -135,6 +135,26 @@
     "guestsAdded_other": "Added {{count}} guests.",
     "addGuestsFailed": "Couldn't add the guests. Try again."
   },
+  "reschedule": {
+    "action": "Reschedule",
+    "title": "Pick a new time",
+    "description": "Times are in your time zone ({{zone}}). Cal.diy will email {{name}} the new time.",
+    "descriptionNoName": "Times are in your time zone ({{zone}}). Cal.diy will email the attendees the new time.",
+    "current": "Now booked for {{time}}.",
+    "daysLabel": "Days with free times",
+    "slotLabel": "{{day}}, {{time}}",
+    "window": "{{from}} – {{to}}",
+    "earlier": "Earlier dates",
+    "later": "Later dates",
+    "noSlots": "No free times between {{from}} and {{to}}.",
+    "loadFailed": "Couldn't load the free times.",
+    "selected": "New time: {{time}}",
+    "reasonLabel": "Reason for rescheduling (optional)",
+    "reasonHint": "Included in Cal.diy's email about the new time.",
+    "submit": "Reschedule",
+    "failed": "Couldn't reschedule the booking. Try again.",
+    "done": "Booking rescheduled."
+  },
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
