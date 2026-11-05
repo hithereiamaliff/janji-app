@@ -12,7 +12,6 @@ const booking: BookingSummary = {
   status: "accepted",
   attendees: [{ name: "Jane", email: "jane@example.com" }],
   location: null,
-  meetingUrl: null,
   isRecurring: false,
 };
 

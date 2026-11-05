@@ -1,6 +1,8 @@
 import { type CalClient, unwrap } from "@janji/cal-api/client";
+import { CalApiError } from "@janji/cal-api/errors";
 
 import { type BookingSummary, toBookingSummary } from "./booking";
+import { type BookingDetail, pickBooking, toBookingDetail } from "./booking-detail";
 
 export const BOOKING_FILTERS = ["upcoming", "unconfirmed", "past", "cancelled"] as const;
 export type BookingFilter = (typeof BOOKING_FILTERS)[number];
@@ -51,4 +53,14 @@ export async function fetchBookingsPage(
     bookings: body.data.map(toBookingSummary),
     nextPage: body.pagination.hasNextPage ? page + 1 : null,
   };
+}
+
+export async function fetchBooking(client: CalClient, uid: string): Promise<BookingDetail> {
+  const body = unwrap(
+    await client.GET("/v2/bookings/{bookingUid}", { params: { path: { bookingUid: uid } } })
+  );
+  const booking = pickBooking(body.data, uid);
+  // An empty recurring series has nothing to show; treat it like a booking that no longer exists.
+  if (!booking) throw new CalApiError({ kind: "not_found", status: 200 });
+  return toBookingDetail(booking);
 }
