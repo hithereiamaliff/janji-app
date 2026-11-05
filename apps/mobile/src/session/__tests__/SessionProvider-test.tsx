@@ -1,3 +1,4 @@
+import type { CalClient } from "@janji/cal-api/client";
 import { act, render, screen } from "@testing-library/react-native";
 import { Text } from "react-native";
 
@@ -119,6 +120,60 @@ describe("SessionProvider", () => {
       expect(request.headers.get("Authorization")).toBe("Bearer cal_new");
       expect(request.headers.get("cal-api-version")).toBe("2024-06-11");
     }
+  });
+
+  describe("before signing out", () => {
+    async function renderSignedIn(beforeSignOut: (client: CalClient) => Promise<void>) {
+      await saveSession({ account, apiKey: "cal_saved" });
+      await render(
+        <SessionProvider beforeSignOut={beforeSignOut}>
+          <SessionProbe />
+        </SessionProvider>
+      );
+      await screen.findByText("signed in as alan");
+    }
+
+    it("lets the app reach the server with the key, then signs out", async () => {
+      const fetchSpy = jest
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(
+          new Response(null, { status: 200, headers: { "Content-Type": "application/json" } })
+        );
+      await renderSignedIn(async (client) => {
+        await client.DELETE("/v2/webhooks/{webhookId}", { params: { path: { webhookId: "12" } } });
+      });
+
+      await act(() => current().signOut());
+
+      const request = fetchSpy.mock.calls[0]?.[0];
+      expect(request instanceof Request && request.headers.get("Authorization")).toBe("Bearer cal_saved");
+      expect(screen.getByText("signedOut")).toBeOnTheScreen();
+      await expect(loadSavedSession()).resolves.toBeNull();
+    });
+
+    it("signs out even when that fails", async () => {
+      await renderSignedIn(async () => {
+        throw new Error("The server can't be reached");
+      });
+
+      await act(() => current().signOut());
+
+      expect(screen.getByText("signedOut")).toBeOnTheScreen();
+    });
+
+    it("waits for it only a few seconds", async () => {
+      await renderSignedIn(() => new Promise<void>(() => undefined));
+      jest.useFakeTimers();
+      try {
+        const signingOut = current().signOut();
+        await act(() => jest.advanceTimersByTimeAsync(5000));
+        await act(() => signingOut);
+      } finally {
+        jest.useRealTimers();
+      }
+
+      expect(screen.getByText("signedOut")).toBeOnTheScreen();
+    });
   });
 
   it("refuses to be used outside the provider", async () => {

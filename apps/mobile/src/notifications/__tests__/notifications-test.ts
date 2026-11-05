@@ -1,6 +1,11 @@
 import { createCalClient } from "@janji/cal-api/client";
 
-import { belongsTo, turnOffNotifications, turnOnNotifications } from "@/notifications/notifications";
+import {
+  belongsTo,
+  releaseNotifications,
+  turnOffNotifications,
+  turnOnNotifications,
+} from "@/notifications/notifications";
 import { loadPushRegistration, type PushRegistration } from "@/notifications/registration-storage";
 import { createRelayClient, RelayRequestError } from "@/notifications/relay-client";
 import { HOOK_TRIGGERS } from "@/notifications/webhooks-api";
@@ -195,6 +200,44 @@ describe("turnOffNotifications", () => {
 
     expect(sent).toEqual([]);
     await expect(loadPushRegistration()).resolves.toEqual(registration);
+  });
+});
+
+describe("releaseNotifications", () => {
+  it("removes the phone's device and webhook as the person signs out", async () => {
+    const { calClient, relay, sent } = servers();
+    mockStore.set("janji.notifications", JSON.stringify(registration));
+
+    await releaseNotifications(calClient, () => relay);
+
+    expect(sent.map(({ to, method, path }) => `${to} ${method} ${path}`)).toEqual([
+      `relay DELETE /v1/devices/${registration.deviceId}`,
+      "cal DELETE /api/v2/webhooks/12",
+    ]);
+    expect(mockStore.size).toBe(0);
+  });
+
+  it("keeps the registration when the relay can't be reached, so the device can be removed later", async () => {
+    const { calClient, sent } = servers();
+    const unreachable = createRelayClient(setup.relayOrigin, async () => {
+      throw new TypeError("Network request failed");
+    });
+    mockStore.set("janji.notifications", JSON.stringify(registration));
+
+    await releaseNotifications(calClient, () => unreachable);
+
+    expect(sent.map(({ to, method, path }) => `${to} ${method} ${path}`)).toEqual([
+      "cal DELETE /api/v2/webhooks/12",
+    ]);
+    await expect(loadPushRegistration()).resolves.toEqual(registration);
+  });
+
+  it("has nothing to do when notifications are off", async () => {
+    const { calClient, relay, sent } = servers();
+
+    await releaseNotifications(calClient, () => relay);
+
+    expect(sent).toEqual([]);
   });
 });
 
