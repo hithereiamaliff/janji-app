@@ -3,7 +3,7 @@ import { fireEvent, renderRouter, screen } from "expo-router/testing-library";
 import en from "@/i18n/locales/en.json";
 import { saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
-import { testAccount } from "@/test-utils/fixtures";
+import { bookingsResponse, testAccount } from "@/test-utils/fixtures";
 
 const mockStore = new Map<string, string>();
 
@@ -25,11 +25,16 @@ function getTabButton(title: string) {
 async function renderSignedIn() {
   await saveSession({ account: testAccount, apiKey: "cal_saved" });
   await renderRouter(appRoutes);
-  await screen.findByText(en.placeholder.bookings);
+  await screen.findByText(en.bookings.empty.upcoming);
 }
 
 describe("tab navigation when signed in", () => {
-  beforeEach(() => mockStore.clear());
+  beforeEach(() => {
+    mockStore.clear();
+    jest.spyOn(globalThis, "fetch").mockImplementation(async () => bookingsResponse([]));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
 
   it("opens on the Bookings tab", async () => {
     await renderSignedIn();

@@ -3,7 +3,7 @@ import { fireEvent, renderRouter, screen } from "expo-router/testing-library";
 import en from "@/i18n/locales/en.json";
 import { loadSavedSession, saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
-import { jsonResponse, testAccount, testMeResponse } from "@/test-utils/fixtures";
+import { bookingsResponse, jsonResponse, testAccount, testMeResponse } from "@/test-utils/fixtures";
 
 const mockStore = new Map<string, string>();
 let mockFailDeletes = false;
@@ -28,11 +28,12 @@ function requestUrl(input: RequestInfo | URL): string {
   return input instanceof Request ? input.url : input.href;
 }
 
-// A fake Cal.diy server: API v2 answers the probe, and /v2/me only accepts cal_secret.
+// A fake Cal.diy server: API v2 answers the probe, /v2/me only accepts cal_secret, and there are no bookings.
 function fakeServer(input: RequestInfo | URL): Response {
   const url = requestUrl(input);
   if (url === "https://book.example.com/api/v2/timezones")
     return jsonResponse({ status: "success", data: [] });
+  if (url.startsWith("https://book.example.com/api/v2/bookings?")) return bookingsResponse([]);
   if (url === "https://book.example.com/api/v2/me") {
     const authorization = input instanceof Request ? input.headers.get("Authorization") : null;
     return authorization === "Bearer cal_secret"
@@ -75,7 +76,7 @@ describe("signing in and out", () => {
     expect(await screen.findByRole("header", { name: keyStrings.title })).toBeOnTheScreen();
     await enterKey("cal_secret");
 
-    expect(await screen.findByText(en.placeholder.bookings)).toBeOnTheScreen();
+    expect(await screen.findByText(en.bookings.empty.upcoming)).toBeOnTheScreen();
     expect(screen).toHavePathname("/");
     await expect(loadSavedSession()).resolves.toEqual({ account: testAccount, apiKey: "cal_secret" });
   });

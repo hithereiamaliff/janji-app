@@ -33,6 +33,7 @@ export function FilterTabs<Value extends string>({
       showsHorizontalScrollIndicator={false}
       accessibilityRole="tablist"
       accessibilityLabel={accessibilityLabel}
+      style={styles.scroller}
       contentContainerStyle={styles.row}
     >
       {options.map((option) => {
@@ -63,6 +64,11 @@ export function FilterTabs<Value extends string>({
 }
 
 const styles = StyleSheet.create({
+  // ScrollView grows by default; in a column that makes the tabs share the screen's height with the list.
+  scroller: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   row: {
     gap: 8,
     paddingHorizontal: 16,
