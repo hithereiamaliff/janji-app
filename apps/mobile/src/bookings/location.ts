@@ -8,15 +8,22 @@ export type BookingPlace =
   /** An address, or whatever else the organizer wrote. */
   | { kind: "text"; text: string };
 
-// Only http(s) locations become links, so a location can't make the app open some other app's URL scheme.
-// A regex reads the host because React Native's URL class doesn't validate what it's given.
-const LINK = /^https?:\/\/(?:[^/?#@\s]*@)?([^/?#:\s]+)/i;
 const PHONE = /^\+?[\d\s().-]{6,}$/;
+
+// Only web links open, so a location can't make the app open another app's URL scheme.
+function webLink(text: string): URL | null {
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" || url.protocol === "http:" ? url : null;
+  } catch {
+    return null;
+  }
+}
 
 export function describeLocation(location: string): BookingPlace {
   const text = location.trim();
-  const host = LINK.exec(text)?.[1];
-  if (host) return { kind: "link", url: text, host: host.toLowerCase() };
+  const link = webLink(text);
+  if (link) return { kind: "link", url: link.href, host: link.hostname };
   if (text.startsWith("integrations:")) return { kind: "app" };
   if (PHONE.test(text)) return { kind: "phone", number: text };
   return { kind: "text", text };
