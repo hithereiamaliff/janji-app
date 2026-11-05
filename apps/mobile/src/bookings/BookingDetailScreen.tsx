@@ -177,9 +177,9 @@ function Attendee({ person, booking, locale, divided }: AttendeeProps) {
       </View>
       <LinkRow
         icon="mail-outline"
-        label={person.email}
-        accessibilityLabel={t("bookingDetail.email", { email: person.email })}
-        url={`mailto:${person.email}`}
+        label={person.displayEmail}
+        accessibilityLabel={t("bookingDetail.email", { email: person.displayEmail })}
+        url={`mailto:${person.displayEmail}`}
       />
       {person.phoneNumber ? (
         <LinkRow

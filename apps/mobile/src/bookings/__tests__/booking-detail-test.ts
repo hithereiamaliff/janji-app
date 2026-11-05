@@ -60,7 +60,7 @@ const answersAsSent: Record<string, unknown> = {
 };
 
 describe("toBookingDetail", () => {
-  it("keeps the people, place and timing the detail screen shows, with addresses as displayed", () => {
+  it("keeps the people, place and timing the detail screen shows, with both forms of each address", () => {
     const detail = toBookingDetail(booking);
 
     expect(detail).toMatchObject({
@@ -69,11 +69,20 @@ describe("toBookingDetail", () => {
       description: "Planning the Penang leg",
       durationMinutes: 60,
       location: "https://meet.google.com/abc-defg-hij",
-      hosts: [{ name: "Alan", email: "alan@example.com", timeZone: "Asia/Kuala_Lumpur", noShow: false }],
+      hosts: [
+        {
+          name: "Alan",
+          email: "alan@example.com",
+          displayEmail: "alan@example.com",
+          timeZone: "Asia/Kuala_Lumpur",
+          noShow: false,
+        },
+      ],
       attendees: [
         {
           name: "Jane",
-          email: "jane@example.com",
+          email: "jane+a1b2c3d4e5f6g7h8i9j0k1l2m@example.com",
+          displayEmail: "jane@example.com",
           timeZone: "Europe/London",
           phoneNumber: "+44 20 7946 0000",
           noShow: false,
