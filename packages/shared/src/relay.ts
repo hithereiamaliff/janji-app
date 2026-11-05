@@ -21,6 +21,24 @@ export type RegisterDeviceResponse = {
   webhookSecret: string;
 };
 
+/**
+ * PATCH /v1/devices/{deviceId}, with the device token as a Bearer token: a new push token after Expo issued
+ * one, or a new language. Either can be left out.
+ */
+export type UpdateDeviceRequest = {
+  expoPushToken?: string;
+  locale?: string;
+};
+
+/** POST /v1/devices/status: which of these devices the relay still has, so the app can tidy up. */
+export type DeviceStatusRequest = {
+  deviceIds: string[];
+};
+
+export type DeviceStatusResponse = {
+  known: string[];
+};
+
 /** The relay's answer to a request it couldn't carry out. */
 export type RelayError = {
   error: "invalid_request" | "rate_limited" | "unauthorized" | "not_found" | "push_token_taken";
