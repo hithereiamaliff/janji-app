@@ -33,3 +33,6 @@ Nothing secret goes in this repository. For `bun run dev`, put a key of your own
 - `POST /v1/devices` `{ expoPushToken, platform, locale }` registers a phone (201), or registers its push
   token again (200): the device and its hook URL stay the same and its credentials are new. At most 20 a
   minute from one address.
+- `PATCH /v1/devices/{id}` `{ expoPushToken?, locale? }` and `DELETE /v1/devices/{id}`, with the device token
+  as `Authorization: Bearer …`, change or remove a device (204).
+- `POST /v1/devices/status` `{ deviceIds }` answers `{ known }`, the ones the relay still has (up to 100).
