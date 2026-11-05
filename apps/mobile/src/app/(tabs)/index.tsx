@@ -1,8 +1,3 @@
-import { useTranslation } from "react-i18next";
+import { BookingsScreen } from "@/bookings/BookingsScreen";
 
-import { PlaceholderScreen } from "@/components/PlaceholderScreen";
-
-export default function BookingsScreen() {
-  const { t } = useTranslation();
-  return <PlaceholderScreen message={t("placeholder.bookings")} />;
-}
+export default BookingsScreen;

@@ -25,6 +25,10 @@ export function useBookings(filter: BookingFilter, search = "") {
     queryFn: ({ pageParam }) => fetchBookingsPage(client, { filter, page: pageParam, search: trimmedSearch }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
+    // While a search is being refined, keep showing the last results instead of flashing a spinner on
+    // every pause in typing. Switching filters starts fresh, so one filter's bookings never sit under another's tab.
+    placeholderData: (previousData, previousQuery) =>
+      previousQuery?.queryKey[2] === filter ? previousData : undefined,
   });
 
   const bookings = useMemo<BookingSummary[]>(
