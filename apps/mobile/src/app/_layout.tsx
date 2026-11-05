@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
+import { QueryProvider } from "@/data/QueryProvider";
 import { SessionProvider, useSession } from "@/session/SessionProvider";
 import { getNavigationTheme } from "@/theme/navigationTheme";
 import { useTheme } from "@/theme/useTheme";
@@ -42,10 +43,12 @@ export default function RootLayout() {
 
   return (
     <SessionProvider>
-      <ThemeProvider value={getNavigationTheme(isDark, colors)}>
-        <RootNavigator />
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <QueryProvider>
+        <ThemeProvider value={getNavigationTheme(isDark, colors)}>
+          <RootNavigator />
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </QueryProvider>
     </SessionProvider>
   );
 }

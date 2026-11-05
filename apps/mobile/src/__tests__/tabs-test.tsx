@@ -2,7 +2,8 @@ import { fireEvent, renderRouter, screen } from "expo-router/testing-library";
 
 import en from "@/i18n/locales/en.json";
 import { saveSession } from "@/session/account-storage";
-import { appRoutes, testAccount } from "@/test-utils/app-routes";
+import { appRoutes } from "@/test-utils/app-routes";
+import { testAccount } from "@/test-utils/fixtures";
 
 const mockStore = new Map<string, string>();
 
