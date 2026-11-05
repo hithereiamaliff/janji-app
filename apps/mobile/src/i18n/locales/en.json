@@ -436,6 +436,20 @@
       "BOOKING_CANCELLED": "Cancelled bookings",
       "lastOne": "To get none, turn off booking notifications.",
       "failed": "Couldn't change which bookings notify you. Try again."
+    },
+    "relay": {
+      "show": "Show notification relay",
+      "hide": "Hide notification relay",
+      "usingBuild": "Notifications come through Janji's relay at {{host}}.",
+      "usingChosen": "Notifications come through your relay at {{host}}.",
+      "none": "This version of Janji has no notification relay. Enter the address of one you run to turn notifications on.",
+      "turnOffFirst": "Turn booking notifications off to change the relay.",
+      "addressLabel": "Relay address",
+      "addressHint": "A relay you run yourself, on HTTPS.",
+      "invalid": "Enter the relay's HTTPS address, such as https://relay.example.com.",
+      "save": "Use this relay",
+      "useBuild": "Use Janji's relay again",
+      "failed": "Couldn't save the relay. Try again."
     }
   },
   "signIn": {

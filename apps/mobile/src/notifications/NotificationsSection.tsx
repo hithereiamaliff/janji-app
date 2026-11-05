@@ -1,11 +1,12 @@
 import type { TFunction } from "i18next";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Linking, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
+import { TextField } from "@/components/TextField";
 import { ThemedSwitch } from "@/components/ThemedSwitch";
 import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
@@ -13,8 +14,11 @@ import { useTheme } from "@/theme/useTheme";
 import type { TurnOnResult } from "./notifications";
 import { chosenTriggers, type PushRegistration } from "./registration-storage";
 import { RelayRequestError } from "./relay-client";
+import { relayOriginFrom } from "./relay-setting";
 import {
+  type RelayInfo,
   useChooseNotificationEvents,
+  useChooseRelay,
   useNotifications,
   useTurnOffNotifications,
   useTurnOnNotifications,
@@ -80,6 +84,93 @@ function EventChoices({ registration, disabled }: { registration: PushRegistrati
   );
 }
 
+/**
+ * Which relay notifications come through, and a way to use one the person runs. A phone with notifications on
+ * stays with the relay it was turned on with, so the relay only changes while they're off.
+ */
+function RelaySettings({ relay, on }: { relay: RelayInfo; on: boolean }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const choose = useChooseRelay();
+  // A build without a relay can't do anything until it has one, so its form starts open.
+  const [open, setOpen] = useState(relay.origin === null);
+  const [address, setAddress] = useState("");
+  const [invalid, setInvalid] = useState(false);
+  const toggleLabel = t(open ? "notifications.relay.hide" : "notifications.relay.show");
+  const host = (origin: string) => new URL(origin).host;
+
+  function handleSave() {
+    const origin = relayOriginFrom(address);
+    setInvalid(origin === null);
+    if (origin) choose.mutate(origin, { onSuccess: () => setAddress("") });
+  }
+
+  let current: string;
+  if (relay.origin === null) current = t("notifications.relay.none");
+  else if (relay.origin === relay.buildOrigin)
+    current = t("notifications.relay.usingBuild", { host: host(relay.origin) });
+  else current = t("notifications.relay.usingChosen", { host: host(relay.origin) });
+
+  return (
+    <View style={styles.group}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={toggleLabel}
+        accessibilityState={{ expanded: open }}
+        onPress={() => setOpen((shown) => !shown)}
+        style={styles.toggle}
+      >
+        <Text style={[styles.toggleLabel, { color: colors.accent }]}>{toggleLabel}</Text>
+      </Pressable>
+      {open ? (
+        <>
+          <Text style={[styles.body, { color: colors.text }]}>{current}</Text>
+          {on ? (
+            <Text style={[styles.body, { color: colors.textMuted }]}>
+              {t("notifications.relay.turnOffFirst")}
+            </Text>
+          ) : (
+            <>
+              <TextField
+                label={t("notifications.relay.addressLabel")}
+                hint={t("notifications.relay.addressHint")}
+                placeholder="https://relay.example.com"
+                value={address}
+                onChangeText={setAddress}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                textContentType="URL"
+                onSubmitEditing={handleSave}
+                error={invalid ? t("notifications.relay.invalid") : null}
+              />
+              <Button
+                variant="secondary"
+                label={t("notifications.relay.save")}
+                loading={choose.isPending}
+                onPress={handleSave}
+              />
+              {relay.buildOrigin && relay.origin !== relay.buildOrigin ? (
+                <Button
+                  variant="secondary"
+                  label={t("notifications.relay.useBuild")}
+                  disabled={choose.isPending}
+                  onPress={() => choose.mutate(null)}
+                />
+              ) : null}
+              {choose.isError ? (
+                <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
+                  {t("notifications.relay.failed")}
+                </Text>
+              ) : null}
+            </>
+          )}
+        </>
+      ) : null}
+    </View>
+  );
+}
+
 /** The switch for this phone's booking notifications, with what stops them when they can't work. */
 export function NotificationsSection() {
   const { t } = useTranslation();
@@ -119,10 +210,12 @@ export function NotificationsSection() {
     ) : (
       <ActivityIndicator accessibilityLabel={t("common.loading")} color={colors.accent} />
     );
-  } else if (state.status === "unavailable" || state.relay.origin === null) {
+  } else if (state.status === "unavailable") {
     content = (
       <Text style={[styles.body, { color: colors.textMuted }]}>{t("notifications.unavailable")}</Text>
     );
+  } else if (state.relay.origin === null) {
+    content = <RelaySettings relay={state.relay} on={false} />;
   } else {
     const registration = state.status === "on" ? state.registration : null;
     const busy = turnOn.isPending || turnOff.isPending;
@@ -188,6 +281,7 @@ export function NotificationsSection() {
             {failureMessage(t, turnOff.error, t("notifications.turnOffFailed"))}
           </Text>
         ) : null}
+        <RelaySettings relay={state.relay} on={registration !== null} />
       </>
     );
   }
@@ -223,6 +317,15 @@ const styles = StyleSheet.create({
   },
   eventLabel: {
     flex: 1,
+  },
+  toggle: {
+    alignSelf: "flex-start",
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  toggleLabel: {
+    fontSize: 15,
+    fontWeight: "600",
   },
   body: {
     fontSize: 15,
