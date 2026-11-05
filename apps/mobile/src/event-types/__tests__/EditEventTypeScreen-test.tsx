@@ -8,6 +8,7 @@ import {
   apiEventType,
   eventTypesResponse,
   jsonResponse,
+  privateLinksResponse,
   type TestEventType,
   testAccount,
 } from "@/test-utils/fixtures";
@@ -61,6 +62,7 @@ async function renderEventType(eventType: TestEventType, changeResponses: Respon
       path: new URL(request.url).pathname,
       body: text ? JSON.parse(text) : null,
     });
+    if (request.url.endsWith("/private-links")) return privateLinksResponse([]);
     if (request.method !== "PATCH") return eventTypesResponse(served);
     return changeResponses.shift() ?? jsonResponse({ status: "success", data: apiEventType(eventType) });
   });
