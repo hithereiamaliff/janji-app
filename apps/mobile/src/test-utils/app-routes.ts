@@ -6,6 +6,7 @@ import BookingsScreen from "@/app/(tabs)/index";
 import SettingsScreen from "@/app/(tabs)/settings";
 import CancelBookingRoute from "@/app/booking/[uid]/cancel";
 import DeclineBookingRoute from "@/app/booking/[uid]/decline";
+import AddGuestsRoute from "@/app/booking/[uid]/guests";
 import BookingRoute from "@/app/booking/[uid]/index";
 import SignInScreen from "@/app/sign-in";
 
@@ -21,4 +22,5 @@ export const appRoutes = {
   "booking/[uid]/index": BookingRoute,
   "booking/[uid]/decline": DeclineBookingRoute,
   "booking/[uid]/cancel": CancelBookingRoute,
+  "booking/[uid]/guests": AddGuestsRoute,
 };

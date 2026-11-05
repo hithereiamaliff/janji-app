@@ -307,6 +307,11 @@ function ManageActions({ uid }: { uid: string }) {
   return (
     <View style={styles.manage}>
       <Button
+        variant="secondary"
+        label={t("bookingActions.addGuests")}
+        onPress={() => router.push({ pathname: "/booking/[uid]/guests", params: { uid } })}
+      />
+      <Button
         variant="destructive"
         label={t("bookingActions.cancel")}
         onPress={() => router.push({ pathname: "/booking/[uid]/cancel", params: { uid } })}
