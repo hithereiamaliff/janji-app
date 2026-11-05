@@ -1,4 +1,11 @@
-import { dayKey, formatDayHeading, formatFullDate, formatTimeRange } from "@/bookings/format";
+import {
+  dayKey,
+  formatDayHeading,
+  formatFullDate,
+  formatTimeRange,
+  timeRangeElsewhere,
+  timeZoneCity,
+} from "@/bookings/format";
 
 // Jest runs in UTC (jest.global-setup.js), so "local time" in these tests is UTC.
 const now = new Date("2026-11-05T09:00:00Z");
@@ -45,5 +52,39 @@ describe("formatTimeRange", () => {
 describe("formatFullDate", () => {
   it("spells out the weekday, day, month and year", () => {
     expect(formatFullDate("2026-11-06T07:00:00Z", "en-GB")).toMatch(/^Friday\W+6 November 2026$/);
+  });
+});
+
+describe("timeRangeElsewhere", () => {
+  const start = "2026-11-06T08:00:00Z";
+  const end = "2026-11-06T09:00:00Z";
+
+  it("shows the range as clocks in another time zone read it, weekday included", () => {
+    expect(timeRangeElsewhere(start, end, "en-US", "Asia/Kuala_Lumpur")).toBe("Fri 4:00 PM – 5:00 PM");
+  });
+
+  it("shows the other day when the time zone puts the booking on one", () => {
+    expect(timeRangeElsewhere("2026-11-06T16:00:00Z", "2026-11-06T17:00:00Z", "en-US", "Asia/Tokyo")).toBe(
+      "Sat 1:00 AM – 2:00 AM"
+    );
+  });
+
+  it("returns null when the clocks there read the same as the device's", () => {
+    // London is on UTC in November, like the test device.
+    expect(timeRangeElsewhere(start, end, "en-US", "Europe/London")).toBeNull();
+  });
+
+  it("returns null for a time zone the device doesn't know", () => {
+    expect(timeRangeElsewhere(start, end, "en-US", "Mars/Olympus_Mons")).toBeNull();
+  });
+});
+
+describe("timeZoneCity", () => {
+  it.each([
+    ["Asia/Kuala_Lumpur", "Kuala Lumpur"],
+    ["America/Argentina/Buenos_Aires", "Buenos Aires"],
+    ["UTC", "UTC"],
+  ])("%s → %s", (timeZone, city) => {
+    expect(timeZoneCity(timeZone)).toBe(city);
   });
 });
