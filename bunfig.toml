@@ -1,0 +1,4 @@
+[install]
+# React Native tooling (Jest's Babel runtime helpers, Metro, native autolinking) expects packages to be
+# reachable from the app the way npm and Yarn hoist them; Bun's isolated layout hides undeclared ones.
+linker = "hoisted"

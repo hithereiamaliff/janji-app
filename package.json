@@ -1,0 +1,19 @@
+{
+  "name": "janji-app",
+  "private": true,
+  "packageManager": "bun@1.4.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "mobile": "cd apps/mobile && bun run start",
+    "check": "biome check --write .",
+    "check:ci": "biome ci .",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter '*' test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.5"
+  }
+}
