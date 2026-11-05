@@ -1,12 +1,13 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
-import { askPushPermission, getPushToken, toPushPermission } from "@/notifications/push";
+import { askPushPermission, getPushToken, onPushTokenChange, toPushPermission } from "@/notifications/push";
 
 type MockAnswer = { granted: boolean; canAskAgain: boolean; ios?: { status: number } };
 
 let mockCurrent: MockAnswer;
 let mockAnswer: MockAnswer;
+const mockTokenListeners = new Set<() => void>();
 
 jest.mock("expo-notifications", () => ({
   IosAuthorizationStatus: { NOT_DETERMINED: 0, DENIED: 1, AUTHORIZED: 2, PROVISIONAL: 3, EPHEMERAL: 4 },
@@ -15,6 +16,10 @@ jest.mock("expo-notifications", () => ({
   requestPermissionsAsync: jest.fn(async () => mockAnswer),
   setNotificationChannelAsync: jest.fn(async () => null),
   getExpoPushTokenAsync: jest.fn(async () => ({ type: "expo", data: "ExponentPushToken[abc]" })),
+  addPushTokenListener: jest.fn((listener: () => void) => {
+    mockTokenListeners.add(listener);
+    return { remove: () => mockTokenListeners.delete(listener) };
+  }),
 }));
 
 const { IosAuthorizationStatus } = Notifications;
@@ -86,5 +91,18 @@ describe("getPushToken", () => {
     await expect(getPushToken("project-1")).resolves.toBe("ExponentPushToken[abc]");
 
     expect(Notifications.getExpoPushTokenAsync).toHaveBeenCalledWith({ projectId: "project-1" });
+  });
+});
+
+describe("onPushTokenChange", () => {
+  it("tells the app when the phone's push token changes, until it stops listening", () => {
+    const changed = jest.fn();
+    const stop = onPushTokenChange(changed);
+
+    for (const listener of mockTokenListeners) listener();
+    stop();
+
+    expect(changed).toHaveBeenCalledTimes(1);
+    expect(mockTokenListeners.size).toBe(0);
   });
 });

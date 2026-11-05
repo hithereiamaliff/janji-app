@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { QueryProvider } from "@/data/QueryProvider";
+import { NotificationsSync } from "@/notifications/NotificationsSync";
 import { releaseNotifications } from "@/notifications/notifications";
 import { SessionProvider, useSession } from "@/session/SessionProvider";
 import { getNavigationTheme } from "@/theme/navigationTheme";
@@ -82,6 +83,7 @@ export default function RootLayout() {
   return (
     <SessionProvider beforeSignOut={releaseNotifications}>
       <QueryProvider>
+        <NotificationsSync />
         <ThemeProvider value={getNavigationTheme(isDark, colors)}>
           <RootNavigator />
           <StatusBar style="auto" />

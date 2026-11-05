@@ -33,6 +33,7 @@ jest.mock("expo-notifications", () => ({
     return mockAnswer;
   },
   getExpoPushTokenAsync: async () => ({ type: "expo", data: "ExponentPushToken[abc]" }),
+  addPushTokenListener: () => ({ remove: () => undefined }),
 }));
 
 jest.mock("@/notifications/push-setup", () => ({ pushSetup: () => mockSetup }));
@@ -52,17 +53,29 @@ const registration: PushRegistration = {
   locale: "en-US",
 };
 
-/** Opens Settings, with Cal.diy and the relay answering as they would unless the relay is `unreachable`. */
+/**
+ * Opens Settings, with Cal.diy and the relay answering as they would: this phone starts connected when a
+ * registration is saved, and they keep track of what's added and removed. The relay can be `unreachable`.
+ * Returns the changes sent, without the reads that the start-up sync makes.
+ */
 async function openSettings({ unreachable = false } = {}) {
+  const connected = mockStore.has("janji.notifications");
+  let webhooks = connected ? [{ id: 12, subscriberUrl: hookUrl }] : [];
+  const devices = new Set(connected ? [registration.deviceId] : []);
   const sent: string[] = [];
   jest.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const request = input instanceof Request ? input : new Request(String(input));
     const { origin, pathname } = new URL(request.url);
     if (pathname.endsWith("/v2/me")) return jsonResponse(testMeResponse);
-    sent.push(`${request.method} ${origin}${pathname}`);
     if (origin === "https://relay.example") {
       if (unreachable) throw new TypeError("Network request failed");
-      if (request.method === "DELETE") return new Response(null, { status: 204 });
+      if (pathname === "/v1/devices/status") return jsonResponse({ known: [...devices] });
+      sent.push(`${request.method} ${origin}${pathname}`);
+      if (request.method === "DELETE") {
+        devices.delete(registration.deviceId);
+        return new Response(null, { status: 204 });
+      }
+      devices.add(registration.deviceId);
       const device = {
         deviceId: registration.deviceId,
         deviceToken: "device-secret",
@@ -71,8 +84,14 @@ async function openSettings({ unreachable = false } = {}) {
       };
       return jsonResponse(device, { status: 201 });
     }
-    if (request.method === "DELETE") return jsonResponse({ status: "success" });
-    return jsonResponse({ status: "success", data: { id: 12, subscriberUrl: hookUrl } }, { status: 201 });
+    if (request.method === "GET") return jsonResponse({ status: "success", data: webhooks });
+    sent.push(`${request.method} ${origin}${pathname}`);
+    if (request.method === "DELETE") {
+      webhooks = [];
+      return jsonResponse({ status: "success" });
+    }
+    webhooks = [{ id: 12, subscriberUrl: hookUrl }];
+    return jsonResponse({ status: "success", data: webhooks[0] }, { status: 201 });
   });
   await saveSession({ account: testAccount, apiKey: "cal_secret" });
   await renderRouter(appRoutes, { initialUrl: "/settings" });

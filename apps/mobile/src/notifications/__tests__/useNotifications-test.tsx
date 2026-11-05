@@ -1,6 +1,6 @@
 import "@/i18n";
 
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { Pressable, Text } from "react-native";
 
@@ -9,6 +9,7 @@ import type { PushSetup } from "@/notifications/push-setup";
 import type { PushRegistration } from "@/notifications/registration-storage";
 import {
   useNotifications,
+  useNotificationsSync,
   useTurnOffNotifications,
   useTurnOnNotifications,
 } from "@/notifications/useNotifications";
@@ -18,6 +19,8 @@ import { jsonResponse, testAccount } from "@/test-utils/fixtures";
 
 const mockStore = new Map<string, string>();
 let mockSetup: PushSetup | null;
+let mockToken = "ExponentPushToken[abc]";
+const mockTokenListeners = new Set<() => void>();
 
 jest.mock("expo-secure-store", () => ({
   getItemAsync: async (key: string) => mockStore.get(key) ?? null,
@@ -32,7 +35,11 @@ jest.mock("expo-secure-store", () => ({
 jest.mock("expo-notifications", () => ({
   IosAuthorizationStatus: { NOT_DETERMINED: 0, DENIED: 1 },
   getPermissionsAsync: async () => ({ granted: true, canAskAgain: false }),
-  getExpoPushTokenAsync: async () => ({ type: "expo", data: "ExponentPushToken[abc]" }),
+  getExpoPushTokenAsync: async () => ({ type: "expo", data: mockToken }),
+  addPushTokenListener: (listener: () => void) => {
+    mockTokenListeners.add(listener);
+    return { remove: () => mockTokenListeners.delete(listener) };
+  },
 }));
 
 jest.mock("@/notifications/push-setup", () => ({ pushSetup: () => mockSetup }));
@@ -155,5 +162,59 @@ describe("useNotifications", () => {
     await renderSwitch();
 
     expect(await screen.findByText("off, granted")).toBeOnTheScreen();
+  });
+});
+
+function Sync() {
+  useNotificationsSync();
+  return <Text>synced</Text>;
+}
+
+describe("useNotificationsSync", () => {
+  beforeEach(() => {
+    mockStore.clear();
+    mockSetup = { platform: "ios", relayOrigin: "https://relay.example", projectId: "project-1" };
+    mockToken = "ExponentPushToken[abc]";
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it("passes the phone's push token on as the app starts, and again when it changes", async () => {
+    const tokens: unknown[] = [];
+    jest.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const request = input instanceof Request ? input : new Request(String(input));
+      const { pathname } = new URL(request.url);
+      if (pathname === "/v1/devices/status") return jsonResponse({ known: [registration.deviceId] });
+      if (request.method === "PATCH") {
+        tokens.push((await request.json()).expoPushToken);
+        return new Response(null, { status: 204 });
+      }
+      return jsonResponse({ status: "success", data: [{ id: 12, subscriberUrl: hookUrl }] });
+    });
+    mockStore.set(
+      "janji.notifications",
+      JSON.stringify({ ...registration, expoPushToken: "ExponentPushToken[old]" })
+    );
+    mockToken = "ExponentPushToken[new]";
+    await saveSession({ account: testAccount, apiKey: "cal_secret" });
+    await render(
+      <SessionProvider>
+        <QueryProvider>
+          <WhenSignedIn>
+            <Sync />
+          </WhenSignedIn>
+        </QueryProvider>
+      </SessionProvider>
+    );
+
+    await waitFor(() => expect(tokens).toEqual(["ExponentPushToken[new]"]));
+    mockToken = "ExponentPushToken[newer]";
+    await act(async () => {
+      for (const listener of mockTokenListeners) listener();
+    });
+
+    await waitFor(() => expect(tokens).toEqual(["ExponentPushToken[new]", "ExponentPushToken[newer]"]));
+    expect(JSON.parse(mockStore.get("janji.notifications") ?? "null")).toMatchObject({
+      expoPushToken: "ExponentPushToken[newer]",
+    });
   });
 });

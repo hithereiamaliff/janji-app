@@ -52,3 +52,9 @@ export async function getPushToken(projectId: string): Promise<string> {
   const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
   return data;
 }
+
+/** Calls `listener` when Apple or Google replace the phone's push token, which stops the old one working. */
+export function onPushTokenChange(listener: () => void): () => void {
+  const subscription = Notifications.addPushTokenListener(() => listener());
+  return () => subscription.remove();
+}
