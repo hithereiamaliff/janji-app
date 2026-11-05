@@ -99,7 +99,9 @@ export function prepareSpecForTypes(spec: Spec): Spec {
 
 async function buildTypesModule(spec: Spec): Promise<string> {
   // Passed as JSON text: openapiTS types its object input as its own OpenAPI3 document type.
-  const ast = await openapiTS(JSON.stringify(prepareSpecForTypes(spec)));
+  // defaultNonNullable would make every property with a default required, request bodies included, so an
+  // update would have to resend settings such as allowReschedulingPastBookings and overwrite them.
+  const ast = await openapiTS(JSON.stringify(prepareSpecForTypes(spec)), { defaultNonNullable: false });
   return `${HEADER}${astToString(ast)}`;
 }
 

@@ -84,7 +84,7 @@ describe("adding guests", () => {
       {
         method: "POST",
         path: "/api/v2/bookings/b1/guests",
-        body: { guests: [{ email: "lee@example.com", language: "en" }] },
+        body: { guests: [{ email: "lee@example.com" }] },
       },
     ]);
   });
