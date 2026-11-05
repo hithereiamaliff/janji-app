@@ -1,9 +1,11 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocales } from "expo-localization";
+import { useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { type ComponentProps, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  AccessibilityInfo,
   ActivityIndicator,
   Linking,
   Pressable,
@@ -15,15 +17,19 @@ import {
 } from "react-native";
 
 import { Badge } from "@/components/Badge";
+import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { useSession } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
 
+import { actionErrorMessage } from "./action-error";
+import { confirmBooking } from "./booking-actions";
 import { type BookingAnswer, type BookingDetail, type BookingPerson, fieldNameLabel } from "./booking-detail";
 import { formatFullDate, formatTimeRange, timeRangeElsewhere, timeZoneCity } from "./format";
 import { describeLocation, phoneUrl } from "./location";
 import { StatusBadge } from "./StatusBadge";
 import { useBooking } from "./useBooking";
+import { useBookingAction } from "./useBookingAction";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -223,11 +229,46 @@ function AnswersSection({ answers }: { answers: BookingAnswer[] }) {
   );
 }
 
+type PendingActionsProps = {
+  uid: string;
+  confirming: boolean;
+  confirmError: Error | null;
+  onConfirm: () => void;
+};
+
+function PendingActions({ uid, confirming, confirmError, onConfirm }: PendingActionsProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const router = useRouter();
+
+  return (
+    <Section title={t("bookingActions.pendingTitle")}>
+      <Text style={[styles.body, { color: colors.text }]}>{t("bookingActions.pendingDescription")}</Text>
+      <View style={styles.actions}>
+        <Button label={t("bookingActions.confirm")} loading={confirming} onPress={onConfirm} />
+        <Button
+          variant="destructive"
+          label={t("bookingActions.decline")}
+          disabled={confirming}
+          onPress={() => router.push({ pathname: "/booking/[uid]/decline", params: { uid } })}
+        />
+      </View>
+      {confirmError ? (
+        <Text accessibilityRole="alert" style={[styles.body, { color: colors.danger }]}>
+          {actionErrorMessage(t, confirmError, t("bookingActions.confirmFailed"))}
+        </Text>
+      ) : null}
+    </Section>
+  );
+}
+
 export function BookingDetailScreen({ uid }: { uid: string }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [{ languageTag: locale }] = useLocales();
   const bookingQuery = useBooking(uid);
+  // Lives here rather than in PendingActions, which unmounts as soon as the booking is confirmed.
+  const confirm = useBookingAction(uid, confirmBooking);
   // Tracked separately from isRefetching so background refreshes don't show the pull-to-refresh spinner.
   const [refreshing, setRefreshing] = useState(false);
 
@@ -235,6 +276,12 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
     setRefreshing(true);
     await bookingQuery.refetch();
     setRefreshing(false);
+  }
+
+  function handleConfirm() {
+    confirm.mutate(undefined, {
+      onSuccess: () => AccessibilityInfo.announceForAccessibility(t("bookingActions.confirmed")),
+    });
   }
 
   if (bookingQuery.isPending) {
@@ -274,6 +321,14 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
           {t("bookingDetail.refreshFailed")}
         </Text>
       ) : null}
+      {confirm.isSuccess ? (
+        <View style={styles.notice}>
+          <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
+          <Text style={[styles.body, styles.noticeText, { color: colors.text }]}>
+            {t("bookingActions.confirmed")}
+          </Text>
+        </View>
+      ) : null}
 
       <View style={styles.heading}>
         {booking.status === "accepted" ? null : (
@@ -294,6 +349,14 @@ export function BookingDetailScreen({ uid }: { uid: string }) {
         ) : null}
       </View>
 
+      {booking.status === "pending" ? (
+        <PendingActions
+          uid={uid}
+          confirming={confirm.isPending}
+          confirmError={confirm.error}
+          onConfirm={handleConfirm}
+        />
+      ) : null}
       <WhenSection booking={booking} locale={locale} />
       {booking.location ? <WhereSection location={booking.location} /> : null}
       {booking.attendees.length > 0 ? (
@@ -345,6 +408,18 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 28,
     fontWeight: "700",
+  },
+  actions: {
+    marginTop: 12,
+    gap: 12,
+  },
+  notice: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  noticeText: {
+    flexShrink: 1,
   },
   section: {
     borderWidth: 1,

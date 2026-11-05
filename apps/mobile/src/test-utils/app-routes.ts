@@ -4,7 +4,8 @@ import AvailabilityScreen from "@/app/(tabs)/availability";
 import EventTypesScreen from "@/app/(tabs)/event-types";
 import BookingsScreen from "@/app/(tabs)/index";
 import SettingsScreen from "@/app/(tabs)/settings";
-import BookingRoute from "@/app/booking/[uid]";
+import DeclineBookingRoute from "@/app/booking/[uid]/decline";
+import BookingRoute from "@/app/booking/[uid]/index";
 import SignInScreen from "@/app/sign-in";
 
 /** The app's real routes, for expo-router's renderRouter in tests. */
@@ -16,5 +17,6 @@ export const appRoutes = {
   "(tabs)/event-types": EventTypesScreen,
   "(tabs)/availability": AvailabilityScreen,
   "(tabs)/settings": SettingsScreen,
-  "booking/[uid]": BookingRoute,
+  "booking/[uid]/index": BookingRoute,
+  "booking/[uid]/decline": DeclineBookingRoute,
 };
