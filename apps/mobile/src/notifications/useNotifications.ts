@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocales } from "expo-localization";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAccountKey } from "@/data/useAccountKey";
 import { useCalClient, useSignedInAccount } from "@/session/SessionProvider";
 
-import { belongsTo, turnOffNotifications, turnOnNotifications } from "./notifications";
-import { type PushPermission, readPushPermission } from "./push";
+import { belongsTo, syncNotifications, turnOffNotifications, turnOnNotifications } from "./notifications";
+import { onPushTokenChange, type PushPermission, readPushPermission } from "./push";
 import { pushSetup } from "./push-setup";
 import { loadPushRegistration, type PushRegistration } from "./registration-storage";
 import { createRelayClient } from "./relay-client";
@@ -74,4 +75,39 @@ export function useTurnOffNotifications() {
     retry: false,
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
+}
+
+/**
+ * Keeps this phone's notifications working while signed in: syncs as the app starts, and again when the
+ * phone gets a new push token or language.
+ */
+export function useNotificationsSync() {
+  const calClient = useCalClient();
+  const { serverOrigin, user } = useSignedInAccount();
+  const userId = user.id;
+  const accountKey = useAccountKey();
+  const [{ languageTag }] = useLocales();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const setup = pushSetup();
+    if (!setup) return;
+    let queue = Promise.resolve();
+    const sync = () => {
+      queue = queue
+        .then(() =>
+          syncNotifications({
+            calClient,
+            setup,
+            account: { serverOrigin, user: { id: userId } },
+            locale: languageTag,
+          })
+        )
+        // One that fails, as when offline, is tried again at the next start.
+        .catch(() => undefined)
+        .then(() => queryClient.invalidateQueries({ queryKey: ["notifications", accountKey] }));
+    };
+    sync();
+    return onPushTokenChange(sync);
+  }, [calClient, serverOrigin, userId, accountKey, languageTag, queryClient]);
 }
