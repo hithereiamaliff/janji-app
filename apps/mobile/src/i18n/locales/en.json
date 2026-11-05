@@ -179,7 +179,37 @@
     "visibility": "Visibility",
     "showOnPage": "Show on your booking page",
     "visibilityHint": "Hidden event types are left off your booking page, {{page}}, but can still be booked through their own link.",
-    "visibilityFailed": "Couldn't change whether this event type is shown. Try again."
+    "visibilityFailed": "Couldn't change whether this event type is shown. Try again.",
+    "edit": {
+      "action": "Edit details",
+      "title": "Edit event type",
+      "titleLabel": "Title",
+      "slugLabel": "Link",
+      "slugHint": "Your booking link: {{link}}",
+      "slugChangedHint": "Your new booking link: {{link}}. The old link will stop working.",
+      "lengthLabel": "Length in minutes",
+      "defaultLength": "Default length",
+      "lengthsOnWeb": "Bookers can pick any of these. Change which lengths are offered in Cal.diy on the web.",
+      "noticeLabel": "Minimum notice",
+      "noticeHint": "How long before its start a booking has to be made.",
+      "noticeUnitLabel": "Minimum notice in",
+      "units": {
+        "minutes": "Minutes",
+        "hours": "Hours",
+        "days": "Days"
+      },
+      "descriptionLabel": "Description",
+      "save": "Save changes",
+      "saved": "Changes saved.",
+      "failed": "Couldn't save the changes. Try again.",
+      "errors": {
+        "titleMissing": "Add a title.",
+        "slugMissing": "Add a link, such as consultation.",
+        "slugTaken": "Another of your event types already uses this link.",
+        "lengthInvalid": "Enter a length of at least 1 minute, as a whole number.",
+        "noticeInvalid": "Enter a whole number, or 0 for no minimum notice."
+      }
+    }
   },
   "settings": {
     "accountHeading": "Account",

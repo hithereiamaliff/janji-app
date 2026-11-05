@@ -39,7 +39,7 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
-          name="event-type/[id]"
+          name="event-type/[id]/index"
           options={{
             headerShown: true,
             title: t("eventTypes.screenTitle"),
@@ -51,6 +51,7 @@ function RootNavigator() {
         <Stack.Screen name="booking/[uid]/cancel" options={{ presentation: "modal" }} />
         <Stack.Screen name="booking/[uid]/guests" options={{ presentation: "modal" }} />
         <Stack.Screen name="booking/[uid]/reschedule" options={{ presentation: "modal" }} />
+        <Stack.Screen name="event-type/[id]/edit" options={{ presentation: "modal" }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />
