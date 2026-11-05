@@ -47,6 +47,7 @@
       "name": "@janji/relay",
       "version": "0.1.0",
       "dependencies": {
+        "@janji/shared": "workspace:*",
         "hono": "4.13.13",
       },
       "devDependencies": {
@@ -66,6 +67,13 @@
       "devDependencies": {
         "@types/bun": "1.4.4",
         "openapi-typescript": "7.13.0",
+        "typescript": "~6.0.3",
+      },
+    },
+    "packages/shared": {
+      "name": "@janji/shared",
+      "version": "0.1.0",
+      "devDependencies": {
         "typescript": "~6.0.3",
       },
     },
@@ -494,6 +502,8 @@
     "@janji/mobile": ["@janji/mobile@workspace:apps/mobile"],
 
     "@janji/relay": ["@janji/relay@workspace:apps/relay"],
+
+    "@janji/shared": ["@janji/shared@workspace:packages/shared"],
 
     "@jest/console": ["@jest/console@30.5.2", "", { "dependencies": { "@jest/types": "30.5.1", "@types/node": "*", "chalk": "^4.1.2", "jest-message-util": "30.5.1", "jest-util": "30.5.1", "slash": "^3.0.0" } }, "sha512-e8sQC4pCMHPBrPX7Hk8TJr+DM5dkUnImSTNag8SEWFAFAF6xIz4AJvCKapnrdHnZxep4bxw4PhG+ZbimYBMyKw=="],
 

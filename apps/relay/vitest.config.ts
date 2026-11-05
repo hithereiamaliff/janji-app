@@ -8,7 +8,13 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: { configPath: "./wrangler.jsonc" },
-        miniflare: { bindings: { TEST_MIGRATIONS: migrations } },
+        miniflare: {
+          bindings: {
+            TEST_MIGRATIONS: migrations,
+            // A key for tests only; a deployed relay gets its own with `wrangler secret put SECRETS_KEY`.
+            SECRETS_KEY: "amFuamktcmVsYXktdGVzdC1rZXktMzItYnl0ZXMtISE=",
+          },
+        },
       }),
     ],
     test: {
