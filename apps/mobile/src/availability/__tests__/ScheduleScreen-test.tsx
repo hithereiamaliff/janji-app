@@ -29,6 +29,12 @@ const weekends: TestSchedule = {
   name: "Weekends",
   timeZone: "Europe/London",
   availability: [{ days: ["Saturday", "Sunday"], startTime: "09:00", endTime: "12:30" }],
+  overrides: [
+    { date: "2026-12-25", startTime: "00:00", endTime: "00:00" },
+    { date: "2026-12-24", startTime: "13:00", endTime: "15:00" },
+    { date: "2026-12-24", startTime: "09:00", endTime: "12:00" },
+    { date: "2026-11-04", startTime: "09:00", endTime: "12:00" },
+  ],
 };
 
 type Sent = { method: string; path: string; body: unknown };
@@ -52,6 +58,8 @@ async function renderSchedule(id: number, changeResponse?: () => Response) {
     });
   });
   await saveSession({ account: testAccount, apiKey: "cal_secret" });
+  // renderRouter starts its fake clock at the time it finds: 9:00 in London on 5 November 2026.
+  jest.spyOn(Date, "now").mockReturnValue(Date.parse("2026-11-05T09:00:00Z"));
   await renderRouter(appRoutes, { initialUrl: `/schedule/${id}` });
   return sent;
 }
@@ -69,6 +77,29 @@ describe("a schedule", () => {
     expect(screen.getByText("Sat, Sun, 9:00 AM – 12:30 PM")).toBeOnTheScreen();
     expect(screen.getByText("London (Europe/London)")).toBeOnTheScreen();
     expect(screen.getByText(en.availability.notDefault)).toBeOnTheScreen();
+  });
+
+  it("shows its date overrides from today on, earliest first", async () => {
+    await renderSchedule(3);
+
+    expect(await screen.findByRole("header", { name: "Weekends" })).toBeOnTheScreen();
+    expect(screen.getAllByText(/^\w{3}, \w{3} \d+, 2026$/).map((date) => date.props.children)).toEqual([
+      "Thu, Dec 24, 2026",
+      "Fri, Dec 25, 2026",
+    ]);
+    expect(
+      screen.getByLabelText("Thursday, December 24, 2026, 9:00 AM – 12:00 PM, 1:00 PM – 3:00 PM")
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText(`Friday, December 25, 2026, ${en.availability.overrides.unavailable}`)
+    ).toBeOnTheScreen();
+  });
+
+  it("says when it has no upcoming date overrides", async () => {
+    await renderSchedule(1);
+
+    expect(await screen.findByRole("header", { name: "Consultation hours" })).toBeOnTheScreen();
+    expect(screen.getByText(en.availability.overrides.none)).toBeOnTheScreen();
   });
 
   it("can be made the default", async () => {
