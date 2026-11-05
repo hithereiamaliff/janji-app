@@ -18,6 +18,9 @@ type FilterTabsProps<Value extends string> = {
    * edges, so tabs scroll edge to edge while the first one lines up with the content around it.
    */
   containerPadding?: number;
+  /** "choices" makes the row a set of radio buttons, for picking a setting rather than a view to switch to. */
+  kind?: "tabs" | "choices";
+  disabled?: boolean;
 };
 
 /**
@@ -30,14 +33,17 @@ export function FilterTabs<Value extends string>({
   onChange,
   accessibilityLabel,
   containerPadding,
+  kind = "tabs",
+  disabled = false,
 }: FilterTabsProps<Value>) {
   const { colors } = useTheme();
+  const choices = kind === "choices";
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      accessibilityRole="tablist"
+      accessibilityRole={choices ? "radiogroup" : "tablist"}
       accessibilityLabel={accessibilityLabel}
       style={[styles.scroller, containerPadding ? { marginHorizontal: -containerPadding } : null]}
       contentContainerStyle={[styles.row, containerPadding ? { paddingHorizontal: containerPadding } : null]}
@@ -47,15 +53,17 @@ export function FilterTabs<Value extends string>({
         return (
           <Pressable
             key={option.value}
-            accessibilityRole="tab"
+            accessibilityRole={choices ? "radio" : "tab"}
             accessibilityLabel={option.label}
-            accessibilityState={{ selected }}
+            accessibilityState={choices ? { checked: selected, disabled } : { selected, disabled }}
+            disabled={disabled}
             onPress={() => onChange(option.value)}
             style={[
               styles.tab,
               {
                 backgroundColor: selected ? colors.accent : colors.surface,
                 borderColor: selected ? colors.accent : colors.inputBorder,
+                opacity: disabled ? 0.5 : 1,
               },
             ]}
           >

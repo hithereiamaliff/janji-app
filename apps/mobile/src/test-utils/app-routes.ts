@@ -12,6 +12,7 @@ import RescheduleRoute from "@/app/booking/[uid]/reschedule";
 import EditEventTypeRoute from "@/app/event-type/[id]/edit";
 import EventTypeRoute from "@/app/event-type/[id]/index";
 import NewPrivateLinkRoute from "@/app/event-type/[id]/private-link";
+import ProfileRoute from "@/app/profile";
 import ScheduleDetailsRoute from "@/app/schedule/[id]/details";
 import WeeklyHoursRoute from "@/app/schedule/[id]/hours";
 import ScheduleRoute from "@/app/schedule/[id]/index";
@@ -43,4 +44,5 @@ export const appRoutes = {
   "schedule/[id]/override/[date]": DateOverrideRoute,
   "schedule/[id]/override/new": NewDateOverrideRoute,
   "schedule/new": NewScheduleRoute,
+  profile: ProfileRoute,
 };
