@@ -44,3 +44,11 @@ Nothing secret goes in this repository. For `bun run dev`, put a key of your own
 
 If the hook URL is on a custom domain behind Cloudflare's WAF or bot protection, exempt `/v1/hooks/*`:
 Cal.diy can't answer a challenge.
+
+## Receipts
+
+Expo answers each push with a ticket, which the relay keeps (`push_tickets`, with the device and nothing
+else). Every 15 minutes a scheduled run asks Expo for the receipts of tickets at least 15 minutes old, as Expo
+suggests. A phone Expo says is no longer registered, such as after an uninstall, is forgotten, so its hook
+answers 410 from then on; Expo can say so on the ticket already, too. Tickets are dropped once their receipt
+comes, or after a day, when Expo clears them.
