@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AccessibilityInfo,
@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { Section } from "@/components/Section";
 import { ThemedSwitch } from "@/components/ThemedSwitch";
 import { actionErrorMessage } from "@/lib/action-error";
 import { useSignedInAccount } from "@/session/SessionProvider";
@@ -24,19 +25,8 @@ import { useTheme } from "@/theme/useTheme";
 
 import { bookingLink, type EventTypeSummary } from "./event-type";
 import { lengthDetails } from "./lengths";
+import { PrivateLinksSection } from "./PrivateLinksSection";
 import { useEventType, useSetEventTypeHidden } from "./useEventTypes";
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  const { colors } = useTheme();
-  return (
-    <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.textMuted }]}>
-        {title}
-      </Text>
-      {children}
-    </View>
-  );
-}
 
 function LinkSection({ link }: { link: string }) {
   const { t } = useTranslation();
@@ -176,6 +166,7 @@ export function EventTypeScreen({ id }: { id: number }) {
         eventType={details}
         page={`${account.serverOrigin.replace(/^https?:\/\//, "")}/${account.user.username}`}
       />
+      <PrivateLinksSection eventType={details} />
       {details.description ? (
         <Section title={t("eventTypes.description")}>
           <Text selectable style={[styles.body, { color: colors.text }]}>
@@ -219,18 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 28,
     fontWeight: "700",
-  },
-  section: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    gap: 4,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    marginBottom: 4,
   },
   body: {
     fontSize: 15,

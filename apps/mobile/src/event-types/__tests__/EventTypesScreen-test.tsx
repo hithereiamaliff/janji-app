@@ -9,6 +9,7 @@ import {
   apiEventType,
   eventTypesResponse,
   jsonResponse,
+  privateLinksResponse,
   type TestEventType,
   testAccount,
 } from "@/test-utils/fixtures";
@@ -47,6 +48,7 @@ async function renderEventTypes(
     const text = await request.text();
     const body: unknown = text ? JSON.parse(text) : null;
     sent.push({ method: request.method, body });
+    if (request.url.endsWith("/private-links")) return privateLinksResponse([]);
     if (request.method !== "PATCH") return response();
     if (patchResponse) return patchResponse();
     const id = Number(new URL(request.url).pathname.split("/").at(-1));

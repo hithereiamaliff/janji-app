@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { Section } from "@/components/Section";
 import { actionErrorMessage } from "@/lib/action-error";
 import { useSession } from "@/session/SessionProvider";
 import { useTheme } from "@/theme/useTheme";
@@ -32,18 +33,6 @@ import { useBooking } from "./useBooking";
 import { useBookingAction } from "./useBookingAction";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  const { colors } = useTheme();
-  return (
-    <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.textMuted }]}>
-        {title}
-      </Text>
-      {children}
-    </View>
-  );
-}
 
 type LinkRowProps = {
   icon: IconName;
@@ -536,18 +525,6 @@ const styles = StyleSheet.create({
   },
   noticeText: {
     flexShrink: 1,
-  },
-  section: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    gap: 4,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    marginBottom: 4,
   },
   strong: {
     fontSize: 16,

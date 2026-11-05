@@ -211,6 +211,26 @@
       }
     }
   },
+  "privateLinks": {
+    "title": "Private links",
+    "intro": "Anyone with a private link can book this event type, even while it's hidden, until the link stops working.",
+    "none": "No private links yet.",
+    "loadFailed": "Couldn't load the private links. Try again.",
+    "worksUntil": "Works until {{time}} on {{date}}",
+    "ended": "Stopped working at {{time}} on {{date}}",
+    "bookingsLeft_one": "{{left}} of {{count}} booking left",
+    "bookingsLeft_other": "{{left}} of {{count}} bookings left",
+    "usedUp_one": "Its {{count}} booking has been made",
+    "usedUp_other": "All {{count}} bookings have been made",
+    "expired": "Expired",
+    "copy": "Copy",
+    "delete": "Delete",
+    "deleteQuestion": "Delete this link? Anyone who has it won't be able to book with it.",
+    "deleteConfirm": "Delete link",
+    "keep": "Keep it",
+    "deleted": "Private link deleted.",
+    "deleteFailed": "Couldn't delete the link. Try again."
+  },
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
