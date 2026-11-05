@@ -26,14 +26,19 @@ Your server's webhooks can't answer a challenge.
 
 ## Pointing the app at it
 
-The app gets the relay's address when it's built, from `JANJI_RELAY_ORIGIN`. To use your own relay, build your
-own copy of the app with that set to your relay, as [`release.md`](./release.md) describes. A copy with its own
-EAS project issues its own push tokens, and your relay sends to them.
+In Janji, open **Settings**, choose **Show notification relay** under Notifications, enter your relay's address
+and choose **Use this relay**. If booking notifications are on, turn them off first: a phone stays with the relay
+it was turned on with. **Use Janji's relay again** goes back.
+
+Your relay sends to the push tokens of Janji's own builds as long as Janji's EAS project leaves Expo's enhanced
+push security off, which is the default. You can also build your own copy of the app with `JANJI_RELAY_ORIGIN`
+set to your relay, as [`release.md`](./release.md) describes. A copy with its own EAS project issues its own push
+tokens, and your relay sends to them.
 
 ## Expo's enhanced push security
 
-Expo projects can require an access token for every push ("enhanced push security", off by default). If you
-turn it on for your EAS project, give the relay one of your Expo access tokens:
+Expo projects can require an access token for every push ("enhanced push security", off by default). If you build
+your own copy of the app and turn it on for that EAS project, give the relay one of your Expo access tokens:
 
 ```sh
 bunx wrangler secret put EXPO_ACCESS_TOKEN

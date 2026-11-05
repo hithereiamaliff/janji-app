@@ -260,12 +260,67 @@ describe("booking notifications in Settings", () => {
     expect(screen.getByText(en.notifications.events.lastOne)).toBeOnTheScreen();
   });
 
-  it("says this version of Janji can't send them when it has no relay", async () => {
+  it("shows the relay notifications come through, and lets the person use their own", async () => {
+    await openSettings();
+    await fireEvent.press(await screen.findByRole("button", { name: en.notifications.relay.show }));
+    expect(screen.getByText("Notifications come through Janji's relay at relay.example.")).toBeOnTheScreen();
+
+    await fireEvent.changeText(
+      screen.getByLabelText(en.notifications.relay.addressLabel),
+      "my-relay.example"
+    );
+    await fireEvent.press(screen.getByRole("button", { name: en.notifications.relay.save }));
+
+    expect(
+      await screen.findByText("Notifications come through your relay at my-relay.example.")
+    ).toBeOnTheScreen();
+    expect(mockStore.get("janji.relayOrigin")).toBe("https://my-relay.example");
+
+    await fireEvent.press(screen.getByRole("button", { name: en.notifications.relay.useBuild }));
+    expect(
+      await screen.findByText("Notifications come through Janji's relay at relay.example.")
+    ).toBeOnTheScreen();
+    expect(mockStore.has("janji.relayOrigin")).toBe(false);
+  });
+
+  it("only takes a relay on HTTPS", async () => {
+    await openSettings();
+    await fireEvent.press(await screen.findByRole("button", { name: en.notifications.relay.show }));
+
+    await fireEvent.changeText(
+      screen.getByLabelText(en.notifications.relay.addressLabel),
+      "http://my-relay.example"
+    );
+    await fireEvent.press(screen.getByRole("button", { name: en.notifications.relay.save }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.notifications.relay.invalid);
+    expect(mockStore.has("janji.relayOrigin")).toBe(false);
+  });
+
+  it("keeps the relay while notifications are on", async () => {
+    mockStore.set("janji.notifications", JSON.stringify(registration));
+    mockPermission = granted;
+    await openSettings();
+    await fireEvent.press(await screen.findByRole("button", { name: en.notifications.relay.show }));
+
+    expect(screen.getByText(en.notifications.relay.turnOffFirst)).toBeOnTheScreen();
+    expect(screen.queryByLabelText(en.notifications.relay.addressLabel)).toBeNull();
+  });
+
+  it("asks for a relay in a version of Janji without one, then offers the switch", async () => {
     mockSetup = { platform: "ios", relayOrigin: null, projectId: "project-1" };
     await openSettings();
 
-    expect(await screen.findByText(en.notifications.unavailable)).toBeOnTheScreen();
+    expect(await screen.findByText(en.notifications.relay.none)).toBeOnTheScreen();
     expect(screen.queryByRole("switch", { name: en.notifications.label })).toBeNull();
+    await fireEvent.changeText(
+      screen.getByLabelText(en.notifications.relay.addressLabel),
+      "my-relay.example"
+    );
+    await fireEvent.press(screen.getByRole("button", { name: en.notifications.relay.save }));
+
+    expect(await notificationsSwitch()).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: en.notifications.relay.useBuild })).toBeNull();
   });
 
   it("says when this version of Janji can't send them", async () => {
