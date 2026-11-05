@@ -9,7 +9,8 @@ import DeclineBookingRoute from "@/app/booking/[uid]/decline";
 import AddGuestsRoute from "@/app/booking/[uid]/guests";
 import BookingRoute from "@/app/booking/[uid]/index";
 import RescheduleRoute from "@/app/booking/[uid]/reschedule";
-import EventTypeRoute from "@/app/event-type/[id]";
+import EditEventTypeRoute from "@/app/event-type/[id]/edit";
+import EventTypeRoute from "@/app/event-type/[id]/index";
 import SignInScreen from "@/app/sign-in";
 
 /** The app's real routes, for expo-router's renderRouter in tests. */
@@ -26,5 +27,6 @@ export const appRoutes = {
   "booking/[uid]/cancel": CancelBookingRoute,
   "booking/[uid]/guests": AddGuestsRoute,
   "booking/[uid]/reschedule": RescheduleRoute,
-  "event-type/[id]": EventTypeRoute,
+  "event-type/[id]/index": EventTypeRoute,
+  "event-type/[id]/edit": EditEventTypeRoute,
 };

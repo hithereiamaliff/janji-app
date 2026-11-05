@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Clipboard from "expo-clipboard";
+import { useRouter } from "expo-router";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -113,6 +114,7 @@ export function EventTypeScreen({ id }: { id: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const account = useSignedInAccount();
+  const router = useRouter();
   const eventType = useEventType(id);
 
   if (eventType.isPending) {
@@ -161,6 +163,11 @@ export function EventTypeScreen({ id }: { id: number }) {
           {details.title}
         </Text>
       </View>
+      <Button
+        variant="secondary"
+        label={t("eventTypes.edit.action")}
+        onPress={() => router.push({ pathname: "/event-type/[id]/edit", params: { id: String(details.id) } })}
+      />
       <Section title={t("eventTypes.length")}>
         <Text style={[styles.body, { color: colors.text }]}>{lengthDetails(t, details)}</Text>
       </Section>
