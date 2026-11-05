@@ -10,8 +10,10 @@ import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
 import { actionErrorMessage } from "@/lib/action-error";
+import { calendarDateText } from "@/lib/calendar-date";
 import { useTheme } from "@/theme/useTheme";
 
+import { overrideHoursText, upcomingOverrideDays } from "./date-overrides";
 import { weeklyHoursText } from "./hours-text";
 import type { Schedule } from "./schedule";
 import { useDeleteSchedule, useSchedule, useSetDefaultSchedule } from "./useSchedules";
@@ -46,6 +48,40 @@ function DefaultSection({ schedule }: { schedule: Schedule }) {
               })}
             </Text>
           ) : null}
+        </View>
+      )}
+    </Section>
+  );
+}
+
+function OverridesSection({ schedule }: { schedule: Schedule }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const [{ languageTag: locale }] = useLocales();
+  const days = upcomingOverrideDays(schedule.overrides, schedule.timeZone);
+
+  return (
+    <Section title={t("availability.overrides.title")}>
+      {days.length === 0 ? (
+        <Text style={[styles.body, { color: colors.textMuted }]}>{t("availability.overrides.none")}</Text>
+      ) : (
+        <View style={styles.group}>
+          {days.map((day) => {
+            const hours = overrideHoursText(t, day, locale);
+            return (
+              <View
+                key={day.date}
+                accessible
+                accessibilityLabel={`${calendarDateText(day.date, locale, "long")}, ${hours}`}
+                style={styles.override}
+              >
+                <Text style={[styles.overrideDate, { color: colors.text }]}>
+                  {calendarDateText(day.date, locale)}
+                </Text>
+                <Text style={[styles.body, { color: colors.textMuted }]}>{hours}</Text>
+              </View>
+            );
+          })}
         </View>
       )}
     </Section>
@@ -191,6 +227,7 @@ export function ScheduleScreen({ id }: { id: number }) {
           />
         </View>
       </Section>
+      <OverridesSection schedule={details} />
       <Section title={t("availability.timeZone")}>
         <Text style={[styles.body, { color: colors.text }]}>
           {t("availability.timeZoneValue", { city: timeZoneCity(details.timeZone), zone: details.timeZone })}
@@ -250,6 +287,14 @@ const styles = StyleSheet.create({
   },
   group: {
     gap: 12,
+  },
+  override: {
+    gap: 2,
+  },
+  overrideDate: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "600",
   },
   sectionAction: {
     marginTop: 12,
