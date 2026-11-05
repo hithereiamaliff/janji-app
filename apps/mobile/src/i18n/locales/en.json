@@ -318,6 +318,16 @@
     "hint": "Opens the list of times",
     "cancel": "Cancel"
   },
+  "timeZonePicker": {
+    "label": "Time zone, {{zone}}",
+    "hint": "Opens a search for a city",
+    "title": "Time zone",
+    "searchLabel": "Search for a city",
+    "searchHint": "Type a city's name to find its time zone, for example Penang or London.",
+    "noMatch": "No city matches “{{query}}”.",
+    "useDevice": "Use this device's time zone: {{zone}}",
+    "loadFailed": "Couldn't load the list of time zones."
+  },
   "settings": {
     "accountHeading": "Account",
     "server": "Server: {{server}}",
