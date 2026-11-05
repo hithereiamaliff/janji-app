@@ -12,6 +12,7 @@ import RescheduleRoute from "@/app/booking/[uid]/reschedule";
 import EditEventTypeRoute from "@/app/event-type/[id]/edit";
 import EventTypeRoute from "@/app/event-type/[id]/index";
 import NewPrivateLinkRoute from "@/app/event-type/[id]/private-link";
+import ScheduleDetailsRoute from "@/app/schedule/[id]/details";
 import WeeklyHoursRoute from "@/app/schedule/[id]/hours";
 import ScheduleRoute from "@/app/schedule/[id]/index";
 import NewScheduleRoute from "@/app/schedule/new";
@@ -36,5 +37,6 @@ export const appRoutes = {
   "event-type/[id]/private-link": NewPrivateLinkRoute,
   "schedule/[id]/index": ScheduleRoute,
   "schedule/[id]/hours": WeeklyHoursRoute,
+  "schedule/[id]/details": ScheduleDetailsRoute,
   "schedule/new": NewScheduleRoute,
 };

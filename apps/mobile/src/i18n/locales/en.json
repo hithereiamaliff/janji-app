@@ -312,6 +312,16 @@
       "save": "Save hours",
       "saved": "Weekly hours saved.",
       "failed": "Couldn't save the hours. Try again."
+    },
+    "details": {
+      "action": "Edit name and time zone",
+      "title": "Name and time zone",
+      "nameLabel": "Name",
+      "timeZoneLabel": "Time zone",
+      "timeZoneHint": "The hours keep their times on the new time zone's clock: 9:00 stays 9:00 there.",
+      "save": "Save",
+      "saved": "Schedule saved.",
+      "failed": "Couldn't save the schedule. Try again."
     }
   },
   "timePicker": {
