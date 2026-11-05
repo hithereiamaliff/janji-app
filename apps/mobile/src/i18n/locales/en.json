@@ -10,5 +10,27 @@
     "eventTypes": "Your event types will show up here.",
     "availability": "Your schedules and working hours will show up here.",
     "settings": "Server, account and notification settings will live here."
+  },
+  "signIn": {
+    "server": {
+      "title": "Connect your server",
+      "description": "Janji works with your own Cal.diy server. Enter the address you open in your browser to use Cal.diy.",
+      "addressLabel": "Server address",
+      "addressPlaceholder": "book.example.com",
+      "advancedShow": "Show advanced options",
+      "advancedHide": "Hide advanced options",
+      "apiAddressLabel": "Cal API v2 address (optional)",
+      "apiAddressHint": "Only needed if your server runs Cal API v2 at a different address, for example https://api.example.com/v2.",
+      "continue": "Continue",
+      "errors": {
+        "empty": "Enter your server's address.",
+        "invalid": "That doesn't look like a web address. Try something like book.example.com.",
+        "insecure": "Janji only connects over a secure connection. Use an address that starts with https://.",
+        "api_address_invalid": "That doesn't look like a web address. Try something like https://api.example.com/v2.",
+        "not_cal_api": "The server answered, but Cal API v2 isn't available there. Cal API v2 runs as a separate service next to Cal.diy, so it may not be set up on this server yet.",
+        "unreachable": "Couldn't reach that server. Check the address and your internet connection.",
+        "timeout": "The server took too long to answer. Try again in a moment."
+      }
+    }
   }
 }
