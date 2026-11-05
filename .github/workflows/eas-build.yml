@@ -1,0 +1,49 @@
+name: EAS build
+
+# Starts an iOS and/or Android build on EAS Build, by hand from the Actions tab. It needs the EXPO_TOKEN
+# repository secret (an access token from expo.dev) and the setup in docs/release.md.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Build profile in apps/mobile/eas.json
+        type: choice
+        options: [development, preview, production]
+        default: preview
+      platform:
+        description: Platform
+        type: choice
+        options: [all, ios, android]
+        default: all
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Start the build on EAS
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # EAS builds in the cloud; this only uploads the project and starts the build, without waiting for it.
+      - name: Start the build
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          PROFILE: ${{ inputs.profile }}
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add an EXPO_TOKEN repository secret first (see docs/release.md)."
+            exit 1
+          fi
+          bunx eas-cli build --profile "$PROFILE" --platform "$PLATFORM" --non-interactive --no-wait

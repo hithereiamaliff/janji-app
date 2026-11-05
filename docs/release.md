@@ -1,0 +1,72 @@
+# Building and releasing Janji
+
+Janji's iOS and Android apps are built with [EAS Build](https://docs.expo.dev/build/introduction/), Expo's
+cloud build service, so no Mac or Android Studio is needed. This guide covers the one-off setup, then the three
+kinds of build. Run the commands in `apps/mobile`.
+
+## What you need
+
+- An **Expo account** (free).
+- The **Apple Developer Program** ($99 a year), for iOS builds, TestFlight and iOS notifications.
+- A **Google Play Console** account ($25 once).
+- A **Firebase project**, which Android notifications go through.
+- The **relay**, deployed: see [`apps/relay/README.md`](../apps/relay/README.md).
+
+## One-off setup
+
+1. **The EAS project.** Run `bunx eas-cli login`, then `bunx eas-cli init`. The app config is TypeScript, which
+   EAS CLI can't edit, so add what it prints to `app.config.ts` yourself:
+
+   ```ts
+   owner: "<your Expo account>",
+   extra: {
+     relayOrigin: process.env.JANJI_RELAY_ORIGIN,
+     eas: { projectId: "<the project ID>" },
+   },
+   ```
+
+   The project ID isn't a secret: the phones' push tokens are issued for it.
+
+2. **The relay's address**, which the builds send notifications through. Without it, a build has no
+   notifications. Set it for each environment the build profiles use (`development`, `preview` and
+   `production`):
+
+   ```sh
+   bunx eas-cli env:set --name JANJI_RELAY_ORIGIN --value https://<your relay> --environment production --visibility plaintext
+   ```
+
+3. **iOS notifications.** Run `bunx eas-cli credentials`, choose iOS, and set up push notifications. EAS can
+   make the push key with your Apple account.
+
+4. **Android notifications.**
+   - In Firebase, add an Android app with the package name `digital.techmavie.janji` and download its
+     `google-services.json`.
+   - On expo.dev, under the project's environment variables, add that file as a **file** variable named
+     `GOOGLE_SERVICES_JSON`, for all three environments.
+   - Upload an FCM V1 service account key: `bunx eas-cli credentials`, then Android, production, Google
+     Service Account, and the key for push notifications (FCM V1). Expo's guide:
+     [Obtain Google Service Account Keys using FCM V1](https://docs.expo.dev/push-notifications/fcm-credentials/).
+
+   Neither file belongs in the repository; `.gitignore` keeps them out.
+
+5. **Building from GitHub** (optional). Add an access token from expo.dev as the `EXPO_TOKEN` repository
+   secret. The **EAS build** workflow in the Actions tab then starts a build for a chosen profile and
+   platform.
+
+## The three builds
+
+| Profile       | What it's for                                                                                                                                                                                    | Command                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| `development` | Testing on your own phone with Expo's developer tools. It loads the app from `bun run mobile` on your computer. Expo Go can't receive notifications, so this is how to test them before release. | `bunx eas-cli build --profile development --platform ios` |
+| `preview`     | A release-like build to install from a link, for you and testers.                                                                                                                                | `bunx eas-cli build --profile preview --platform android` |
+| `production`  | Builds for the App Store and Google Play. EAS counts the build numbers up.                                                                                                                       | `bunx eas-cli build --profile production --platform all`  |
+
+iPhones need registering before they can install `development` and `preview` builds: `bunx eas-cli device:create`.
+
+A production build goes to the stores with `bunx eas-cli submit --platform ios` or `--platform android`.
+
+## Before the first store release
+
+- Replace the placeholder icon and splash screen, which come from Expo's template.
+- Make the repository public: the app links to its source code.
+- Review [`privacy.md`](./privacy.md), which the store listings link to.

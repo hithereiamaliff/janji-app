@@ -21,6 +21,11 @@ apps/mobile/android/
 *.mobileprovision
 *.pem
 
+# Firebase and Google service account files, which EAS gets from its own settings
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+
 # Metro
 .metro-health-check*
 
