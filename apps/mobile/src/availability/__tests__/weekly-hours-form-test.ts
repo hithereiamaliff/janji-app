@@ -1,10 +1,12 @@
 import type { WeeklyHours } from "@/availability/schedule";
 import {
   checkDayRanges,
+  checkRanges,
   DEFAULT_RANGE,
   emptyWeek,
   fromDayRanges,
   nextRange,
+  sortRanges,
   TIME_CHOICES,
   toDayRanges,
 } from "@/availability/weekly-hours-form";
@@ -95,5 +97,34 @@ describe("checkDayRanges", () => {
     ];
 
     expect(checkDayRanges(week)).toEqual({ Wednesday: "overlaps" });
+  });
+});
+
+describe("checkRanges", () => {
+  it("checks one day's ranges the same way", () => {
+    expect(checkRanges([])).toBeNull();
+    expect(checkRanges([{ start: "09:00", end: "12:00" }])).toBeNull();
+    expect(checkRanges([{ start: "12:00", end: "12:00" }])).toBe("endsBeforeStart");
+    expect(
+      checkRanges([
+        { start: "11:00", end: "14:00" },
+        { start: "09:00", end: "12:00" },
+      ])
+    ).toBe("overlaps");
+  });
+});
+
+describe("sortRanges", () => {
+  it("puts the ranges earliest first, leaving the ones given as they were", () => {
+    const ranges = [
+      { start: "13:00", end: "17:00" },
+      { start: "09:00", end: "12:00" },
+    ];
+
+    expect(sortRanges(ranges)).toEqual([
+      { start: "09:00", end: "12:00" },
+      { start: "13:00", end: "17:00" },
+    ]);
+    expect(ranges[0]?.start).toBe("13:00");
   });
 });

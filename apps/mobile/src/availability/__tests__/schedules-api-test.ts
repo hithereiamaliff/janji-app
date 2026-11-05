@@ -119,6 +119,21 @@ describe("updateSchedule", () => {
 
     expect(sent[0]?.body).toEqual({ availability: [] });
   });
+
+  it("sends date overrides as they are, which replace the schedule's", async () => {
+    const overrides = [
+      { date: "2026-12-24", startTime: "09:00", endTime: "12:00" },
+      { date: "2026-12-25", startTime: "00:00", endTime: "00:00" },
+    ];
+    const { client, sent } = clientAnswering(() =>
+      jsonResponse({ status: "success", data: apiSchedule({ id: 3, name: "Weekends", overrides }) })
+    );
+
+    const saved = await updateSchedule(client, 3, { overrides });
+
+    expect(sent[0]?.body).toEqual({ overrides });
+    expect(saved.overrides).toEqual(overrides);
+  });
 });
 
 describe("deleteSchedule", () => {

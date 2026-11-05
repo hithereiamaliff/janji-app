@@ -322,6 +322,10 @@
       "save": "Save",
       "saved": "Schedule saved.",
       "failed": "Couldn't save the schedule. Try again."
+    },
+    "overrides": {
+      "unavailable": "Unavailable all day",
+      "range": "{{start}} – {{end}}"
     }
   },
   "timePicker": {
