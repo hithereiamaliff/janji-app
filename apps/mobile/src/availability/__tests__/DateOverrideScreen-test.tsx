@@ -9,6 +9,7 @@ import {
   schedulesResponse,
   type TestSchedule,
   testAccount,
+  testMeResponse,
 } from "@/test-utils/fixtures";
 
 const mockStore = new Map<string, string>();
@@ -42,6 +43,7 @@ async function openSchedule(changeResponse?: () => Response, initialUrl = "/sche
   const patches: unknown[] = [];
   jest.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
     const request = input instanceof Request ? input : new Request(String(input));
+    if (request.url.endsWith("/v2/me")) return jsonResponse(testMeResponse);
     if (request.method !== "PATCH") return schedulesResponse([weekends]);
     const body: unknown = await request.json();
     patches.push(body);
@@ -57,6 +59,11 @@ async function openSchedule(changeResponse?: () => Response, initialUrl = "/sche
   return patches;
 }
 
+async function addOverride() {
+  await fireEvent.press(screen.getByRole("button", { name: en.availability.overrides.add }));
+  await screen.findByRole("header", { name: en.availability.overrides.addTitle });
+}
+
 async function editOverride(label: string) {
   await fireEvent.press(screen.getByRole("button", { name: label }));
 }
@@ -64,6 +71,100 @@ async function editOverride(label: string) {
 const press = (name: string) => fireEvent.press(screen.getByRole("button", { name }));
 const save = () => press(en.availability.overrides.save);
 const christmasEve = "Thursday, December 24, 2026, 9:00 AM – 12:00 PM, 1:00 PM – 3:00 PM";
+
+describe("adding date overrides", () => {
+  beforeEach(() => mockStore.clear());
+  afterEach(() => jest.restoreAllMocks());
+
+  it("starts from the weekday's hours of the first date picked, then saves them", async () => {
+    const patches = await openSchedule();
+    await addOverride();
+
+    expect(screen.getByText("November 2026")).toBeOnTheScreen();
+    await press("Saturday, November 28, 2026");
+    expect(screen.getByRole("button", { name: "Start, 9:00 AM" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "End, 12:30 PM" })).toBeOnTheScreen();
+    await save();
+
+    await waitFor(() => expect(screen).toHavePathname("/schedule/3"));
+    expect(patches).toEqual([
+      {
+        overrides: [past, { date: "2026-11-28", startTime: "09:00", endTime: "12:30" }, ...christmas],
+      },
+    ]);
+    expect(
+      await screen.findByRole("button", { name: "Saturday, November 28, 2026, 9:00 AM – 12:30 PM" })
+    ).toBeOnTheScreen();
+  });
+
+  it("makes several dates unavailable all day at once", async () => {
+    const patches = await openSchedule();
+    await addOverride();
+
+    await press("Tuesday, November 24, 2026");
+    await press("Wednesday, November 25, 2026");
+    await fireEvent(
+      screen.getByRole("switch", { name: en.availability.overrides.unavailable }),
+      "valueChange",
+      true
+    );
+    await save();
+
+    await waitFor(() =>
+      expect(patches).toEqual([
+        {
+          overrides: [
+            past,
+            { date: "2026-11-24", startTime: "00:00", endTime: "00:00" },
+            { date: "2026-11-25", startTime: "00:00", endTime: "00:00" },
+            ...christmas,
+          ],
+        },
+      ])
+    );
+  });
+
+  it("starts the calendar's weeks on the person's first day of the week", async () => {
+    await openSchedule();
+    await addOverride();
+
+    const columns = screen.getAllByText(/^(Sun|Mon|Tue|Wed|Thu|Fri|Sat)$/, { includeHiddenElements: true });
+    expect(columns[0]).toHaveTextContent("Mon");
+  });
+
+  it("keeps earlier dates, and dates that already have an override, from being picked", async () => {
+    await openSchedule();
+    await addOverride();
+
+    expect(screen.getByRole("button", { name: "Wednesday, November 4, 2026" })).toBeDisabled();
+    await press(en.calendar.nextMonth);
+    expect(screen.getByRole("button", { name: "Thursday, December 24, 2026" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Wednesday, December 23, 2026" })).toBeEnabled();
+  });
+
+  it("needs a date", async () => {
+    const patches = await openSchedule();
+    await addOverride();
+
+    await save();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.availability.overrides.noDates);
+    expect(patches).toEqual([]);
+  });
+
+  it("keeps the form and explains when saving fails", async () => {
+    await openSchedule(() =>
+      jsonResponse({ status: "error", error: { message: "invalid_input" } }, { status: 400 })
+    );
+    await addOverride();
+
+    await press("Tuesday, November 24, 2026");
+    await save();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.availability.overrides.failed);
+    expect(screen).toHavePathname("/schedule/3/override/new");
+  });
+});
 
 describe("changing a date override", () => {
   beforeEach(() => mockStore.clear());

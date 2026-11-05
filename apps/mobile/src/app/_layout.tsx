@@ -64,6 +64,7 @@ function RootNavigator() {
         <Stack.Screen name="schedule/new" options={{ presentation: "modal" }} />
         <Stack.Screen name="schedule/[id]/hours" options={{ presentation: "modal" }} />
         <Stack.Screen name="schedule/[id]/details" options={{ presentation: "modal" }} />
+        <Stack.Screen name="schedule/[id]/override/new" options={{ presentation: "modal" }} />
         <Stack.Screen name="schedule/[id]/override/[date]" options={{ presentation: "modal" }} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
