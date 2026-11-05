@@ -9,6 +9,7 @@ import {
   eventTypesResponse,
   jsonResponse,
   privateLinksResponse,
+  schedulesResponse,
   type TestEventType,
   testAccount,
 } from "@/test-utils/fixtures";
@@ -63,6 +64,12 @@ async function renderEventType(eventType: TestEventType, changeResponses: Respon
       body: text ? JSON.parse(text) : null,
     });
     if (request.url.endsWith("/private-links")) return privateLinksResponse([]);
+    if (request.url.endsWith("/v2/schedules")) {
+      return schedulesResponse([
+        { id: 1, name: "Consultation hours", isDefault: true },
+        { id: 4, name: "Weekends" },
+      ]);
+    }
     if (request.method !== "PATCH") return eventTypesResponse(served);
     return changeResponses.shift() ?? jsonResponse({ status: "success", data: apiEventType(eventType) });
   });
@@ -233,5 +240,41 @@ describe("editing an event type", () => {
 
     await waitFor(() => expect(screen).toHavePathname("/event-type/2"));
     expect(changes(sent).map((request) => request.body)).toEqual([{ description: "What we'll cover." }]);
+  });
+
+  it("follows the default schedule until another is picked, then saves that one", async () => {
+    const sent = await renderEventType(consultation, [saved({ ...consultation, scheduleId: 4 })]);
+
+    expect(
+      await screen.findByRole("radio", { name: `Consultation hours, ${en.eventTypes.edit.defaultSchedule}` })
+    ).toBeChecked();
+    expect(screen.getByText(en.eventTypes.edit.followsDefaultHint)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("radio", { name: "Weekends" }));
+    expect(screen.getByText(en.eventTypes.edit.scheduleHint)).toBeOnTheScreen();
+    await save();
+
+    await waitFor(() => expect(changes(sent).map((request) => request.body)).toEqual([{ scheduleId: 4 }]));
+  });
+
+  it("keeps following the default when it's picked again", async () => {
+    const sent = await renderEventType(consultation);
+
+    await fireEvent.press(await screen.findByRole("radio", { name: "Weekends" }));
+    await fireEvent.press(
+      screen.getByRole("radio", { name: `Consultation hours, ${en.eventTypes.edit.defaultSchedule}` })
+    );
+    await save();
+
+    await waitFor(() => expect(screen).toHavePathname("/event-type/2"));
+    expect(changes(sent)).toEqual([]);
+  });
+
+  it("shows the schedule an event type has of its own", async () => {
+    const onWeekends = { ...consultation, scheduleId: 4 };
+    served = eventTypes.map((eventType) => (eventType.id === onWeekends.id ? onWeekends : eventType));
+    await renderEventType(onWeekends);
+
+    expect(await screen.findByRole("radio", { name: "Weekends" })).toBeChecked();
+    expect(screen.getByText(en.eventTypes.edit.scheduleHint)).toBeOnTheScreen();
   });
 });

@@ -22,6 +22,7 @@ describe("toEventTypeSummary", () => {
       description: null,
       minimumBookingNotice: 0,
       hidden: true,
+      scheduleId: null,
     });
   });
 

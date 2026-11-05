@@ -15,6 +15,8 @@ export type EventTypeSummary = {
   minimumBookingNotice: number;
   /** Left off the public booking page, though still bookable through its own link. */
   hidden: boolean;
+  /** The schedule its hours come from, or null for the person's default schedule. */
+  scheduleId: number | null;
 };
 
 export function toEventTypeSummary(eventType: ApiEventType): EventTypeSummary {
@@ -28,6 +30,7 @@ export function toEventTypeSummary(eventType: ApiEventType): EventTypeSummary {
     description: eventType.description.trim() || null,
     minimumBookingNotice: eventType.minimumBookingNotice ?? 0,
     hidden: eventType.hidden,
+    scheduleId: eventType.scheduleId,
   };
 }
 
