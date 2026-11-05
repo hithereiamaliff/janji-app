@@ -14,15 +14,18 @@ Janji is an independent project. It is not made by or affiliated with Cal.com, I
 ## Requirements for your server
 
 Janji talks to your server's **Cal API v2** (`https://<your-server>/api/v2`). Cal API v2 is a separate
-service next to the Cal.diy web app, so it may not be running on your server yet. A setup guide will live in
-`docs/server-setup.md`.
+service next to the Cal.diy web app, so it may not be running on your server yet:
+[docs/server-setup.md](./docs/server-setup.md) explains how to run it. What the app and its notification relay
+keep is in [docs/privacy.md](./docs/privacy.md).
 
 ## Repository layout
 
 ```
 apps/mobile/        Expo (React Native) app
-apps/relay/         push notification relay (Cloudflare Worker), coming later
+apps/relay/         push notification relay (Cloudflare Worker)
 packages/cal-api/   typed Cal API v2 client, generated from Cal.diy's OpenAPI spec
+packages/shared/    types the app and the relay share
+docs/               server setup and privacy
 ```
 
 ## Development
