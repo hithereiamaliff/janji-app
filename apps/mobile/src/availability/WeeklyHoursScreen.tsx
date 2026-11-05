@@ -1,9 +1,8 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocales } from "expo-localization";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { timeZoneCity } from "@/bookings/format";
 import { Button } from "@/components/Button";
@@ -12,9 +11,9 @@ import { ThemedSwitch } from "@/components/ThemedSwitch";
 import { actionErrorMessage } from "@/lib/action-error";
 import { useTheme } from "@/theme/useTheme";
 
-import { clockTime, weekdayName } from "./hours-text";
+import { weekdayName } from "./hours-text";
 import { type Schedule, WEEK_DAYS, type WeekDay } from "./schedule";
-import { TimePicker } from "./TimePicker";
+import { TimeRangesEditor } from "./TimeRangesEditor";
 import { useSchedule, useUpdateSchedule } from "./useSchedules";
 import {
   checkDayRanges,
@@ -22,7 +21,6 @@ import {
   type DayRanges,
   DEFAULT_RANGE,
   fromDayRanges,
-  nextRange,
   type TimeRange,
   toDayRanges,
 } from "./weekly-hours-form";
@@ -41,11 +39,6 @@ function DayEditor({ day, ranges, problem, onOpenChange, onChange, disabled }: D
   const { colors } = useTheme();
   const [{ languageTag: locale }] = useLocales();
   const name = weekdayName(day, locale);
-  const next = nextRange(ranges);
-
-  function changeRange(index: number, range: TimeRange) {
-    onChange(ranges.map((current, at) => (at === index ? range : current)));
-  }
 
   return (
     <View style={[styles.day, { borderColor: colors.border }]}>
@@ -61,48 +54,18 @@ function DayEditor({ day, ranges, problem, onOpenChange, onChange, disabled }: D
       {ranges.length === 0 ? (
         <Text style={[styles.note, { color: colors.textMuted }]}>{t("availability.hours.unavailable")}</Text>
       ) : (
-        ranges.map((range, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: a range has no identity beyond its place in the day
-          <View key={index} style={styles.range}>
-            <TimePicker
-              label={t("availability.hours.startOf", { day: name })}
-              title={t("availability.hours.startTitle")}
-              value={range.start}
-              onChange={(start) => changeRange(index, { ...range, start })}
-              disabled={disabled}
-            />
-            <Text style={[styles.dash, { color: colors.textMuted }]}>–</Text>
-            <TimePicker
-              label={t("availability.hours.endOf", { day: name })}
-              title={t("availability.hours.endTitle")}
-              value={range.end}
-              onChange={(end) => changeRange(index, { ...range, end })}
-              disabled={disabled}
-            />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("availability.hours.remove", {
-                day: name,
-                range: `${clockTime(range.start, locale)} – ${clockTime(range.end, locale)}`,
-              })}
-              disabled={disabled}
-              onPress={() => onChange(ranges.filter((_, at) => at !== index))}
-              style={({ pressed }) => [styles.remove, { opacity: pressed ? 0.6 : 1 }]}
-            >
-              <Ionicons name="close-circle-outline" size={26} color={colors.textMuted} />
-            </Pressable>
-          </View>
-        ))
-      )}
-      {ranges.length > 0 && next ? (
-        <Button
-          variant="secondary"
-          label={t("availability.hours.add")}
-          accessibilityHint={t("availability.hours.addHint", { day: name })}
+        <TimeRangesEditor
+          ranges={ranges}
+          onChange={onChange}
+          labels={{
+            start: t("availability.hours.startOf", { day: name }),
+            end: t("availability.hours.endOf", { day: name }),
+            remove: (range) => t("availability.hours.remove", { day: name, range }),
+            addHint: t("availability.hours.addHint", { day: name }),
+          }}
           disabled={disabled}
-          onPress={() => onChange([...ranges, next])}
         />
-      ) : null}
+      )}
       {problem ? (
         <Text accessibilityRole="alert" style={[styles.note, { color: colors.danger }]}>
           {t(`availability.hours.problems.${problem}`)}
@@ -239,20 +202,6 @@ const styles = StyleSheet.create({
   dayName: {
     fontSize: 16,
     fontWeight: "600",
-  },
-  range: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  dash: {
-    fontSize: 16,
-  },
-  remove: {
-    minWidth: 44,
-    minHeight: 44,
-    alignItems: "center",
-    justifyContent: "center",
   },
   note: {
     fontSize: 14,
