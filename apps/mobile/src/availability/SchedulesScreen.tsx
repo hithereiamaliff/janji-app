@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 
+import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
 import { useTheme } from "@/theme/useTheme";
 
@@ -74,6 +75,15 @@ export function SchedulesScreen() {
       ListEmptyComponent={
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t("availability.empty")}</Text>
       }
+      ListFooterComponent={
+        <View style={styles.footer}>
+          <Button
+            variant="secondary"
+            label={t("availability.new.action")}
+            onPress={() => router.push("/schedule/new")}
+          />
+        </View>
+      }
     />
   );
 }
@@ -98,6 +108,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 8,
+  },
+  footer: {
+    marginTop: 16,
   },
   empty: {
     marginTop: 48,
