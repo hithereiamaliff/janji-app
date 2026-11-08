@@ -46,7 +46,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: "digital.techmavie.janji",
     adaptiveIcon: {
-      backgroundColor: "#E6F4FE",
+      backgroundColor: "#1D4ED8",
       foregroundImage: "./assets/android-icon-foreground.png",
       backgroundImage: "./assets/android-icon-background.png",
       monochromeImage: "./assets/android-icon-monochrome.png",
@@ -64,6 +64,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-secure-store",
     "expo-localization",
     "expo-web-browser",
+    [
+      "expo-splash-screen",
+      { backgroundColor: "#1D4ED8", image: "./assets/splash-icon.png", imageWidth: 200 },
+    ],
     // Expo's push service puts notifications sent without a channel in "default", which the app names.
     ["expo-notifications", { defaultChannel: "default" }],
   ],
