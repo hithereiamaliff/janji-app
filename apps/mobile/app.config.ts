@@ -4,6 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Janji",
   slug: "janji",
+  owner: "techmavie-digital",
   scheme: "janji",
   version: "0.1.0",
   orientation: "portrait",
@@ -70,6 +71,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // The relay that turns Cal.diy's webhooks into this build's notifications, such as
     // "https://relay.example". A build made without one, or without an EAS project, has no notifications.
     relayOrigin: process.env.JANJI_RELAY_ORIGIN,
+    // Janji's own EAS project. A copy built under another Expo account puts its own project here, and its own
+    // account in `owner`, because the phones' push tokens are issued for the project.
+    eas: { projectId: "7bcb6277-d27f-423a-b1c9-c23585c80463" },
   },
   experiments: {
     typedRoutes: true,
