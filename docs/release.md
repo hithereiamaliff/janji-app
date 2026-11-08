@@ -14,16 +14,12 @@ kinds of build. Run the commands in `apps/mobile`.
 
 ## One-off setup
 
-1. **The EAS project.** Run `bunx eas-cli login`, then `bunx eas-cli init`. The app config is TypeScript, which
-   EAS CLI can't edit, so add what it prints to `app.config.ts` yourself:
+1. **The EAS project.** `app.config.ts` holds Janji's own project, in `owner` and `extra.eas.projectId`. To build a
+   copy under your own Expo account, run `bunx eas-cli init`, then put your account and the project ID it prints
+   in place of those two. The app config is TypeScript, which EAS CLI can't edit.
 
-   ```ts
-   owner: "<your Expo account>",
-   extra: {
-     relayOrigin: process.env.JANJI_RELAY_ORIGIN,
-     eas: { projectId: "<the project ID>" },
-   },
-   ```
+   On a server you reach over SSH, sign in with an [access token](https://expo.dev/settings/access-tokens) in
+   `EXPO_TOKEN` rather than `bunx eas-cli login`, whose browser sign-in returns to `localhost` on the server.
 
    The project ID isn't a secret: the phones' push tokens are issued for it.
 
