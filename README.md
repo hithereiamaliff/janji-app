@@ -48,5 +48,4 @@ explains how to make one, and the store builds.
 
 ## License
 
-[MIT](./LICENSE). The placeholder icons in `apps/mobile/assets` come from Expo's MIT-licensed project
-template and will be replaced with Janji's own icon before release.
+[MIT](./LICENSE).

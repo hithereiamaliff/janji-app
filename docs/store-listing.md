@@ -97,6 +97,5 @@ The full description is the App Store's.
 
 - A demo account on a Cal.diy server, with event types and bookings, and an API key that never expires.
 - The repository made public, since the support and privacy links point to it.
-- Janji's own icon and splash screen.
 - For Google Play with a personal developer account made after November 2023: a closed test with at least
   12 testers for 14 days in a row before production.
