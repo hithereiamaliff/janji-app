@@ -11,7 +11,6 @@ import {
   Linking,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -20,6 +19,7 @@ import {
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { Section } from "@/components/Section";
 import { actionErrorMessage } from "@/lib/action-error";
 import { shareLink } from "@/lib/share-link";
@@ -464,7 +464,7 @@ export function BookingDetailScreen({ uid, notice }: BookingDetailScreenProps) {
   const updatingNoShowFor = noShow.isPending ? noShow.variables?.[0]?.email : undefined;
 
   return (
-    <ScrollView
+    <ScreenScrollView
       testID="booking-detail"
       style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
@@ -547,7 +547,7 @@ export function BookingDetailScreen({ uid, notice }: BookingDetailScreenProps) {
       {booking.answers.length > 0 ? <AnswersSection answers={booking.answers} /> : null}
       {inactive ? null : <ShareActions uid={uid} upcoming={Date.parse(booking.end) > Date.now()} />}
       {manageable ? <ManageActions uid={uid} /> : null}
-    </ScrollView>
+    </ScreenScrollView>
   );
 }
 

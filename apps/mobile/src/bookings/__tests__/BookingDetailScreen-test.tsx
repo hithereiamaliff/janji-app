@@ -81,6 +81,13 @@ describe("BookingDetailScreen", () => {
     expect(screen.getByText(en.bookingDetail.recurring)).toBeOnTheScreen();
   });
 
+  it("starts below the header, which iOS 26 draws over the screen", async () => {
+    await renderDetail();
+
+    await screen.findByRole("header", { name: "Itinerary review" });
+    expect(screen.getByTestId("booking-detail")).toHaveProp("contentInsetAdjustmentBehavior", "automatic");
+  });
+
   it("labels bookings that aren't confirmed", async () => {
     await renderDetail([], { ...booking, status: "pending" });
 

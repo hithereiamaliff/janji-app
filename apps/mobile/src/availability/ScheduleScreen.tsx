@@ -3,20 +3,13 @@ import { useLocales } from "expo-localization";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  AccessibilityInfo,
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { AccessibilityInfo, ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { timeZoneCity } from "@/bookings/format";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { Section } from "@/components/Section";
 import { actionErrorMessage } from "@/lib/action-error";
 import { calendarDateText } from "@/lib/calendar-date";
@@ -223,7 +216,7 @@ export function ScheduleScreen({ id }: { id: number }) {
   }
 
   return (
-    <ScrollView
+    <ScreenScrollView
       style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
     >
@@ -270,7 +263,7 @@ export function ScheduleScreen({ id }: { id: number }) {
       </Section>
       <DefaultSection schedule={details} />
       <DeleteControls schedule={details} remove={remove} />
-    </ScrollView>
+    </ScreenScrollView>
   );
 }
 
