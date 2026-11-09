@@ -1,5 +1,9 @@
 # Getting your Cal.diy server ready for Janji
 
+**No Cal.diy server yet?** Cal.diy has no hosted version, so install it first with its
+[deployment guide](https://github.com/calcom/cal.diy#deployment), then come back here for API v2. If your
+bookings are on Cal.com's cloud instead, use Cal.com's own app: Janji is for self-hosted Cal.diy servers.
+
 Janji talks to your server's **Cal API v2**. The Cal.diy web app doesn't include it: API v2 is a separate
 service in the Cal.diy repository (`apps/api/v2`, a NestJS app) that needs its own container and a Redis.
 If `https://<your-server>/api/v2/timezones` shows the web app's "page not found", API v2 isn't running yet, and

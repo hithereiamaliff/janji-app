@@ -9,7 +9,7 @@ const strings = en.welcome;
 
 describe("WelcomeStep", () => {
   it("says what Janji is for and who makes it", async () => {
-    await render(<WelcomeStep onGetStarted={jest.fn()} />);
+    await render(<WelcomeStep onGetStarted={jest.fn()} onNoServer={jest.fn()} />);
 
     expect(screen.getByRole("header", { name: strings.title })).toBeOnTheScreen();
     expect(screen.getByText(strings.tagline)).toBeOnTheScreen();
@@ -21,10 +21,19 @@ describe("WelcomeStep", () => {
 
   it("moves on when Get started is pressed", async () => {
     const onGetStarted = jest.fn();
-    await render(<WelcomeStep onGetStarted={onGetStarted} />);
+    await render(<WelcomeStep onGetStarted={onGetStarted} onNoServer={jest.fn()} />);
 
     await fireEvent.press(screen.getByRole("button", { name: strings.getStarted }));
 
     expect(onGetStarted).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers help to someone without a Cal.diy server", async () => {
+    const onNoServer = jest.fn();
+    await render(<WelcomeStep onGetStarted={jest.fn()} onNoServer={onNoServer} />);
+
+    await fireEvent.press(screen.getByRole("button", { name: en.noServer.link }));
+
+    expect(onNoServer).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,3 +1,4 @@
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { BackHandler, Platform, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +20,7 @@ type Welcome = "loading" | "firstTime" | "reopened" | "closed";
  */
 export default function SignInScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const [server, setServer] = useState<Server | null>(null);
   const [lastAddress, setLastAddress] = useState("");
   const [welcome, setWelcome] = useState<Welcome>("loading");
@@ -44,6 +46,8 @@ export default function SignInScreen() {
     setWelcome("reopened");
   }, []);
 
+  const openNoServer = useCallback(() => router.push("/no-server"), [router]);
+
   const backToServerStep = useCallback(() => {
     if (!server) return;
     setLastAddress(server.serverOrigin.replace(/^https?:\/\//, ""));
@@ -51,23 +55,31 @@ export default function SignInScreen() {
   }, [server]);
 
   // Android's back button should return to the server step rather than leave the app. Only Android has
-  // one, and react-native-web logs an error if BackHandler is used at all.
-  useEffect(() => {
-    if (Platform.OS !== "android" || (!server && welcome !== "reopened")) return;
-    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (server) backToServerStep();
-      else setWelcome("closed");
-      return true;
-    });
-    return () => subscription.remove();
-  }, [server, welcome, backToServerStep]);
+  // one, and react-native-web logs an error if BackHandler is used at all. Listening only while this screen
+  // is focused leaves the back button to the navigator when a screen opens over it.
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== "android" || (!server && welcome !== "reopened")) return;
+      const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+        if (server) backToServerStep();
+        else setWelcome("closed");
+        return true;
+      });
+      return () => subscription.remove();
+    }, [server, welcome, backToServerStep])
+  );
 
   function currentStep() {
     if (server) return <ApiKeyStep server={server} onChangeServer={backToServerStep} />;
     if (welcome === "loading") return null;
-    if (welcome !== "closed") return <WelcomeStep onGetStarted={closeWelcome} />;
+    if (welcome !== "closed") return <WelcomeStep onGetStarted={closeWelcome} onNoServer={openNoServer} />;
     return (
-      <ServerStep initialAddress={lastAddress} onServerFound={setServer} onShowWelcome={reopenWelcome} />
+      <ServerStep
+        initialAddress={lastAddress}
+        onServerFound={setServer}
+        onShowWelcome={reopenWelcome}
+        onNoServer={openNoServer}
+      />
     );
   }
 

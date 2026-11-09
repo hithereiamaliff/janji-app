@@ -16,8 +16,11 @@ function apiV2Answers() {
 async function renderStep() {
   const onServerFound = jest.fn();
   const onShowWelcome = jest.fn();
-  await render(<ServerStep onServerFound={onServerFound} onShowWelcome={onShowWelcome} />);
-  return { onServerFound, onShowWelcome };
+  const onNoServer = jest.fn();
+  await render(
+    <ServerStep onServerFound={onServerFound} onShowWelcome={onShowWelcome} onNoServer={onNoServer} />
+  );
+  return { onServerFound, onShowWelcome, onNoServer };
 }
 
 async function submit(address: string) {
@@ -55,6 +58,14 @@ describe("ServerStep", () => {
 
     expect(onShowWelcome).toHaveBeenCalledWith("book.example");
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("offers help to someone without a Cal.diy server", async () => {
+    const { onNoServer } = await renderStep();
+
+    await fireEvent.press(screen.getByRole("button", { name: en.noServer.link }));
+
+    expect(onNoServer).toHaveBeenCalledTimes(1);
   });
 
   it("checks the server when the keyboard's Go key is pressed", async () => {

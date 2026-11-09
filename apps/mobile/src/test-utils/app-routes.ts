@@ -12,6 +12,7 @@ import RescheduleRoute from "@/app/booking/[uid]/reschedule";
 import EditEventTypeRoute from "@/app/event-type/[id]/edit";
 import EventTypeRoute from "@/app/event-type/[id]/index";
 import NewPrivateLinkRoute from "@/app/event-type/[id]/private-link";
+import NoServerRoute from "@/app/no-server";
 import ProfileRoute from "@/app/profile";
 import ScheduleDetailsRoute from "@/app/schedule/[id]/details";
 import WeeklyHoursRoute from "@/app/schedule/[id]/hours";
@@ -25,6 +26,7 @@ import SignInScreen from "@/app/sign-in";
 export const appRoutes = {
   _layout: RootLayout,
   "sign-in": SignInScreen,
+  "no-server": NoServerRoute,
   "(tabs)/_layout": TabsLayout,
   "(tabs)/index": BookingsScreen,
   "(tabs)/event-types": EventTypesScreen,
