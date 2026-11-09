@@ -3,6 +3,7 @@ import { fireEvent, renderRouter, screen, waitFor } from "expo-router/testing-li
 import { BOOKINGS_PAGE_SIZE } from "@/bookings/bookings-api";
 import { formatDayHeading } from "@/bookings/format";
 import en from "@/i18n/locales/en.json";
+import { saveWelcomeSeen } from "@/onboarding/welcome-storage";
 import { saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
 import {
@@ -181,6 +182,7 @@ describe("BookingsScreen", () => {
   });
 
   it("asks for a new sign-in when the API key stops working", async () => {
+    await saveWelcomeSeen();
     const server = await renderBookings();
     server.nextResponses.push(
       jsonResponse({ status: "error", error: { message: "Invalid API Key" } }, { status: 401 })

@@ -1,6 +1,7 @@
 import { fireEvent, renderRouter, screen } from "expo-router/testing-library";
 
 import en from "@/i18n/locales/en.json";
+import { loadWelcomeSeen, saveWelcomeSeen } from "@/onboarding/welcome-storage";
 import { loadSavedSession, saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
 import { bookingsResponse, jsonResponse, testAccount, testMeResponse } from "@/test-utils/fixtures";
@@ -22,6 +23,7 @@ jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn() }));
 jest.mock("expo-clipboard", () => ({ getStringAsync: jest.fn(async () => "") }));
 
 const { server: serverStrings, apiKey: keyStrings } = en.signIn;
+const welcomeStrings = en.welcome;
 
 function requestUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") return input;
@@ -53,7 +55,7 @@ async function enterKey(apiKey: string) {
   await fireEvent.press(screen.getByRole("button", { name: keyStrings.signIn }));
 }
 
-describe("signing in and out", () => {
+describe("the welcome", () => {
   beforeEach(() => {
     mockStore.clear();
     mockFailDeletes = false;
@@ -62,7 +64,41 @@ describe("signing in and out", () => {
 
   afterEach(() => jest.restoreAllMocks());
 
-  it("starts on sign-in when no account is saved", async () => {
+  it("greets a new phone once, then leads to the server step", async () => {
+    await renderRouter(appRoutes);
+
+    expect(await screen.findByRole("header", { name: welcomeStrings.title })).toBeOnTheScreen();
+    expect(screen).toHavePathname("/sign-in");
+    await fireEvent.press(screen.getByRole("button", { name: welcomeStrings.getStarted }));
+
+    expect(await screen.findByRole("header", { name: serverStrings.title })).toBeOnTheScreen();
+    await expect(loadWelcomeSeen()).resolves.toBe(true);
+  });
+
+  it("opens again from the server step and keeps the address typed so far", async () => {
+    await saveWelcomeSeen();
+    await renderRouter(appRoutes);
+
+    await fireEvent.changeText(await screen.findByLabelText(serverStrings.addressLabel), "book.example.com");
+    await fireEvent.press(screen.getByRole("button", { name: serverStrings.aboutJanji }));
+    expect(await screen.findByRole("header", { name: welcomeStrings.title })).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: welcomeStrings.getStarted }));
+
+    expect(await screen.findByLabelText(serverStrings.addressLabel)).toHaveDisplayValue("book.example.com");
+  });
+});
+
+describe("signing in and out", () => {
+  beforeEach(async () => {
+    mockStore.clear();
+    mockFailDeletes = false;
+    await saveWelcomeSeen();
+    jest.spyOn(globalThis, "fetch").mockImplementation(async (input) => fakeServer(input));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it("starts on the server step when no account is saved and the welcome was seen", async () => {
     await renderRouter(appRoutes);
 
     expect(await screen.findByRole("header", { name: serverStrings.title })).toBeOnTheScreen();

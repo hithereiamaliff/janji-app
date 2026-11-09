@@ -464,6 +464,30 @@
       "failed": "Couldn't save the relay. Try again."
     }
   },
+  "welcome": {
+    "title": "Janji",
+    "tagline": "Your Cal.diy bookings, on your phone.",
+    "points": {
+      "ownServer": {
+        "title": "Made for your own server",
+        "body": "Janji connects to the Cal.diy server you run. Cal.com's own app connects to Cal.com's cloud, not to self-hosted servers."
+      },
+      "onTheGo": {
+        "title": "Your bookings, wherever you are",
+        "body": "Confirm, reschedule or cancel bookings, and change your event types and availability."
+      },
+      "notifications": {
+        "title": "Know when someone books",
+        "body": "Get a notification when someone books, reschedules or cancels."
+      },
+      "noAccount": {
+        "title": "No new account",
+        "body": "Sign in with an API key from your own server. It stays on this phone."
+      }
+    },
+    "getStarted": "Get started",
+    "independent": "Janji is free and open source. It's an independent project, not made by Cal.com, Inc."
+  },
   "signIn": {
     "server": {
       "title": "Connect your server",
@@ -475,6 +499,7 @@
       "apiAddressLabel": "Cal API v2 address (optional)",
       "apiAddressHint": "Only needed if your server runs Cal API v2 at a different address, for example https://api.example.com/v2.",
       "continue": "Continue",
+      "aboutJanji": "What's Janji?",
       "errors": {
         "empty": "Enter your server's address.",
         "invalid": "That doesn't look like a web address. Try something like book.example.com.",
