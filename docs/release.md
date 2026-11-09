@@ -59,7 +59,10 @@ kinds of build. Run the commands in `apps/mobile`.
 
 iPhones need registering before they can install `development` and `preview` builds: `bunx eas-cli device:create`.
 
-A production build goes to the stores with `bunx eas-cli submit --platform ios` or `--platform android`.
+A production build goes to the stores with `bunx eas-cli submit --platform ios` or `--platform android`, or straight
+after the build with `--auto-submit`. Without a terminal to ask in (`--non-interactive`), an iOS submission needs
+the App Store Connect app's Apple ID in `eas.json`, under `submit.production.ios.ascAppId`; a copy under your own
+Apple account puts its own there (App Store Connect → the app → App Information → Apple ID).
 
 ## Updates without a new build
 
