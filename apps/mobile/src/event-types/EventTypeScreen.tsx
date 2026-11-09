@@ -3,11 +3,12 @@ import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccessibilityInfo, ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { LoadErrorState } from "@/components/LoadErrorState";
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { Section } from "@/components/Section";
 import { ThemedSwitch } from "@/components/ThemedSwitch";
 import { actionErrorMessage } from "@/lib/action-error";
@@ -125,7 +126,7 @@ export function EventTypeScreen({ id }: { id: number }) {
   }
 
   return (
-    <ScrollView
+    <ScreenScrollView
       style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
     >
@@ -160,7 +161,7 @@ export function EventTypeScreen({ id }: { id: number }) {
           </Text>
         </Section>
       ) : null}
-    </ScrollView>
+    </ScreenScrollView>
   );
 }
 
