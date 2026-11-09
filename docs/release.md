@@ -61,6 +61,22 @@ iPhones need registering before they can install `development` and `preview` bui
 
 A production build goes to the stores with `bunx eas-cli submit --platform ios` or `--platform android`.
 
+## Updates without a new build
+
+Changes to JavaScript, text and images reach the installed apps over the air with
+[Expo Update](https://docs.expo.dev/eas-update/introduction/), without a new build. Each build profile listens
+on the channel of the same name:
+
+```sh
+bunx eas-cli update --channel production --environment production --message "What changed"
+```
+
+- Pass `--environment`, so the update carries `JANJI_RELAY_ORIGIN` the way a build does.
+- An app downloads an update when it starts, and runs it the next time it opens.
+- An update only reaches builds of the same app `version`. After adding or upgrading a native module, or
+  changing native config such as icons, permissions or plugins, raise `version` in `app.config.ts` and make
+  new builds. Otherwise an update could reach a build that lacks the native code it needs.
+
 ## Before the first store release
 
 - Make the repository public: the app links to its source code, and the listings to its support and privacy

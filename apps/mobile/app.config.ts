@@ -7,6 +7,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   owner: "techmavie-digital",
   scheme: "janji",
   version: "0.1.0",
+  // An update only reaches builds of the same `version`, so raise it whenever native code or native config
+  // changes. The fingerprint policy would do that by itself, but it hashes the config, and
+  // GOOGLE_SERVICES_JSON (a secret file path on EAS Build, unset where updates are published) would make the
+  // Android runtime versions differ.
+  runtimeVersion: { policy: "appVersion" },
+  updates: { url: "https://u.expo.dev/7bcb6277-d27f-423a-b1c9-c23585c80463" },
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
