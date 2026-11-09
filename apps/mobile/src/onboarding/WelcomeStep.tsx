@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
+import { LinkButton } from "@/components/LinkButton";
 import { useTheme } from "@/theme/useTheme";
 
 import appIcon from "../../assets/icon.png";
@@ -19,10 +20,12 @@ const POINTS: readonly { key: "ownServer" | "onTheGo" | "notifications" | "noAcc
 
 type WelcomeStepProps = {
   onGetStarted: () => void;
+  /** Explains what to do for someone without a Cal.diy server. */
+  onNoServer: () => void;
 };
 
 /** What Janji is and why it exists, before someone connects a server for the first time. */
-export function WelcomeStep({ onGetStarted }: WelcomeStepProps) {
+export function WelcomeStep({ onGetStarted, onNoServer }: WelcomeStepProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
@@ -51,6 +54,7 @@ export function WelcomeStep({ onGetStarted }: WelcomeStepProps) {
       </View>
 
       <Button label={t("welcome.getStarted")} onPress={onGetStarted} />
+      <LinkButton centered label={t("noServer.link")} onPress={onNoServer} />
       <Text style={[styles.footnote, { color: colors.textMuted }]}>{t("welcome.independent")}</Text>
     </ScrollView>
   );

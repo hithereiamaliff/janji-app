@@ -1,25 +1,31 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { FormScreen } from "@/components/FormScreen";
+import { LinkButton } from "@/components/LinkButton";
 import { TextField } from "@/components/TextField";
 import type { Server } from "@/session/account";
 import { checkServer, type ServerCheckFailure } from "@/session/sign-in";
-import { useTheme } from "@/theme/useTheme";
 
 type ServerStepProps = {
   initialAddress?: string;
   onServerFound: (server: Server) => void;
   /** Opens the welcome again. Gets the address typed so far, so it can be filled in again afterwards. */
   onShowWelcome: (address: string) => void;
+  /** Explains what to do for someone without a Cal.diy server. */
+  onNoServer: () => void;
 };
 
 /** Sign-in step 1: find the person's Cal.diy server and check that Cal API v2 answers there. */
-export function ServerStep({ initialAddress = "", onServerFound, onShowWelcome }: ServerStepProps) {
+export function ServerStep({
+  initialAddress = "",
+  onServerFound,
+  onShowWelcome,
+  onNoServer,
+}: ServerStepProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const [address, setAddress] = useState(initialAddress);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [apiV2Address, setApiV2Address] = useState("");
@@ -62,15 +68,11 @@ export function ServerStep({ initialAddress = "", onServerFound, onShowWelcome }
         error={addressError}
       />
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={advancedLabel}
-        accessibilityState={{ expanded: showAdvanced }}
+      <LinkButton
+        label={advancedLabel}
+        expanded={showAdvanced}
         onPress={() => setShowAdvanced((shown) => !shown)}
-        style={styles.toggle}
-      >
-        <Text style={[styles.toggleLabel, { color: colors.accent }]}>{advancedLabel}</Text>
-      </Pressable>
+      />
 
       {showAdvanced ? (
         <TextField
@@ -89,29 +91,10 @@ export function ServerStep({ initialAddress = "", onServerFound, onShowWelcome }
 
       <Button label={t("signIn.server.continue")} onPress={handleContinue} loading={checking} />
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t("signIn.server.aboutJanji")}
-        onPress={() => onShowWelcome(address)}
-        style={[styles.toggle, styles.about]}
-      >
-        <Text style={[styles.toggleLabel, { color: colors.accent }]}>{t("signIn.server.aboutJanji")}</Text>
-      </Pressable>
+      <View>
+        <LinkButton centered label={t("noServer.link")} onPress={onNoServer} />
+        <LinkButton centered label={t("signIn.server.aboutJanji")} onPress={() => onShowWelcome(address)} />
+      </View>
     </FormScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  toggle: {
-    alignSelf: "flex-start",
-    minHeight: 44,
-    justifyContent: "center",
-  },
-  toggleLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  about: {
-    alignSelf: "center",
-  },
-});

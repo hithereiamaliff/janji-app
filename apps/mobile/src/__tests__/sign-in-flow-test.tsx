@@ -1,4 +1,6 @@
 import { fireEvent, renderRouter, screen } from "expo-router/testing-library";
+import * as WebBrowser from "expo-web-browser";
+import { Linking } from "react-native";
 
 import en from "@/i18n/locales/en.json";
 import { loadWelcomeSeen, saveWelcomeSeen } from "@/onboarding/welcome-storage";
@@ -19,7 +21,7 @@ jest.mock("expo-secure-store", () => ({
     mockStore.delete(key);
   },
 }));
-jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn() }));
+jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn(async () => ({ type: "opened" })) }));
 jest.mock("expo-clipboard", () => ({ getStringAsync: jest.fn(async () => "") }));
 
 const { server: serverStrings, apiKey: keyStrings } = en.signIn;
@@ -85,6 +87,49 @@ describe("the welcome", () => {
     await fireEvent.press(screen.getByRole("button", { name: welcomeStrings.getStarted }));
 
     expect(await screen.findByLabelText(serverStrings.addressLabel)).toHaveDisplayValue("book.example.com");
+  });
+});
+
+describe("without a Cal.diy server", () => {
+  beforeEach(() => {
+    mockStore.clear();
+    mockFailDeletes = false;
+    jest.spyOn(globalThis, "fetch").mockImplementation(async (input) => fakeServer(input));
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it("explains what to do instead, then returns to the server step", async () => {
+    await saveWelcomeSeen();
+    const openURL = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    await renderRouter(appRoutes);
+
+    await fireEvent.changeText(await screen.findByLabelText(serverStrings.addressLabel), "book.example");
+    await fireEvent.press(screen.getByRole("button", { name: en.noServer.link }));
+    expect(await screen.findByRole("header", { name: en.noServer.title })).toBeOnTheScreen();
+    expect(screen).toHavePathname("/no-server");
+
+    await fireEvent.press(screen.getByRole("button", { name: en.noServer.calCom.action }));
+    expect(openURL).toHaveBeenCalledWith("https://apps.apple.com/app/id6757157271");
+    await fireEvent.press(screen.getByRole("button", { name: en.noServer.ownServer.action }));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
+      "https://github.com/hithereiamaliff/janji-app/blob/main/docs/server-setup.md"
+    );
+
+    await fireEvent.press(screen.getByRole("button", { name: en.bookingActions.goBack }));
+    expect(screen).toHavePathname("/sign-in");
+    expect(await screen.findByLabelText(serverStrings.addressLabel)).toHaveDisplayValue("book.example");
+  });
+
+  it("opens from the welcome and goes back to it", async () => {
+    await renderRouter(appRoutes);
+
+    await fireEvent.press(await screen.findByRole("button", { name: en.noServer.link }));
+    expect(await screen.findByRole("header", { name: en.noServer.title })).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: en.bookingActions.goBack }));
+
+    expect(screen).toHavePathname("/sign-in");
+    expect(await screen.findByRole("header", { name: welcomeStrings.title })).toBeOnTheScreen();
   });
 });
 

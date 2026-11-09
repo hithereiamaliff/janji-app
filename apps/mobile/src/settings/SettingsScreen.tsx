@@ -1,6 +1,5 @@
 import { useLocales } from "expo-localization";
 import { useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -11,6 +10,7 @@ import { LoadErrorState } from "@/components/LoadErrorState";
 import { Section } from "@/components/Section";
 import { appVersion } from "@/lib/app-version";
 import { weekdayName } from "@/lib/calendar-date";
+import { openInBrowser, PRIVACY_URL, SOURCE_CODE_URL, SUPPORT_URL } from "@/lib/links";
 import { NotificationsSection } from "@/notifications/NotificationsSection";
 import { clockExample } from "@/profile/profile-text";
 import { useProfile } from "@/profile/useProfile";
@@ -74,15 +74,6 @@ function ProfileSection() {
       <View style={styles.group}>{content}</View>
     </Section>
   );
-}
-
-const SOURCE_CODE_URL = "https://github.com/hithereiamaliff/janji-app";
-const PRIVACY_URL = `${SOURCE_CODE_URL}/blob/main/docs/privacy.md`;
-const SUPPORT_URL = `${SOURCE_CODE_URL}/blob/main/docs/support.md`;
-
-function openInBrowser(url: string) {
-  // Without a browser to open there's nothing more to do; the button stays for another try.
-  WebBrowser.openBrowserAsync(url).catch(() => undefined);
 }
 
 function WebSection({ serverOrigin }: { serverOrigin: string }) {

@@ -488,6 +488,25 @@
     "getStarted": "Get started",
     "independent": "Janji is free and open source. It's an independent project, not made by Cal.com, Inc."
   },
+  "noServer": {
+    "link": "Don't have a Cal.diy server?",
+    "title": "No Cal.diy server?",
+    "description": "Janji only works with a Cal.diy server. What to do next depends on how you take bookings today.",
+    "calCom": {
+      "title": "Your bookings are on Cal.com",
+      "body": "Janji is made for self-hosted Cal.diy servers. For a Cal.com account, use Cal.com's own app.",
+      "action": "Get Cal.com's app"
+    },
+    "team": {
+      "title": "Someone else runs your Cal.diy",
+      "body": "Ask them for the address you open in your browser to use Cal.diy, then enter it on the previous screen."
+    },
+    "ownServer": {
+      "title": "You'd like a server of your own",
+      "body": "Cal.diy is free and open source, but there's no hosted version: you run it on a server you manage, which takes some server know-how. The setup guide links to Cal.diy's install steps and shows how to add Cal API v2, which Janji needs.",
+      "action": "Open the setup guide"
+    }
+  },
   "signIn": {
     "server": {
       "title": "Connect your server",
