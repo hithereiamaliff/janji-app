@@ -165,14 +165,14 @@ Features that need native code, such as push notifications, run in an Expo devel
 
 ### Docs
 
-| Guide | What it covers |
-| --- | --- |
-| [server-setup.md](./docs/server-setup.md) | Running Cal API v2 next to your Cal.diy server |
-| [self-host-relay.md](./docs/self-host-relay.md) | Running your own notification relay |
-| [release.md](./docs/release.md) | EAS builds, store submissions and over-the-air updates |
-| [privacy.md](./docs/privacy.md) | What the app and the relay keep |
-| [support.md](./docs/support.md) | Help with common problems |
-| [store-listing.md](./docs/store-listing.md) | App Store and Google Play text |
+| Guide                                           | What it covers                                         |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| [server-setup.md](./docs/server-setup.md)       | Running Cal API v2 next to your Cal.diy server         |
+| [self-host-relay.md](./docs/self-host-relay.md) | Running your own notification relay                    |
+| [release.md](./docs/release.md)                 | EAS builds, store submissions and over-the-air updates |
+| [privacy.md](./docs/privacy.md)                 | What the app and the relay keep                        |
+| [support.md](./docs/support.md)                 | Help with common problems                              |
+| [store-listing.md](./docs/store-listing.md)     | App Store and Google Play text                         |
 
 ### Contributing
 
