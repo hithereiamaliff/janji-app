@@ -12,10 +12,12 @@ import { useTheme } from "@/theme/useTheme";
 type ServerStepProps = {
   initialAddress?: string;
   onServerFound: (server: Server) => void;
+  /** Opens the welcome again. Gets the address typed so far, so it can be filled in again afterwards. */
+  onShowWelcome: (address: string) => void;
 };
 
 /** Sign-in step 1: find the person's Cal.diy server and check that Cal API v2 answers there. */
-export function ServerStep({ initialAddress = "", onServerFound }: ServerStepProps) {
+export function ServerStep({ initialAddress = "", onServerFound, onShowWelcome }: ServerStepProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [address, setAddress] = useState(initialAddress);
@@ -86,6 +88,15 @@ export function ServerStep({ initialAddress = "", onServerFound }: ServerStepPro
       ) : null}
 
       <Button label={t("signIn.server.continue")} onPress={handleContinue} loading={checking} />
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t("signIn.server.aboutJanji")}
+        onPress={() => onShowWelcome(address)}
+        style={[styles.toggle, styles.about]}
+      >
+        <Text style={[styles.toggleLabel, { color: colors.accent }]}>{t("signIn.server.aboutJanji")}</Text>
+      </Pressable>
     </FormScreen>
   );
 }
@@ -99,5 +110,8 @@ const styles = StyleSheet.create({
   toggleLabel: {
     fontSize: 15,
     fontWeight: "600",
+  },
+  about: {
+    alignSelf: "center",
   },
 });

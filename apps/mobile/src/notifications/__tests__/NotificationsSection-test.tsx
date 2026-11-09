@@ -4,6 +4,7 @@ import { Linking } from "react-native";
 import en from "@/i18n/locales/en.json";
 import type { PushBuild } from "@/notifications/push-setup";
 import type { PushRegistration } from "@/notifications/registration-storage";
+import { saveWelcomeSeen } from "@/onboarding/welcome-storage";
 import { saveSession } from "@/session/account-storage";
 import { appRoutes } from "@/test-utils/app-routes";
 import { jsonResponse, testAccount, testMeResponse } from "@/test-utils/fixtures";
@@ -210,6 +211,7 @@ describe("booking notifications in Settings", () => {
   });
 
   it("turns them off for this phone when the person signs out", async () => {
+    await saveWelcomeSeen();
     mockStore.set("janji.notifications", JSON.stringify(registration));
     mockPermission = granted;
     const sent = await openSettings();
@@ -222,7 +224,7 @@ describe("booking notifications in Settings", () => {
       `DELETE https://relay.example/v1/devices/${registration.deviceId}`,
       "DELETE https://book.example.com/api/v2/webhooks/12",
     ]);
-    expect(mockStore.size).toBe(0);
+    expect([...mockStore.keys()]).toEqual(["janji.welcomeSeen"]);
   });
 
   it("lets the person choose which bookings notify them", async () => {

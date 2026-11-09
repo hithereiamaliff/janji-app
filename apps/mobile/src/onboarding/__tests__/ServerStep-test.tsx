@@ -15,8 +15,9 @@ function apiV2Answers() {
 
 async function renderStep() {
   const onServerFound = jest.fn();
-  await render(<ServerStep onServerFound={onServerFound} />);
-  return { onServerFound };
+  const onShowWelcome = jest.fn();
+  await render(<ServerStep onServerFound={onServerFound} onShowWelcome={onShowWelcome} />);
+  return { onServerFound, onShowWelcome };
 }
 
 async function submit(address: string) {
@@ -44,6 +45,16 @@ describe("ServerStep", () => {
       serverOrigin: "https://book.example.com",
       apiRootUrl: "https://book.example.com/api",
     });
+  });
+
+  it("opens the welcome again with the address typed so far", async () => {
+    const { onShowWelcome } = await renderStep();
+
+    await fireEvent.changeText(screen.getByLabelText(strings.addressLabel), "book.example");
+    await fireEvent.press(screen.getByRole("button", { name: strings.aboutJanji }));
+
+    expect(onShowWelcome).toHaveBeenCalledWith("book.example");
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("checks the server when the keyboard's Go key is pressed", async () => {
