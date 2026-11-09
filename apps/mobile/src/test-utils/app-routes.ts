@@ -20,6 +20,7 @@ import ScheduleRoute from "@/app/schedule/[id]/index";
 import DateOverrideRoute from "@/app/schedule/[id]/override/[date]";
 import NewDateOverrideRoute from "@/app/schedule/[id]/override/new";
 import NewScheduleRoute from "@/app/schedule/new";
+import ServerGuideRoute from "@/app/server-guide";
 import SignInScreen from "@/app/sign-in";
 
 /** The app's real routes, for expo-router's renderRouter in tests. */
@@ -27,6 +28,7 @@ export const appRoutes = {
   _layout: RootLayout,
   "sign-in": SignInScreen,
   "no-server": NoServerRoute,
+  "server-guide": ServerGuideRoute,
   "(tabs)/_layout": TabsLayout,
   "(tabs)/index": BookingsScreen,
   "(tabs)/event-types": EventTypesScreen,
