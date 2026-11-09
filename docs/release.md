@@ -84,5 +84,7 @@ bunx eas-cli update --channel production --environment production --message "Wha
 
 - Make the repository public: the app links to its source code, and the listings to its support and privacy
   pages.
+- On GitHub, under Settings → General → Social preview, upload [`media/social-preview.png`](./media/social-preview.png),
+  so links to the repository show Janji's card.
 - Review [`privacy.md`](./privacy.md) and [`support.md`](./support.md), which the store listings link to.
 - Fill in the listings and the stores' privacy forms from [`store-listing.md`](./store-listing.md).
