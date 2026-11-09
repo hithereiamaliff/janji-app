@@ -76,6 +76,7 @@ function RootNavigator() {
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />
         <Stack.Screen name="no-server" options={{ presentation: "modal" }} />
+        <Stack.Screen name="server-guide" options={{ presentation: "modal" }} />
       </Stack.Protected>
     </Stack>
   );

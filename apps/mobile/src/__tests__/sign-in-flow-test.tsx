@@ -112,10 +112,17 @@ describe("without a Cal.diy server", () => {
     await fireEvent.press(screen.getByRole("button", { name: en.noServer.calCom.action }));
     expect(openURL).toHaveBeenCalledWith("https://apps.apple.com/app/id6757157271");
     await fireEvent.press(screen.getByRole("button", { name: en.noServer.ownServer.action }));
+    expect(await screen.findByRole("header", { name: en.serverGuide.title })).toBeOnTheScreen();
+    expect(screen).toHavePathname("/server-guide");
+    await fireEvent.press(screen.getByRole("button", { name: en.serverGuide.install.action }));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith("https://github.com/calcom/cal.diy#deployment");
+    await fireEvent.press(screen.getByRole("button", { name: en.serverGuide.apiV2.action }));
     expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
       "https://github.com/hithereiamaliff/janji-app/blob/main/docs/server-setup.md"
     );
 
+    await fireEvent.press(screen.getByRole("button", { name: en.bookingActions.goBack }));
+    expect(screen).toHavePathname("/no-server");
     await fireEvent.press(screen.getByRole("button", { name: en.bookingActions.goBack }));
     expect(screen).toHavePathname("/sign-in");
     expect(await screen.findByLabelText(serverStrings.addressLabel)).toHaveDisplayValue("book.example");

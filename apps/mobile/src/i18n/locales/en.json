@@ -503,8 +503,30 @@
     },
     "ownServer": {
       "title": "You'd like a server of your own",
-      "body": "Cal.diy is free and open source, but there's no hosted version: you run it on a server you manage, which takes some server know-how. The setup guide links to Cal.diy's install steps and shows how to add Cal API v2, which Janji needs.",
+      "body": "Cal.diy is free and open source, but there's no hosted version: you run it on a server you manage, which takes some server know-how. The setup guide walks through the steps.",
       "action": "Open the setup guide"
+    }
+  },
+  "serverGuide": {
+    "title": "Set up your own server",
+    "description": "Cal.diy runs on a server you manage, so it suits people who are comfortable running servers. These are the steps; the guides they link to have the details.",
+    "server": {
+      "title": "Get a server",
+      "body": "A Linux server or VPS with Docker, and a domain name pointing at it. People book you at that address, so it needs HTTPS, for example through Caddy or nginx."
+    },
+    "install": {
+      "title": "Install Cal.diy",
+      "body": "Follow Cal.diy's own guide to run it with Docker Compose, together with its PostgreSQL database.",
+      "action": "Cal.diy's install guide"
+    },
+    "apiV2": {
+      "title": "Add Cal API v2",
+      "body": "Janji talks to Cal API v2, a separate Cal.diy service with its own container and Redis. Your domain sends /api/v2 to it. The guide has the configuration to copy.",
+      "action": "Janji's Cal API v2 guide"
+    },
+    "connect": {
+      "title": "Connect Janji",
+      "body": "Enter your server's address in Janji. Then create an API key in Cal.diy, under Settings → Developer → API keys, and paste it in."
     }
   },
   "signIn": {
