@@ -114,6 +114,7 @@ These answers also follow Expo's guide.
 - A demo account on a Cal.diy server, with event types and bookings, and an API key that never expires.
 - The repository made public, since the support and privacy links point to it.
 - [`privacy.md`](./privacy.md) reviewed, and its draft note removed.
-- Screenshots from the native app: iPhone 6.9-inch, iPad 13-inch (Janji supports iPad) and Android phone.
+- Screenshots for iPhone with Dynamic Island, medium display (6.3-inch, which App Store Connect requires), iPad
+  13-inch (Janji supports iPad) and Android phone. 6.9-inch iPhone screenshots are optional.
 - For Google Play with a personal developer account made after November 2023: a closed test with at least
   12 testers for 14 days in a row before production.
