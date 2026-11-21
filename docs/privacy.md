@@ -4,8 +4,6 @@ Janji is an app for your own Cal.diy server, made by TechMavie Digital. It has n
 ads, it doesn't track you, and it doesn't sell or share anything about you. This page says what it keeps,
 where, and for how long.
 
-> Draft, to be reviewed before Janji is published.
-
 ## On your phone
 
 - **Your server's address and your API key**, and your name, email, username and time zone as your server has
