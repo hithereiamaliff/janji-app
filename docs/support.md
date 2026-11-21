@@ -30,10 +30,11 @@ and cancelled bookings. Janji has no accounts of its own: you sign in to your se
 - Notifications can be turned off on their own in Settings; this deletes the phone from the notification
   relay and removes its webhook from your server.
 
-[What Janji keeps, and where](./privacy.md) has the details.
+[What Janji keeps, and where](./privacy.md) has the details. For anything else, [get in touch](#contact).
 
-## Questions and bug reports
+## Contact
 
-Janji is open source. Report a problem or ask a question in the project's
-[issues](https://github.com/hithereiamaliff/janji-app/issues). Please don't post API keys, server addresses
-you'd rather keep private, or details of other people's bookings there.
+Email [hello@techmavie.digital](mailto:hello@techmavie.digital) with questions, problems or privacy requests.
+You can also report a problem or ask a question in the project's
+[issues](https://github.com/hithereiamaliff/janji-app/issues), which anyone can read. Please don't send or
+post API keys, server addresses you'd rather keep private, or details of other people's bookings.

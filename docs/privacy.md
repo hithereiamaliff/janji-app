@@ -1,7 +1,8 @@
 # Privacy
 
-Janji is an app for your own Cal.diy server. It has no accounts of its own, no analytics and no ads, and it
-doesn't sell or share anything about you. This page says what it keeps, where, and for how long.
+Janji is an app for your own Cal.diy server, made by TechMavie Digital. It has no accounts of its own and no
+ads, it doesn't track you, and it doesn't sell or share anything about you. This page says what it keeps,
+where, and for how long.
 
 > Draft, to be reviewed before Janji is published.
 
@@ -43,7 +44,25 @@ notification also holds the ID of the booking it replaced.
 Turning notifications off, or signing out, deletes the phone from the relay. So does uninstalling the app, once
 Apple or Google tell Expo the phone can't get notifications any more.
 
+## App updates
+
+Janji gets fixes over the air from **Expo Update**, Expo's update service. When the app checks for an update,
+it sends Expo:
+
+- a random **install ID**, made on the phone for this installation of Janji. It isn't based on your name,
+  email, account or the phone's hardware;
+- facts about the app: its platform, version, update channel and the update it's running;
+- if an update failed to start, the IDs of up to five failed updates and, once, the text of the error that
+  stopped the app.
+
+Like any request on the internet, a check also shows Expo the phone's IP address. Expo keeps the install ID and
+the IP address with each check, to count how many phones have each update and to decide which phones get an
+update that's rolled out gradually. It keeps the error text in its logs for three days. Expo handles all of
+this for Janji as a service provider: it doesn't use it for advertising, combine it with data from other apps,
+or share it with data brokers. Expo's [privacy explained](https://expo.dev/privacy-explained) page has the
+details.
+
 ## Questions
 
-Janji is open source, so you can check all of this in its code. Questions about privacy go to the address on
-the support page.
+Janji is open source, so you can check all of this in its code. Questions about privacy, and requests about
+your data, go to [hello@techmavie.digital](mailto:hello@techmavie.digital).
