@@ -6,7 +6,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: "janji",
   owner: "techmavie-digital",
   scheme: "janji",
-  version: "0.1.0",
+  version: "1.0.0",
   // An update only reaches builds of the same `version`, so raise it whenever native code or native config
   // changes. The fingerprint policy would do that by itself, but it hashes the config, and
   // GOOGLE_SERVICES_JSON (a secret file path on EAS Build, unset where updates are published) would make the
@@ -58,6 +58,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       monochromeImage: "./assets/android-icon-monochrome.png",
     },
     predictiveBackGestureEnabled: false,
+    // Janji shows no ads and never reads the advertising ID. Google's libraries can still add the permission for
+    // it, which would contradict the "no advertising ID" answer in Play Console.
+    blockedPermissions: ["com.google.android.gms.permission.AD_ID"],
     // Firebase's file for Android notifications. EAS Build gives its path in a file environment variable, so
     // it isn't committed; without it, an Android build has no notifications.
     ...(process.env.GOOGLE_SERVICES_JSON ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON } : {}),
